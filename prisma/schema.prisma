@@ -1,0 +1,261 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int                @id @default(autoincrement())
+  email              String             @unique
+  password           String
+  name               String
+  role               Role               @relation(fields: [roleName], references: [name])
+  roleName           String
+  profile            Profile?
+  // 
+  progress           Progress[]
+  attendance         Attendance[]
+  forumPosts         ForumPost[]
+  forumComments      ForumComment[]
+  LessonsFeedbacks   LessonFeedback[]
+  Certificate        Certificate[]
+  Submission         Submission[]
+  // Done
+  CoursesEnrollment  CourseEnrollment[]
+  InstructoreCourses CourseInstructor[]
+  ChatParticipations ChatParticipant[]
+}
+
+model Profile {
+  id     Int     @id @default(autoincrement())
+  userId Int     @unique
+  user   User    @relation(fields: [userId], references: [id])
+  bio    String?
+  avatar String?
+  phone  String?
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+}
+
+model Course {
+  id                Int                @id @default(autoincrement())
+  title             String
+  description       String
+  categoryId        Int
+  category          CourseCategory     @relation(fields: [categoryId], references: [id])
+  // 
+  units             Unit[]
+  feedbacks         LessonFeedback[]
+  assignments       Assignment[]
+  quizzes           Quiz[]
+  certificates      Certificate[]
+  Media             Media[]
+  Progress          Progress[]
+  Attendance        Attendance[]
+  CourseEnrollments CourseEnrollment[]
+  CourseInstructors CourseInstructor[]
+}
+
+model CourseCategory {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  courses Course[]
+}
+
+model CourseEnrollment {
+  id        Int    @id @default(autoincrement())
+  courseId  Int
+  Course    Course @relation(fields: [courseId], references: [id])
+  studentId Int
+  Student   User   @relation(fields: [studentId], references: [id])
+}
+
+model CourseInstructor {
+  id           Int    @id @default(autoincrement())
+  courseId     Int
+  Course       Course @relation(fields: [courseId], references: [id])
+  instructorId Int
+  Instructor   User   @relation(fields: [instructorId], references: [id])
+  position     String
+}
+
+model Media {
+  id       Int       @id @default(autoincrement())
+  url      String
+  type     MediaType
+  courseId Int?
+  course   Course?   @relation(fields: [courseId], references: [id])
+  lessonId Int?
+  lesson   Lesson?   @relation(fields: [lessonId], references: [id])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+}
+
+model Unit {
+  id       Int      @id @default(autoincrement())
+  title    String
+  courseId Int
+  course   Course   @relation(fields: [courseId], references: [id])
+  lessons  Lesson[]
+}
+
+model Lesson {
+  id        Int              @id @default(autoincrement())
+  title     String
+  unitId    Int
+  unit      Unit             @relation(fields: [unitId], references: [id])
+  media     Media[]
+  feedbacks LessonFeedback[]
+}
+
+model LessonFeedback {
+  id       Int     @id @default(autoincrement())
+  lessonId Int
+  lesson   Lesson  @relation(fields: [lessonId], references: [id])
+  userId   Int
+  user     User    @relation(fields: [userId], references: [id])
+  feedback String
+  Course   Course? @relation(fields: [courseId], references: [id])
+  courseId Int?
+}
+
+model ForumPost {
+  id       Int            @id @default(autoincrement())
+  title    String
+  content  String
+  userId   Int
+  user     User           @relation(fields: [userId], references: [id])
+  comments ForumComment[]
+}
+
+model ForumComment {
+  id      Int       @id @default(autoincrement())
+  content String
+  postId  Int
+  post    ForumPost @relation(fields: [postId], references: [id])
+  userId  Int
+  user    User      @relation(fields: [userId], references: [id])
+}
+
+model Progress {
+  id       Int    @id @default(autoincrement())
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id])
+  userId   Int
+  user     User   @relation(fields: [userId], references: [id])
+  progress Float
+}
+
+model Attendance {
+  id       Int      @id @default(autoincrement())
+  courseId Int
+  course   Course   @relation(fields: [courseId], references: [id])
+  userId   Int
+  user     User     @relation(fields: [userId], references: [id])
+  date     DateTime
+}
+
+model Certificate {
+  id        Int      @id @default(autoincrement())
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  issueDate DateTime
+}
+
+model Chat {
+  id           Int               @id @default(autoincrement())
+  title        String?
+  createdAt    DateTime          @default(now())
+  participants ChatParticipant[]
+  messages     Message[]
+}
+
+model ChatParticipant {
+  id                  Int                   @id @default(autoincrement())
+  userId              Int
+  user                User                  @relation(fields: [userId], references: [id])
+  chatId              Int
+  chat                Chat                  @relation(fields: [chatId], references: [id])
+  joinedAt            DateTime              @default(now())
+  participationStatus ChatParticipantStatus
+  messages            Message[]
+}
+
+model Message {
+  id                Int             @id @default(autoincrement())
+  chatParticipantId Int
+  chatParticipant   ChatParticipant @relation(fields: [chatParticipantId], references: [id])
+  chatId            Int
+  chat              Chat            @relation(fields: [chatId], references: [id])
+  content           String
+  sentAt            DateTime        @default(now())
+}
+
+enum ChatParticipantStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Quiz {
+  id        Int        @id @default(autoincrement())
+  courseId  Int
+  course    Course     @relation(fields: [courseId], references: [id])
+  title     String
+  questions Question[]
+}
+
+model Question {
+  id      Int      @id @default(autoincrement())
+  quizId  Int
+  quiz    Quiz     @relation(fields: [quizId], references: [id])
+  content String
+  answers Answer[]
+}
+
+model Answer {
+  id         Int      @id @default(autoincrement())
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id])
+  content    String
+  isCorrect  Boolean
+}
+
+model Assignment {
+  id          Int          @id @default(autoincrement())
+  courseId    Int
+  course      Course       @relation(fields: [courseId], references: [id])
+  title       String
+  content     String
+  dueDate     DateTime
+  submissions Submission[]
+}
+
+model Submission {
+  id           Int        @id @default(autoincrement())
+  assignmentId Int
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  userId       Int
+  user         User       @relation(fields: [userId], references: [id])
+  content      String
+  submittedAt  DateTime
+}
