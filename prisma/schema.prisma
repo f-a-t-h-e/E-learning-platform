@@ -33,6 +33,17 @@ model User {
   CoursesEnrollment  CourseEnrollment[]
   InstructoreCourses CourseInstructor[]
   ChatParticipations ChatParticipant[]
+
+  Sessions Session[]
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  refreshToken String
+  userId       Int
+  User         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
 }
 
 model Profile {
