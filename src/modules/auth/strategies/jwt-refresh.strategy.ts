@@ -6,7 +6,7 @@ import { IRefreshToken } from '../entities/tokens-payloads';
 import { AuthService } from '../auth.service';
 
 @Injectable()
-export class JwtRefreshTokenStrategy extends PassportStrategy(
+export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
   'jwt-refresh-token',
 ) {

@@ -17,7 +17,9 @@ import { UpdateUnitDto } from './dto/update-unit.dto';
 import { CoursesService } from '../courses/courses.service';
 import JwtGuard from '../auth/guards/jwt.guard';
 import { User } from 'src/common/decorators/user.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('units')
 @Controller('units')
 export class UnitsController {
   constructor(
@@ -25,6 +27,7 @@ export class UnitsController {
     private readonly coursesService: CoursesService,
   ) {}
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Post()
   create(@User() user: RequestUser, @Body() createUnitDto: CreateUnitDto) {
@@ -56,6 +59,7 @@ export class UnitsController {
     return this.unitsService.findOne(+id);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Patch(':id')
   update(
@@ -77,6 +81,7 @@ export class UnitsController {
     return this.unitsService.update(+id, updateUnitDto, courseId);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Delete(':id')
   remove(

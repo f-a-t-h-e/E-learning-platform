@@ -14,11 +14,14 @@ import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import JwtGuard from '../auth/guards/jwt.guard';
 import { User } from 'src/common/decorators/user.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags("courses")
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Post()
   async create(
@@ -43,6 +46,7 @@ export class CoursesController {
     return this.coursesService.findOne(+id);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Patch(':id')
   async update(
@@ -58,6 +62,7 @@ export class CoursesController {
     return this.coursesService.update(+id, updateCourseDto, user.id);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Delete(':id')
   async remove(@User() user: RequestUser, @Param('id') id: string) {

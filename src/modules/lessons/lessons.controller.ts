@@ -17,7 +17,9 @@ import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { CoursesService } from '../courses/courses.service';
 import JwtGuard from '../auth/guards/jwt.guard';
 import { User } from 'src/common/decorators/user.decorator';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('lessons')
 @Controller('lessons')
 export class LessonsController {
   constructor(
@@ -25,6 +27,7 @@ export class LessonsController {
     private readonly coursesService: CoursesService,
   ) {}
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Post()
   create(@User() user: RequestUser, @Body() createLessonDto: CreateLessonDto) {
@@ -56,6 +59,7 @@ export class LessonsController {
     return this.lessonsService.findOne(+id);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Patch(':id')
   update(
@@ -77,6 +81,7 @@ export class LessonsController {
     return this.lessonsService.update(+id, updateLessonDto, courseId);
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtGuard)
   @Delete(':id')
   remove(

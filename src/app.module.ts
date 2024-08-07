@@ -8,7 +8,13 @@ import { UnitsModule } from './modules/units/units.module';
 import { LessonsModule } from './modules/lessons/lessons.module';
 
 @Module({
-  imports: [CoursesModule, AuthModule, PrismaModule, UnitsModule, LessonsModule],
+  imports: [
+    AuthModule,
+    CoursesModule,
+    PrismaModule,
+    UnitsModule,
+    LessonsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
