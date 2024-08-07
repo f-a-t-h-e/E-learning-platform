@@ -33,8 +33,14 @@ model User {
   CoursesEnrollment  CourseEnrollment[]
   InstructoreCourses CourseInstructor[]
   ChatParticipations ChatParticipant[]
-
-  Sessions Session[]
+  // 
+  Sessions           Session[]
+  CreatedLessons     Lesson[]
+  CreatedUnits       Unit[]
+  // 
+  // timestamp
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
 }
 
 model Session {
@@ -47,12 +53,16 @@ model Session {
 }
 
 model Profile {
-  id     Int     @id @default(autoincrement())
-  userId Int     @unique
-  user   User    @relation(fields: [userId], references: [id])
-  bio    String?
-  avatar String?
-  phone  String?
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  bio       String?
+  avatar    String?
+  phone     String?
+  // 
+  // timestamp
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Role {
@@ -66,7 +76,7 @@ model Course {
   title             String
   description       String?
   // 
-  units             Unit[]
+  Units             Unit[]
   feedbacks         LessonFeedback[]
   assignments       Assignment[]
   quizzes           Quiz[]
@@ -76,6 +86,11 @@ model Course {
   Attendance        Attendance[]
   CourseEnrollments CourseEnrollment[]
   CourseInstructors CourseInstructor[]
+  // 
+  // timestamp
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  Lessons           Lesson[]
 }
 
 model CourseEnrollment {
@@ -118,20 +133,37 @@ enum MediaType {
 }
 
 model Unit {
-  id       Int      @id @default(autoincrement())
-  title    String
-  courseId Int
-  course   Course   @relation(fields: [courseId], references: [id])
-  lessons  Lesson[]
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  courseId    Int
+  // Owner
+  addedBy     Int
+  AddedBy     User     @relation(fields: [addedBy], references: [id])
+  course      Course   @relation(fields: [courseId], references: [id])
+  lessons     Lesson[]
+  //
+  // timestamp
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Lesson {
-  id        Int              @id @default(autoincrement())
-  title     String
-  unitId    Int
-  unit      Unit             @relation(fields: [unitId], references: [id])
-  media     Media[]
-  feedbacks LessonFeedback[]
+  id          Int              @id @default(autoincrement())
+  title       String
+  unitId      Int
+  courseId    Int
+  description String?
+  addedBy     Int
+  AddedBy     User             @relation(fields: [addedBy], references: [id])
+  unit        Unit             @relation(fields: [unitId], references: [id])
+  course      Course           @relation(fields: [courseId], references: [id])
+  media       Media[]
+  feedbacks   LessonFeedback[]
+  //
+  // timestamp
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 }
 
 model LessonFeedback {

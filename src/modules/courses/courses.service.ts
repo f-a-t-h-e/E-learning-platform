@@ -62,4 +62,20 @@ export class CoursesService {
     });
     return course;
   }
+
+  async isUserATeacherAtCourse(userId: number, courseId: number) {
+    const instructore = await this.prisma.courseInstructor.findFirst({
+      where: {
+        courseId: courseId,
+        instructorId: userId,
+      },
+      select: {
+        position: true,
+      }
+    });
+
+    return TEACHERS_POSITIONS.includes(instructore.position) && instructore;
+  }
 }
+
+const TEACHERS_POSITIONS = ['OWNER', 'TEACHER'];
