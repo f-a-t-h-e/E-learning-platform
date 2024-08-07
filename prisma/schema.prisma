@@ -64,9 +64,7 @@ model Role {
 model Course {
   id                Int                @id @default(autoincrement())
   title             String
-  description       String
-  categoryId        Int
-  category          CourseCategory     @relation(fields: [categoryId], references: [id])
+  description       String?
   // 
   units             Unit[]
   feedbacks         LessonFeedback[]
@@ -80,12 +78,6 @@ model Course {
   CourseInstructors CourseInstructor[]
 }
 
-model CourseCategory {
-  id      Int      @id @default(autoincrement())
-  name    String   @unique
-  courses Course[]
-}
-
 model CourseEnrollment {
   id        Int    @id @default(autoincrement())
   courseId  Int
@@ -95,12 +87,17 @@ model CourseEnrollment {
 }
 
 model CourseInstructor {
-  id           Int    @id @default(autoincrement())
+  id           Int                       @id @default(autoincrement())
   courseId     Int
-  Course       Course @relation(fields: [courseId], references: [id])
+  Course       Course                    @relation(fields: [courseId], references: [id])
   instructorId Int
-  Instructor   User   @relation(fields: [instructorId], references: [id])
-  position     String
+  Instructor   User                      @relation(fields: [instructorId], references: [id])
+  position     CourseInstructorPositions
+}
+
+enum CourseInstructorPositions {
+  OWNER
+  TEACHER
 }
 
 model Media {
