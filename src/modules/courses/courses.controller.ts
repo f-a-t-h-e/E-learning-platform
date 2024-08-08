@@ -10,19 +10,26 @@ import {
   BadRequestException,
   HttpCode,
   HttpStatus,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import JwtGuard from '../auth/guards/jwt.guard';
 import { User } from 'src/common/decorators/user.decorator';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
 import { Course } from './entities/course.entity';
 import { BadRequestResponse } from 'src/common/entities/error-response.entity';
 
 @ApiErrorResponses()
-@ApiTags("courses")
+@ApiTags('courses')
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
@@ -68,10 +75,9 @@ export class CoursesController {
   })
   @HttpCode(HttpStatus.OK)
   @Get()
-  async findAll():Promise<Course[]> {
+  async findAll(): Promise<Course[]> {
     return this.coursesService.findAll();
   }
-
 
   @ApiOperation({
     summary: 'Get one course',
@@ -83,7 +89,7 @@ export class CoursesController {
     description: `The course that you requested`,
   })
   @ApiParam({
-    name: "id",
+    name: 'id',
     description: `The unit id of the course`,
     type: Number,
     required: true,
@@ -91,8 +97,8 @@ export class CoursesController {
   })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Course> {
-    return this.coursesService.findOne(+id);
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Course> {
+    return this.coursesService.findOne(id);
   }
 
   @ApiBearerAuth()
@@ -106,7 +112,7 @@ export class CoursesController {
     description: `The course that you've just edit successfully`,
   })
   @ApiParam({
-    name: "id",
+    name: 'id',
     description: `The unit id of the course`,
     type: Number,
     required: true,
@@ -117,7 +123,7 @@ export class CoursesController {
   @Patch(':id')
   async update(
     @User() user: RequestUser,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateCourseDto: UpdateCourseDto,
   ): Promise<Course> {
     if (user.roleName !== 'teacher') {
@@ -125,7 +131,7 @@ export class CoursesController {
         'You have to be a teacher to edit a course!',
       );
     }
-    return this.coursesService.update(+id, updateCourseDto, user.id);
+    return this.coursesService.update(id, updateCourseDto, user.id);
   }
 
   @ApiBearerAuth()
@@ -139,7 +145,7 @@ export class CoursesController {
     description: `The course that you've just deleted successfully`,
   })
   @ApiParam({
-    name: "id",
+    name: 'id',
     description: `The unit id of the course`,
     type: Number,
     required: true,
@@ -148,12 +154,15 @@ export class CoursesController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
   @Delete(':id')
-  async remove(@User() user: RequestUser, @Param('id') id: string): Promise<Course> {
+  async remove(
+    @User() user: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Course> {
     if (user.roleName !== 'teacher') {
       throw new BadRequestException(
         'You have to be a teacher to remove a course!',
       );
     }
-    return this.coursesService.remove(+id, user.id);
+    return this.coursesService.remove(id, user.id);
   }
 }

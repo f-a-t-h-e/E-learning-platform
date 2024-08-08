@@ -5,5 +5,8 @@
 - [x] Add OpenApi setup
 - [x] Add OpenApi initial details for auth endpoints
 - [x] Add OpenApi requests & bodies for courses, units & lessons
+- [x] Add lessons-contents module and its initial api
+- [x] Add OpenApi schemas for lessons-contents
+- [x] Add Forums to the db
 - [ ] Add the initial services
 - [ ] Add the initial controllers

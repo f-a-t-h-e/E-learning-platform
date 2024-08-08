@@ -12,6 +12,7 @@ import {
   NotFoundException,
   HttpStatus,
   HttpCode,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
@@ -30,6 +31,8 @@ import {
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
 import { BadRequestResponse } from 'src/common/entities/error-response.entity';
 import { Lesson } from './entities/lesson.entity';
+import { TRUTHY_STRING_VALUES } from 'src/common/constants';
+import { ParseTruthyPipe } from 'src/common/pipes/ParseTruthy.pipe';
 
 @ApiErrorResponses()
 @ApiTags('lessons')
@@ -53,7 +56,7 @@ export class LessonsController {
   @ApiResponse({
     type: BadRequestResponse,
     status: HttpStatus.BAD_REQUEST,
-    description: `You sent invalid fields or you are not a teacher`,
+    description: `You sent invalid fields or you are not a teacher in this course`,
   })
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
@@ -86,14 +89,21 @@ export class LessonsController {
     required: true,
     example: 79,
   })
+  @ApiQuery({
+    name: 'getContent',
+    description: `Use it to get the content of the lessons as well`,
+    type: String,
+    enum: TRUTHY_STRING_VALUES,
+    required: true,
+    example: 79,
+  })
   @HttpCode(HttpStatus.OK)
   @Get()
-  findAll(@Query('unitId') unitIdString: string) {
-    const unitId = parseInt(`${unitIdString}`);
-    if (isNaN(unitId)) {
-      throw new BadRequestException('Invalid query param unitId');
-    }
-    return this.lessonsService.findAll(unitId);
+  findAll(
+    @Query('unitId', ParseIntPipe) unitId: number,
+    @Query('getContent', ParseTruthyPipe) getContent: boolean,
+  ) {
+    return this.lessonsService.findAll(unitId, getContent);
   }
 
   @ApiOperation({
@@ -112,13 +122,21 @@ export class LessonsController {
     required: true,
     example: 971,
   })
+  @ApiQuery({
+    name: 'getContent',
+    description: `Use it to get the content of the lessons as well`,
+    type: String,
+    enum: TRUTHY_STRING_VALUES,
+    required: true,
+    example: 79,
+  })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    if (isNaN(+id)) {
-      throw new NotFoundException(`This lesson doesn't exist`);
-    }
-    return this.lessonsService.findOne(+id);
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('getContent', ParseTruthyPipe) getContent: boolean,
+  ) {
+    return this.lessonsService.findOne(id, getContent);
   }
 
   @ApiBearerAuth()
@@ -150,21 +168,14 @@ export class LessonsController {
   @Patch(':id')
   update(
     @User() user: RequestUser,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateLessonDto: UpdateLessonDto,
-    @Query('courseId') courseIdString: string,
+    @Query('courseId', ParseIntPipe) courseId: number,
   ) {
-    const courseId = parseInt(`${courseIdString}`);
-    if (isNaN(courseId)) {
-      throw new BadRequestException('Invalid query param unitId');
-    }
-    if (isNaN(+id)) {
-      throw new NotFoundException(`This lesson doesn't exist`);
-    }
     if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
       throw new BadRequestException('You are not a teacher in this course!');
     }
-    return this.lessonsService.update(+id, updateLessonDto, courseId);
+    return this.lessonsService.update(id, updateLessonDto, courseId);
   }
 
   @ApiBearerAuth()
@@ -186,19 +197,12 @@ export class LessonsController {
   @Delete(':id')
   remove(
     @User() user: RequestUser,
-    @Param('id') id: string,
-    @Query('courseId') courseIdString: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Query('courseId', ParseIntPipe) courseId: number,
   ) {
-    const courseId = parseInt(`${courseIdString}`);
-    if (isNaN(courseId)) {
-      throw new BadRequestException('Invalid query param unitId');
-    }
-    if (isNaN(+id)) {
-      throw new NotFoundException(`This lesson doesn't exist`);
-    }
     if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
       throw new BadRequestException('You are not a teacher in this course!');
     }
-    return this.lessonsService.remove(+id, courseId);
+    return this.lessonsService.remove(id, courseId);
   }
 }

@@ -24,8 +24,6 @@ model User {
   // 
   progress           Progress[]
   attendance         Attendance[]
-  forumPosts         ForumPost[]
-  forumComments      ForumComment[]
   LessonsFeedbacks   LessonFeedback[]
   Certificate        Certificate[]
   Submission         Submission[]
@@ -41,6 +39,12 @@ model User {
   // timestamp
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
+  // Forums
+  CreatedForums      Forum[]
+  ForumMemberIn      ForumMember[]
+  ForumPosts         ForumPost[]
+  ForumComments      ForumComment[]
+  // 
 }
 
 model Session {
@@ -91,6 +95,7 @@ model Course {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   Lessons           Lesson[]
+  Forums            Forum[]
 }
 
 model CourseEnrollment {
@@ -149,21 +154,34 @@ model Unit {
 }
 
 model Lesson {
-  id          Int              @id @default(autoincrement())
-  title       String
-  unitId      Int
-  courseId    Int
-  description String?
-  addedBy     Int
-  AddedBy     User             @relation(fields: [addedBy], references: [id])
-  unit        Unit             @relation(fields: [unitId], references: [id])
-  course      Course           @relation(fields: [courseId], references: [id])
-  media       Media[]
-  feedbacks   LessonFeedback[]
+  id            Int              @id @default(autoincrement())
+  title         String
+  unitId        Int
+  courseId      Int
+  description   String?
+  addedBy       Int
+  AddedBy       User             @relation(fields: [addedBy], references: [id])
+  unit          Unit             @relation(fields: [unitId], references: [id])
+  course        Course           @relation(fields: [courseId], references: [id])
+  media         Media[]
+  feedbacks     LessonFeedback[]
+  LessonContent LessonContent?
   //
   // timestamp
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model LessonContent {
+  id          Int         @id
+  contentType ContentType
+  content     String
+  lesson      Lesson      @relation(fields: [id], references: [id])
+}
+
+enum ContentType {
+  URL
+  TEXT
 }
 
 model LessonFeedback {
@@ -177,22 +195,64 @@ model LessonFeedback {
   courseId Int?
 }
 
+model Forum {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String?
+  createdBy   Int
+  Owner       User          @relation(fields: [createdBy], references: [id])
+  courseId    Int?
+  Course      Course?       @relation(fields: [courseId], references: [id])
+  ForumMember ForumMember[]
+  ForumPosts  ForumPost[]
+  // timestamp
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ForumMember {
+  forumId   Int
+  Forum     Forum          @relation(fields: [forumId], references: [id])
+  memberId  Int
+  Member    User           @relation(fields: [memberId], references: [id])
+  position  ForumPositions
+  // timestamp
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@id([forumId, memberId])
+}
+
+enum ForumPositions {
+  OWNER
+  TEACHER
+  STUDENT
+}
+
 model ForumPost {
-  id       Int            @id @default(autoincrement())
-  title    String
-  content  String
-  userId   Int
-  user     User           @relation(fields: [userId], references: [id])
-  comments ForumComment[]
+  id        Int            @id @default(autoincrement())
+  title     String
+  content   String
+  writerId  Int
+  Writer    User           @relation(fields: [writerId], references: [id])
+  forumId   Int
+  Forum     Forum          @relation(fields: [forumId], references: [id])
+  comments  ForumComment[]
+  // timestamp
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 }
 
 model ForumComment {
-  id      Int       @id @default(autoincrement())
-  content String
-  postId  Int
-  post    ForumPost @relation(fields: [postId], references: [id])
-  userId  Int
-  user    User      @relation(fields: [userId], references: [id])
+  id        Int       @id @default(autoincrement())
+  content   String
+  postId    Int
+  post      ForumPost @relation(fields: [postId], references: [id])
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id])
+  // timestamp
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Progress {
