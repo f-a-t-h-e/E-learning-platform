@@ -8,5 +8,6 @@
 - [x] Add lessons-contents module and its initial api
 - [x] Add OpenApi schemas for lessons-contents
 - [x] Add Forums to the db
+- [x] Add OpenApi details for lessons-contents
 - [ ] Add the initial services
 - [ ] Add the initial controllers

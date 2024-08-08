@@ -7,10 +7,10 @@ import {
   Param,
   Delete,
   UseGuards,
-  BadRequestException,
   HttpCode,
   HttpStatus,
   ParseIntPipe,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -26,7 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
 import { Course } from './entities/course.entity';
-import { BadRequestResponse } from 'src/common/entities/error-response.entity';
+import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
 
 @ApiErrorResponses()
 @ApiTags('courses')
@@ -45,9 +45,9 @@ export class CoursesController {
     description: `The new course was successfully created`,
   })
   @ApiResponse({
-    type: BadRequestResponse,
-    status: HttpStatus.BAD_REQUEST,
-    description: `You sent invalid fields or you are not a teacher`,
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'You have to be a teacher to create a course!',
   })
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
@@ -57,7 +57,7 @@ export class CoursesController {
     @Body() createCourseDto: CreateCourseDto,
   ): Promise<Course> {
     if (user.roleName !== 'teacher') {
-      throw new BadRequestException(
+      throw new UnauthorizedException(
         'You have to be a teacher to create a course!',
       );
     }
@@ -109,7 +109,7 @@ export class CoursesController {
   @ApiResponse({
     type: Course,
     status: HttpStatus.OK,
-    description: `The course that you've just edit successfully`,
+    description: `The course that you've just edited successfully`,
   })
   @ApiParam({
     name: 'id',
@@ -117,6 +117,11 @@ export class CoursesController {
     type: Number,
     required: true,
     example: 7,
+  })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'You have to be a teacher in this course to edit it!',
   })
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
@@ -127,8 +132,8 @@ export class CoursesController {
     @Body() updateCourseDto: UpdateCourseDto,
   ): Promise<Course> {
     if (user.roleName !== 'teacher') {
-      throw new BadRequestException(
-        'You have to be a teacher to edit a course!',
+      throw new UnauthorizedException(
+        'You have to be a teacher in this course to edit it!',
       );
     }
     return this.coursesService.update(id, updateCourseDto, user.id);
@@ -151,6 +156,11 @@ export class CoursesController {
     required: true,
     example: 7,
   })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'You have to be a teacher in this course to delete it!',
+  })
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
   @Delete(':id')
@@ -159,8 +169,8 @@ export class CoursesController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Course> {
     if (user.roleName !== 'teacher') {
-      throw new BadRequestException(
-        'You have to be a teacher to remove a course!',
+      throw new UnauthorizedException(
+        'You have to be a teacher in this course to delete it!',
       );
     }
     return this.coursesService.remove(id, user.id);

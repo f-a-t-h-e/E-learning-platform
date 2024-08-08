@@ -7,12 +7,11 @@ import {
   Param,
   Delete,
   Query,
-  BadRequestException,
   UseGuards,
-  NotFoundException,
   HttpStatus,
   HttpCode,
   ParseIntPipe,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
@@ -29,7 +28,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
-import { BadRequestResponse } from 'src/common/entities/error-response.entity';
+import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
 import { Lesson } from './entities/lesson.entity';
 import { TRUTHY_STRING_VALUES } from 'src/common/constants';
 import { ParseTruthyPipe } from 'src/common/pipes/ParseTruthy.pipe';
@@ -54,8 +53,8 @@ export class LessonsController {
     description: `The new lesson was successfully created`,
   })
   @ApiResponse({
-    type: BadRequestResponse,
-    status: HttpStatus.BAD_REQUEST,
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
     description: `You sent invalid fields or you are not a teacher in this course`,
   })
   @HttpCode(HttpStatus.CREATED)
@@ -68,7 +67,7 @@ export class LessonsController {
         createLessonDto.courseId,
       )
     ) {
-      throw new BadRequestException('You are not a teacher in this course!');
+      throw new UnauthorizedException('You are not a teacher in this course!');
     }
     return this.lessonsService.create(createLessonDto, user.id);
   }
@@ -147,7 +146,7 @@ export class LessonsController {
   @ApiResponse({
     type: Lesson,
     status: HttpStatus.OK,
-    description: `The lesson that you've just edit successfully`,
+    description: `The lesson that you've just edited successfully`,
   })
   @ApiParam({
     name: 'id',
@@ -163,6 +162,11 @@ export class LessonsController {
     required: true,
     example: 7,
   })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: `You are not a teacher in this course`,
+  })
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
   @Patch(':id')
@@ -173,7 +177,7 @@ export class LessonsController {
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
     if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
-      throw new BadRequestException('You are not a teacher in this course!');
+      throw new UnauthorizedException('You are not a teacher in this course!');
     }
     return this.lessonsService.update(id, updateLessonDto, courseId);
   }
@@ -193,6 +197,11 @@ export class LessonsController {
     required: true,
     example: 7,
   })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: `You are not a teacher in this course`,
+  })
   @UseGuards(JwtGuard)
   @Delete(':id')
   remove(
@@ -201,7 +210,7 @@ export class LessonsController {
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
     if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
-      throw new BadRequestException('You are not a teacher in this course!');
+      throw new UnauthorizedException('You are not a teacher in this course!');
     }
     return this.lessonsService.remove(id, courseId);
   }

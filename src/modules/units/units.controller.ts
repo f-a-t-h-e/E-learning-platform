@@ -7,12 +7,11 @@ import {
   Param,
   Delete,
   Query,
-  BadRequestException,
   UseGuards,
-  NotFoundException,
   HttpStatus,
   HttpCode,
   ParseIntPipe,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UnitsService } from './units.service';
 import { CreateUnitDto } from './dto/create-unit.dto';
@@ -30,7 +29,7 @@ import {
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
 import { Unit } from './entities/unit.entity';
-import { BadRequestResponse } from 'src/common/entities/error-response.entity';
+import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
 
 @ApiErrorResponses()
 @ApiTags('units')
@@ -52,9 +51,9 @@ export class UnitsController {
     description: `The new unit was successfully created`,
   })
   @ApiResponse({
-    type: BadRequestResponse,
-    status: HttpStatus.BAD_REQUEST,
-    description: `You sent invalid fields or you are not a teacher`,
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: `You are not a teacher`,
   })
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtGuard)
@@ -69,7 +68,7 @@ export class UnitsController {
         createUnitDto.courseId,
       )
     ) {
-      throw new BadRequestException('You are not a teacher in this course!');
+      throw new UnauthorizedException('You are not a teacher in this course!');
     }
     return this.unitsService.create(createUnitDto, user.id);
   }
@@ -126,7 +125,7 @@ export class UnitsController {
   @ApiResponse({
     type: Unit,
     status: HttpStatus.OK,
-    description: `The unit that you've just edit successfully`,
+    description: `The unit that you've just edited successfully`,
   })
   @ApiParam({
     name: 'id',
@@ -142,6 +141,11 @@ export class UnitsController {
     required: true,
     example: 7,
   })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: `You are not a teacher in this course`,
+  })
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtGuard)
   @Patch(':id')
@@ -152,7 +156,7 @@ export class UnitsController {
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
     if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
-      throw new BadRequestException('You are not a teacher in this course!');
+      throw new UnauthorizedException('You are not a teacher in this course!');
     }
     return this.unitsService.update(id, updateUnitDto, courseId);
   }
@@ -172,6 +176,11 @@ export class UnitsController {
     required: true,
     example: 7,
   })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: `You are not a teacher in this course`,
+  })
   @UseGuards(JwtGuard)
   @Delete(':id')
   remove(
@@ -180,7 +189,7 @@ export class UnitsController {
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
     if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
-      throw new BadRequestException('You are not a teacher in this course!');
+      throw new UnauthorizedException('You are not a teacher in this course!');
     }
     return this.unitsService.remove(id, courseId);
   }

@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLessonsContentDto {
   @ApiProperty({
-    description: 'The unique identifier of the lesson',
+    description: 'The unique identifier of the lesson that you want to add content to',
     example: 1,
   })
   @IsNumber()
