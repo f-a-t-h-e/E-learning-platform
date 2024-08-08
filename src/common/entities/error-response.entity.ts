@@ -39,6 +39,7 @@ export class BadRequestResponse implements ErrorResponse {
     description: 'A detailed message explaining what was wrong with the request, such as missing parameters or invalid data.',
     example: 'The email field is required and cannot be empty.',
     nullable: true,
+    required: false
   })
   error?: string;
 }
@@ -60,6 +61,7 @@ export class UnauthorizedResponse implements ErrorResponse {
     description: 'A detailed message explaining why the request is unauthorized, such as invalid credentials or missing token.',
     example: 'Authentication token is missing or invalid.',
     nullable: true,
+    required: false
   })
   error?: string;
 }
@@ -82,6 +84,7 @@ export class NotFoundResponse implements ErrorResponse {
     description: 'A detailed message explaining which resource could not be found, such as a missing user or endpoint.',
     example: 'The user with the given ID does not exist.',
     nullable: true,
+    required: false
   })
   error?: string;
 }
@@ -104,6 +107,7 @@ export class InternalServerErrorResponse implements ErrorResponse {
     description: 'A detailed message providing additional context about the server error, such as stack traces or unexpected failures.',
     example: 'An unexpected error occurred while processing the request. Please try again later.',
     nullable: true,
+    required: false
   })
   error?: string;
 }
