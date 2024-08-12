@@ -89,4 +89,25 @@ export class LessonsService {
     }
     return false;
   }
+  async getCourseFromUserIdAndLessonId(userId: number, lessonId: number) {
+    const foundResult = await this.prisma.lesson.findFirst({
+      where: {
+        id: lessonId,
+        course: {
+          CourseInstructors: {
+            some: {
+              instructorId: userId,
+            },
+          },
+        },
+      },
+      select: {
+        courseId: true,
+      },
+    });
+    if (foundResult) {
+      return foundResult.courseId;
+    }
+    return false as false;
+  }
 }

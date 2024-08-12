@@ -15,6 +15,7 @@ import { Request } from 'express';
 import { RegisterDto } from './dto/register.dto';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -25,9 +26,8 @@ import { RequestUser } from './entities/request-user.entity';
 import { Whoami } from './entities/whoami.entity';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
 import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
-
-const accessTokenAge = 1000 * 60 * 60 * 1;
-const refreshTokenAge = 1000 * 60 * 60 * 12;
+import { LoginDto } from './dto/login.dto';
+import { setAccessAndRefreshCookies } from './utils/setAccessAndRefreshCookies';
 
 @ApiErrorResponses()
 @ApiTags('auth')
@@ -55,16 +55,8 @@ export class AuthController {
     // Manage token
     const accessToken = this.authService.getCookieWithJwtAccessToken(user);
     const refreshToken = this.authService.getCookieWithJwtRefresgToken(user);
-    req.res.cookie('access', accessToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: accessTokenAge,
-    });
-    req.res.cookie('refresh', refreshToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: refreshTokenAge,
-    });
+
+    setAccessAndRefreshCookies(req.res, accessToken, refreshToken);
 
     /**
      * @todo Confirm email
@@ -86,6 +78,10 @@ export class AuthController {
     status: HttpStatus.OK,
     description: `The user logged in successfully`,
   })
+  @ApiBody({
+    required: true,
+    type: LoginDto,
+  })
   @HttpCode(HttpStatus.OK)
   @UseGuards(LocalAuthGuard)
   @Post('login')
@@ -93,16 +89,9 @@ export class AuthController {
     // Manage token
     const accessToken = this.authService.getCookieWithJwtAccessToken(user);
     const refreshToken = this.authService.getCookieWithJwtRefresgToken(user);
-    req.res.cookie('access', accessToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: accessTokenAge,
-    });
-    req.res.cookie('refresh', refreshToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: refreshTokenAge,
-    });
+
+    setAccessAndRefreshCookies(req.res, accessToken, refreshToken);
+
     return {
       accessToken,
       refreshToken,

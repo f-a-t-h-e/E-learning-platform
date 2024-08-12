@@ -23,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: IAccessToken) {
+  async validate(_request: Request, payload: IAccessToken) {
     return payload;
   }
 }

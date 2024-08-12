@@ -7,6 +7,7 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { UnitsModule } from './modules/units/units.module';
 import { LessonsModule } from './modules/lessons/lessons.module';
 import { LessonsContentsModule } from './modules/lessons-contents/lessons-contents.module';
+import { MediaModule } from './modules/media/media.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { LessonsContentsModule } from './modules/lessons-contents/lessons-conten
     UnitsModule,
     LessonsModule,
     LessonsContentsModule,
+    MediaModule,
   ],
   controllers: [AppController],
   providers: [AppService],

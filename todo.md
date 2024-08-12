@@ -9,5 +9,8 @@
 - [x] Add OpenApi schemas for lessons-contents
 - [x] Add Forums to the db
 - [x] Add OpenApi details for lessons-contents
+- [x] Add media module
+- [x] Add FileValidationInterceptor that validates and writes the files to the local disk
+- [x] Add OpenApi to the media controller
 - [ ] Add the initial services
 - [ ] Add the initial controllers

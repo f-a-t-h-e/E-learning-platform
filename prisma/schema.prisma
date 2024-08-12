@@ -45,6 +45,7 @@ model User {
   ForumPosts         ForumPost[]
   ForumComments      ForumComment[]
   // 
+  UploadedMedia      Media[]
 }
 
 model Session {
@@ -121,13 +122,21 @@ enum CourseInstructorPositions {
 }
 
 model Media {
-  id       Int       @id @default(autoincrement())
-  url      String
-  type     MediaType
-  courseId Int?
-  course   Course?   @relation(fields: [courseId], references: [id])
-  lessonId Int?
-  lesson   Lesson?   @relation(fields: [lessonId], references: [id])
+  id        Int        @id @default(autoincrement())
+  url       String
+  type      MediaType
+  extension String
+  state     MediaState
+  bytes     BigInt
+  userId    Int
+  User      User       @relation(fields: [userId], references: [id])
+  courseId  Int?
+  course    Course?    @relation(fields: [courseId], references: [id])
+  lessonId  Int?
+  lesson    Lesson?    @relation(fields: [lessonId], references: [id])
+  // timestamp
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 enum MediaType {
@@ -135,6 +144,12 @@ enum MediaType {
   VIDEO
   AUDIO
   DOCUMENT
+}
+
+enum MediaState {
+  UPLOADING
+  FAILED
+  UPLOADED
 }
 
 model Unit {
