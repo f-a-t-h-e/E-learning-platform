@@ -10,7 +10,7 @@ import {
   ParseIntPipe,
   HttpCode,
   HttpStatus,
-  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { LessonsContentsService } from './lessons-contents.service';
 import { CreateLessonsContentDto } from './dto/create-lessons-content.dto';
@@ -25,7 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { LessonsContent } from './entities/lessons-content.entity';
+import { LessonsContentEntity } from './entities/lessons-content.entity';
 import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
 
@@ -44,7 +44,7 @@ export class LessonsContentsController {
     description: `This lets you to add a new content to a lesson in a course you are a teacher in (You can add only 1 content)`,
   })
   @ApiResponse({
-    type: LessonsContent,
+    type: LessonsContentEntity,
     status: HttpStatus.CREATED,
     description: `The new content was successfully added`,
   })
@@ -66,7 +66,7 @@ export class LessonsContentsController {
         createLessonsContentDto.id,
       )
     ) {
-      throw new UnauthorizedException(
+      throw new ForbiddenException(
         'You have to be a teacher in this course to edit a lesson',
       );
     }
@@ -81,7 +81,7 @@ export class LessonsContentsController {
     description: `Get a specific lesson' content using its id`,
   })
   @ApiResponse({
-    type: LessonsContent,
+    type: LessonsContentEntity,
     status: HttpStatus.OK,
     description: `The content that you requested`,
   })
@@ -104,7 +104,7 @@ export class LessonsContentsController {
     description: `Edit a specific lesson' content using its id`,
   })
   @ApiResponse({
-    type: LessonsContent,
+    type: LessonsContentEntity,
     status: HttpStatus.OK,
     description: `The content that you've just edited successfully`,
   })
@@ -129,7 +129,7 @@ export class LessonsContentsController {
     @Body() updateLessonsContentDto: UpdateLessonsContentDto,
   ) {
     if (!this.lessonsService.canUserEditLesson(user.id, id)) {
-      throw new UnauthorizedException(
+      throw new ForbiddenException(
         `You have to be a teacher in this course to edit a lesson' content`,
       );
     }
@@ -156,7 +156,7 @@ export class LessonsContentsController {
   @Delete(':id')
   remove(@User() user: RequestUser, @Param('id', ParseIntPipe) id: number) {
     if (!this.lessonsService.canUserEditLesson(user.id, id)) {
-      throw new UnauthorizedException(
+      throw new ForbiddenException(
         `You have to be a teacher in this course to delete a lesson' content`,
       );
     }

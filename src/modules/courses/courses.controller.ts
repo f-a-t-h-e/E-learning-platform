@@ -10,7 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseIntPipe,
-  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
@@ -25,7 +25,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
-import { Course } from './entities/course.entity';
+import { CourseEntity } from './entities/course.entity';
 import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
 
 @ApiErrorResponses()
@@ -40,7 +40,7 @@ export class CoursesController {
     description: `This lets you to create a new course if you are a teacher`,
   })
   @ApiResponse({
-    type: Course,
+    type: CourseEntity,
     status: HttpStatus.CREATED,
     description: `The new course was successfully created`,
   })
@@ -55,9 +55,9 @@ export class CoursesController {
   async create(
     @User() user: RequestUser,
     @Body() createCourseDto: CreateCourseDto,
-  ): Promise<Course> {
+  ): Promise<CourseEntity> {
     if (user.roleName !== 'teacher') {
-      throw new UnauthorizedException(
+      throw new ForbiddenException(
         'You have to be a teacher to create a course!',
       );
     }
@@ -69,13 +69,13 @@ export class CoursesController {
     description: `Get the courses that exist on the platform`,
   })
   @ApiResponse({
-    type: [Course],
+    type: [CourseEntity],
     status: HttpStatus.OK,
     description: `The courses that you requested`,
   })
   @HttpCode(HttpStatus.OK)
   @Get()
-  async findAll(): Promise<Course[]> {
+  async findAll(): Promise<CourseEntity[]> {
     return this.coursesService.findAll();
   }
 
@@ -84,7 +84,7 @@ export class CoursesController {
     description: `Get a specific course using its id`,
   })
   @ApiResponse({
-    type: Course,
+    type: CourseEntity,
     status: HttpStatus.OK,
     description: `The course that you requested`,
   })
@@ -97,7 +97,7 @@ export class CoursesController {
   })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<Course> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<CourseEntity> {
     return this.coursesService.findOne(id);
   }
 
@@ -107,7 +107,7 @@ export class CoursesController {
     description: `Edit a specific course using its id`,
   })
   @ApiResponse({
-    type: Course,
+    type: CourseEntity,
     status: HttpStatus.OK,
     description: `The course that you've just edited successfully`,
   })
@@ -130,9 +130,9 @@ export class CoursesController {
     @User() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCourseDto: UpdateCourseDto,
-  ): Promise<Course> {
+  ): Promise<CourseEntity> {
     if (user.roleName !== 'teacher') {
-      throw new UnauthorizedException(
+      throw new ForbiddenException(
         'You have to be a teacher in this course to edit it!',
       );
     }
@@ -145,7 +145,7 @@ export class CoursesController {
     description: `Delete a specific course using its id`,
   })
   @ApiResponse({
-    type: Course,
+    type: CourseEntity,
     status: HttpStatus.OK,
     description: `The course that you've just deleted successfully`,
   })
@@ -167,9 +167,9 @@ export class CoursesController {
   async remove(
     @User() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<Course> {
+  ): Promise<CourseEntity> {
     if (user.roleName !== 'teacher') {
-      throw new UnauthorizedException(
+      throw new ForbiddenException(
         'You have to be a teacher in this course to delete it!',
       );
     }

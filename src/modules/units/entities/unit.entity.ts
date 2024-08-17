@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Unit as PUnit } from '@prisma/client';
-export class Unit implements PUnit {
+import { Unit } from '@prisma/client';
+export class UnitEntity implements Unit {
   @ApiProperty({
     description: 'The unique identifier for the unit',
     example: 1,

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Lesson as PLesson } from '@prisma/client';
-export class Lesson implements PLesson {
+import { Lesson } from '@prisma/client';
+export class LessonEntity implements Lesson {
   @ApiProperty({
     description: 'The unique identifier for the lesson',
     example: 1,

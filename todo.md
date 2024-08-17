@@ -12,5 +12,7 @@
 - [x] Add media module
 - [x] Add FileValidationInterceptor that validates and writes the files to the local disk
 - [x] Add OpenApi to the media controller
-- [ ] Add the initial services
-- [ ] Add the initial controllers
+- [x] Add Role based authentication
+- [x] Add util method `useTransaction` & logger to `PrismaService`
+- [ ] Add module courses-enrollments
+- [ ] Add OpenApi to courses-enrollments

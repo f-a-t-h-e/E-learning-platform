@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Course as PCourse } from '@prisma/client';
-export class Course implements PCourse {
+import { Course } from '@prisma/client';
+export class CourseEntity implements Course {
   @ApiProperty({
     description: 'The unique identifier for the course',
     example: 1,

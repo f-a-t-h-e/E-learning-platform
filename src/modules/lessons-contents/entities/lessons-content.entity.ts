@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { $Enums, LessonContent as PLessonContent } from '@prisma/client';
-export class LessonsContent implements PLessonContent {
+import { $Enums, LessonContent } from '@prisma/client';
+export class LessonsContentEntity implements LessonContent {
   @ApiProperty({
     description: 'The unique identifier of the lesson',
     example: 1,

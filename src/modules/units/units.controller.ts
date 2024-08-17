@@ -11,7 +11,7 @@ import {
   HttpStatus,
   HttpCode,
   ParseIntPipe,
-  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UnitsService } from './units.service';
 import { CreateUnitDto } from './dto/create-unit.dto';
@@ -28,7 +28,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
-import { Unit } from './entities/unit.entity';
+import { UnitEntity } from './entities/unit.entity';
 import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
 
 @ApiErrorResponses()
@@ -46,7 +46,7 @@ export class UnitsController {
     description: `This lets you to create a new unit in a course you are a teacher in`,
   })
   @ApiResponse({
-    type: Unit,
+    type: UnitEntity,
     status: HttpStatus.CREATED,
     description: `The new unit was successfully created`,
   })
@@ -61,14 +61,14 @@ export class UnitsController {
   create(
     @User() user: RequestUser,
     @Body() createUnitDto: CreateUnitDto,
-  ): Promise<Unit> {
+  ): Promise<UnitEntity> {
     if (
       !this.coursesService.isUserATeacherAtCourse(
         user.id,
         createUnitDto.courseId,
       )
     ) {
-      throw new UnauthorizedException('You are not a teacher in this course!');
+      throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.unitsService.create(createUnitDto, user.id);
   }
@@ -78,7 +78,7 @@ export class UnitsController {
     description: `Get the units related to the course that you want`,
   })
   @ApiResponse({
-    type: [Unit],
+    type: [UnitEntity],
     status: HttpStatus.OK,
     description: `The units that you requested`,
   })
@@ -91,7 +91,9 @@ export class UnitsController {
   })
   @HttpCode(HttpStatus.OK)
   @Get()
-  findAll(@Query('courseId', ParseIntPipe) courseId: number): Promise<Unit[]> {
+  findAll(
+    @Query('courseId', ParseIntPipe) courseId: number,
+  ): Promise<UnitEntity[]> {
     return this.unitsService.findAll(courseId);
   }
 
@@ -100,7 +102,7 @@ export class UnitsController {
     description: `Get a specific unit using its id`,
   })
   @ApiResponse({
-    type: Unit,
+    type: UnitEntity,
     status: HttpStatus.OK,
     description: `The unit that you requested`,
   })
@@ -113,7 +115,7 @@ export class UnitsController {
   })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<Unit> {
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<UnitEntity> {
     return this.unitsService.findOne(id);
   }
 
@@ -123,7 +125,7 @@ export class UnitsController {
     description: `Edit a specific unit using its id`,
   })
   @ApiResponse({
-    type: Unit,
+    type: UnitEntity,
     status: HttpStatus.OK,
     description: `The unit that you've just edited successfully`,
   })
@@ -156,7 +158,7 @@ export class UnitsController {
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
     if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
-      throw new UnauthorizedException('You are not a teacher in this course!');
+      throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.unitsService.update(id, updateUnitDto, courseId);
   }
@@ -189,7 +191,7 @@ export class UnitsController {
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
     if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
-      throw new UnauthorizedException('You are not a teacher in this course!');
+      throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.unitsService.remove(id, courseId);
   }

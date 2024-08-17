@@ -1,26 +1,38 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
-import { BadRequestResponse, InternalServerErrorResponse, NotFoundResponse, UnauthorizedResponse } from '../entities/error-response.entity';
+import {
+  ApiBadRequestResponse,
+  ApiForbiddenResponse,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import {
+  BadRequestResponse,
+  ForbiddenResponse,
+  InternalServerErrorResponse,
+  NotFoundResponse,
+  UnauthorizedResponse,
+} from '../entities/error-response.entity';
 
 export function ApiErrorResponses() {
   return applyDecorators(
-    ApiResponse({
-      status: 400,
+    ApiBadRequestResponse({
       description: 'Bad Request',
       type: BadRequestResponse,
     }),
-    ApiResponse({
-      status: 401,
+    ApiUnauthorizedResponse({
       description: 'Unauthorized',
       type: UnauthorizedResponse,
     }),
-    ApiResponse({
-      status: 404,
+    ApiForbiddenResponse({
+      description: 'Forbidden',
+      type: ForbiddenResponse,
+    }),
+    ApiNotFoundResponse({
       description: 'Not Found',
       type: NotFoundResponse,
     }),
-    ApiResponse({
-      status: 500,
+    ApiInternalServerErrorResponse({
       description: 'Internal Server Error',
       type: InternalServerErrorResponse,
     }),

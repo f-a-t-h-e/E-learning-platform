@@ -7,7 +7,7 @@ import {
   UseInterceptors,
   HttpStatus,
   UseGuards,
-  UnauthorizedException,
+  ForbiddenException,
   HttpCode,
   ParseIntPipe,
   InternalServerErrorException,
@@ -74,7 +74,7 @@ export class MediaController {
   ) {
     const media = await this.mediaService.findOne(id);
     if (media.userId !== user.id) {
-      throw new UnauthorizedException(
+      throw new ForbiddenException(
         `You have no access to this media details`,
       );
     }
@@ -179,7 +179,7 @@ export class MediaController {
       if (isAllowed !== false) {
         createMediaDto.courseId = isAllowed;
       } else {
-        throw new UnauthorizedException(`You don't have access to this lesson`);
+        throw new ForbiddenException(`You don't have access to this lesson`);
       }
     } else if (createMediaDto.courseId) {
       const isAllowed = await this.coursesService.isUserATeacherAtCourse(
@@ -187,7 +187,7 @@ export class MediaController {
         createMediaDto.courseId,
       );
       if (!isAllowed) {
-        throw new UnauthorizedException(`You don't have access to this course`);
+        throw new ForbiddenException(`You don't have access to this course`);
       }
     }
     const media = await this.mediaService.create({

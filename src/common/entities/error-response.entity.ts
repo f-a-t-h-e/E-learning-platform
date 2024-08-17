@@ -71,6 +71,29 @@ export class UnauthorizedResponse implements ErrorResponse {
   error?: string;
 }
 
+export class ForbiddenResponse implements ErrorResponse {
+  @ApiProperty({
+    description: 'The HTTP status code indicating that the server understood the request but refuses to authorize it.',
+    example: 403,
+  })
+  statusCode: 403;
+
+  @ApiProperty({
+    description: 'A brief description indicating that access to the resource is forbidden.',
+    example: 'Forbidden',
+  })
+  message: string;
+
+  @ApiProperty({
+    description:
+      'A detailed message explaining why access is forbidden, such as insufficient permissions.',
+    example: 'You do not have permission to access this resource.',
+    nullable: true,
+    required: false,
+  })
+  error?: string;
+}
+
 export class NotFoundResponse implements ErrorResponse {
   @ApiProperty({
     description:

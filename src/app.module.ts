@@ -8,6 +8,8 @@ import { UnitsModule } from './modules/units/units.module';
 import { LessonsModule } from './modules/lessons/lessons.module';
 import { LessonsContentsModule } from './modules/lessons-contents/lessons-contents.module';
 import { MediaModule } from './modules/media/media.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './modules/auth/guards/roles.guard';
 
 @Module({
   imports: [
@@ -20,6 +22,12 @@ import { MediaModule } from './modules/media/media.module';
     MediaModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

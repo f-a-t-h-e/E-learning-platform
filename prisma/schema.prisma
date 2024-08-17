@@ -100,11 +100,16 @@ model Course {
 }
 
 model CourseEnrollment {
-  id        Int    @id @default(autoincrement())
   courseId  Int
-  Course    Course @relation(fields: [courseId], references: [id])
+  Course    Course   @relation(fields: [courseId], references: [id])
   studentId Int
-  Student   User   @relation(fields: [studentId], references: [id])
+  Student   User     @relation(fields: [studentId], references: [id])
+  // 
+  // timestamp
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, courseId])
 }
 
 model CourseInstructor {

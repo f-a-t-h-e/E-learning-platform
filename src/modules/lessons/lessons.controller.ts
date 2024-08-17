@@ -11,7 +11,7 @@ import {
   HttpStatus,
   HttpCode,
   ParseIntPipe,
-  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
@@ -29,7 +29,7 @@ import {
 } from '@nestjs/swagger';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
 import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
-import { Lesson } from './entities/lesson.entity';
+import { LessonEntity } from './entities/lesson.entity';
 import { TRUTHY_STRING_VALUES } from 'src/common/constants';
 import { ParseTruthyPipe } from 'src/common/pipes/ParseTruthy.pipe';
 
@@ -48,7 +48,7 @@ export class LessonsController {
     description: `This lets you to create a new lesson in a course you are a teacher in`,
   })
   @ApiResponse({
-    type: Lesson,
+    type: LessonEntity,
     status: HttpStatus.CREATED,
     description: `The new lesson was successfully created`,
   })
@@ -67,7 +67,7 @@ export class LessonsController {
         createLessonDto.courseId,
       )
     ) {
-      throw new UnauthorizedException('You are not a teacher in this course!');
+      throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.lessonsService.create(createLessonDto, user.id);
   }
@@ -77,7 +77,7 @@ export class LessonsController {
     description: `Get the lessons related to the unit that you want`,
   })
   @ApiResponse({
-    type: [Lesson],
+    type: [LessonEntity],
     status: HttpStatus.OK,
     description: `The lessons that you requested`,
   })
@@ -110,7 +110,7 @@ export class LessonsController {
     description: `Get a specific lesson using its id`,
   })
   @ApiResponse({
-    type: Lesson,
+    type: LessonEntity,
     status: HttpStatus.OK,
     description: `The lesson that you requested`,
   })
@@ -144,7 +144,7 @@ export class LessonsController {
     description: `Edit a specific lesson using its id`,
   })
   @ApiResponse({
-    type: Lesson,
+    type: LessonEntity,
     status: HttpStatus.OK,
     description: `The lesson that you've just edited successfully`,
   })
@@ -177,7 +177,7 @@ export class LessonsController {
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
     if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
-      throw new UnauthorizedException('You are not a teacher in this course!');
+      throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.lessonsService.update(id, updateLessonDto, courseId);
   }
@@ -210,7 +210,7 @@ export class LessonsController {
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
     if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
-      throw new UnauthorizedException('You are not a teacher in this course!');
+      throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.lessonsService.remove(id, courseId);
   }
