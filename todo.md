@@ -14,5 +14,5 @@
 - [x] Add OpenApi to the media controller
 - [x] Add Role based authentication
 - [x] Add util method `useTransaction` & logger to `PrismaService`
-- [ ] Add module courses-enrollments
-- [ ] Add OpenApi to courses-enrollments
+- [x] Add module courses-enrollments
+- [x] Add OpenApi to courses-enrollments

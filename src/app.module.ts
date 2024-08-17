@@ -8,6 +8,7 @@ import { UnitsModule } from './modules/units/units.module';
 import { LessonsModule } from './modules/lessons/lessons.module';
 import { LessonsContentsModule } from './modules/lessons-contents/lessons-contents.module';
 import { MediaModule } from './modules/media/media.module';
+import { CoursesEnrollmentsModule } from './modules/courses-enrollments/courses-enrollments.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 
@@ -15,6 +16,7 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
   imports: [
     AuthModule,
     CoursesModule,
+    CoursesEnrollmentsModule,
     PrismaModule,
     UnitsModule,
     LessonsModule,
