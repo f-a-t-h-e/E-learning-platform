@@ -52,7 +52,7 @@ export class QuizzesController {
   @ApiQuery({
     name: 'courseId',
     type: Number,
-    description: `\`course.id\` that you want to get its quizzes.`
+    description: `\`course.id\` that you want to get its quizzes.`,
   })
   @ApiResponse({ status: 200, description: 'Return many quizzes.' })
   findMany(@Query('courseId', ParseIntPipe) courseId: number) {
@@ -81,7 +81,7 @@ export class QuizzesController {
   @Patch(':id')
   @RolesDecorator(Role.Teacher)
   @ApiOperation({ summary: 'Update a quiz by ID' })
-  @ApiParam({ name: 'id', description: 'Quiz ID' })
+  @ApiParam({ name: 'id', description: 'Quiz ID', type: Number })
   @ApiResponse({
     status: 200,
     description: 'The quiz has been successfully updated.',
@@ -98,7 +98,7 @@ export class QuizzesController {
   @Delete(':id')
   @RolesDecorator(Role.Teacher)
   @ApiOperation({ summary: 'Delete a quiz by ID' })
-  @ApiParam({ name: 'id', description: 'Quiz ID' })
+  @ApiParam({ name: 'id', description: 'Quiz ID', type: Number })
   @ApiResponse({
     status: 200,
     description: 'The quiz has been successfully deleted.',

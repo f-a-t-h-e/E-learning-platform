@@ -80,10 +80,10 @@ export class QuizQuestionsService {
     });
   }
 
-  async removeMany(ids: number[]) {
+  async removeMany(id: number) {
     return this.prisma.quizQuestion.deleteMany({
       where: {
-        id: { in: ids },
+        quizId: id,
       },
     });
   }

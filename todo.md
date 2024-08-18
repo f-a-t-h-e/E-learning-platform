@@ -21,8 +21,12 @@
 - [x] Add OpenApi to quizzes module
 - [x] Add questions module
 - [x] Add OpenApi to questions module
-- [ ] Complete the authorization for the quizzes module
-- [ ] Complete the authorization for the quiz-questions module
+- [ ] Improve the authorization for the quizzes module
+- [ ] Improve the authorization for the quiz-questions module
 - [ ] Add email module
 - [ ] Add the necessary service mothods for email
 - [ ] Add websockets
+- [x] Add quiz-submissions module
+- [x] Add OpenApi to quiz-submissions module
+- [ ] Improve the authorization for quiz-submissions
+- [ ] Add functionality to evaluate quiz-submissions

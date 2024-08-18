@@ -15,6 +15,7 @@ import { MediaModule } from './modules/media/media.module';
 import { CoursesEnrollmentsModule } from './modules/courses-enrollments/courses-enrollments.module';
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { QuizQuestionsModule } from './modules/quiz-questions/quiz-questions.module';
+import { QuizSubmissionsModule } from './modules/quiz-submissions/quiz-submissions.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { QuizQuestionsModule } from './modules/quiz-questions/quiz-questions.mod
     LessonsContentsModule,
     QuizzesModule,
     QuizQuestionsModule,
+    QuizSubmissionsModule,
     MediaModule,
   ],
   controllers: [AppController],

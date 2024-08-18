@@ -63,9 +63,12 @@ export class QuizQuestionsController {
   @ApiQuery({
     name: 'courseId',
     type: Number,
-    description: `\`course.id\` that you want to get its quizzes questions.`
+    description: `\`course.id\` that you want to get its quizzes questions.`,
   })
-  @ApiResponse({ status: 200, description: 'Return all the course quiz questions.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all the course quiz questions.',
+  })
   findAll(@Query('courseId', ParseIntPipe) courseId: number) {
     return this.quizQuestionsService.findAll(courseId);
   }
@@ -73,46 +76,47 @@ export class QuizQuestionsController {
   @Get(':id')
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Get a quiz question by ID' })
-  @ApiParam({ name: 'id', description: 'Quiz Question ID' })
+  @ApiParam({ name: 'id', description: 'Quiz Question ID', type: Number })
   @ApiResponse({
     status: 200,
     description: 'Return the specified quiz question.',
   })
   @ApiResponse({ status: 404, description: 'Quiz question not found' })
-  findOne(@Param('id') id: string) {
-    return this.quizQuestionsService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.quizQuestionsService.findOne(id);
   }
 
   @Patch(':id')
   @RolesDecorator(Role.Teacher)
   @ApiOperation({ summary: 'Update a quiz question by ID' })
-  @ApiParam({ name: 'id', description: 'Quiz Question ID' })
+  @ApiParam({ name: 'id', description: 'Quiz Question ID', type: Number })
   @ApiResponse({
     status: 200,
     description: 'The quiz question has been successfully updated.',
   })
   @ApiResponse({ status: 404, description: 'Quiz question not found' })
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateQuizQuestionDto: UpdateQuizQuestionDto,
   ) {
-    return this.quizQuestionsService.update(+id, updateQuizQuestionDto);
+    return this.quizQuestionsService.update(id, updateQuizQuestionDto);
   }
 
   @Delete(':id')
   @RolesDecorator(Role.Teacher)
   @ApiOperation({ summary: 'Delete a quiz question by ID' })
-  @ApiParam({ name: 'id', description: 'Quiz Question ID' })
+  @ApiParam({ name: 'id', description: 'Quiz Question ID', type: Number })
   @ApiResponse({
     status: 200,
     description: 'The quiz question has been successfully deleted.',
   })
   @ApiResponse({ status: 404, description: 'Quiz question not found' })
-  remove(@Param('id') id: string) {
-    return this.quizQuestionsService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.quizQuestionsService.remove(id);
   }
 
-  @Delete('bulk')
+  @Delete('bulk/:id')
+  @ApiParam({ name: 'id', description: 'Quiz Question ID', type: Number })
   @RolesDecorator(Role.Teacher)
   @ApiOperation({ summary: 'Delete multiple quiz questions by IDs' })
   @ApiResponse({
@@ -120,7 +124,7 @@ export class QuizQuestionsController {
     description: 'The quiz questions have been successfully deleted.',
   })
   @ApiResponse({ status: 400, description: 'Bad Request' })
-  removeMany(@Body() ids: number[]) {
-    return this.quizQuestionsService.removeMany(ids);
+  removeMany(@Param('id', ParseIntPipe) id: number) {
+    return this.quizQuestionsService.removeMany(id);
   }
 }

@@ -289,7 +289,7 @@ model QuizSubmission {
   Student   Profile      @relation(fields: [studentId], references: [userId])
   createdAt DateTime     @default(now()) @db.Timestamptz(3)
   // Relations
-  answers   QuizAnswer[]
+  Answers   QuizAnswer[]
 }
 
 model QuizAnswer {
@@ -298,7 +298,7 @@ model QuizAnswer {
   questionId   Int
   answer       String
   // isCorrect    Boolean?
-  mark         Int            @db.SmallInt
+  mark         Int?           @db.SmallInt
   Submission   QuizSubmission @relation(fields: [submissionId], references: [id])
   Question     QuizQuestion   @relation(fields: [questionId], references: [id])
 }
