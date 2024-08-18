@@ -73,10 +73,8 @@ export class MediaController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     const media = await this.mediaService.findOne(id);
-    if (media.userId !== user.id) {
-      throw new ForbiddenException(
-        `You have no access to this media details`,
-      );
+    if (media.profileId !== user.id) {
+      throw new ForbiddenException(`You have no access to this media details`);
     }
     if (media.url !== 'id') {
       return media.bytes;
@@ -192,7 +190,7 @@ export class MediaController {
     }
     const media = await this.mediaService.create({
       ...createMediaDto,
-      userId: user.id,
+      profileId: user.id,
     });
     const filePath = getFilePath({
       userId: user.id,

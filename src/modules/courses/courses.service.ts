@@ -11,7 +11,7 @@ export class CoursesService {
       data: {
         title: createCourseDto.title,
         description: createCourseDto.description,
-        CourseInstructors: {
+        Instructors: {
           create: {
             position: 'OWNER',
             instructorId: userId,
@@ -36,7 +36,7 @@ export class CoursesService {
     const course = await this.prisma.course.update({
       where: {
         id: id,
-        CourseInstructors: {
+        Instructors: {
           some: {
             instructorId: userId,
           },
@@ -53,7 +53,7 @@ export class CoursesService {
     const course = await this.prisma.course.delete({
       where: {
         id: id,
-        CourseInstructors: {
+        Instructors: {
           some: {
             instructorId: userId,
           },
@@ -71,7 +71,7 @@ export class CoursesService {
       },
       select: {
         position: true,
-      }
+      },
     });
 
     return TEACHERS_POSITIONS.includes(instructore.position) && instructore;

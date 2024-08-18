@@ -1,9 +1,5 @@
 import { Injectable } from '@nestjs/common';
 
-// import * as fileType from "file-type"
-
-import { CreateMediaDto } from './dto/create-media.dto';
-import { UpdateMediaDto } from './dto/update-media.dto';
 import { MediaType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -11,7 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class MediaService {
   constructor(private readonly prisma: PrismaService) {}
   async create(data: {
-    userId: number;
+    profileId: number;
     type: MediaType;
     courseId?: number;
     url?: string;
@@ -23,7 +19,7 @@ export class MediaService {
         type: data.type,
         url: data.url || 'id',
         courseId: data.courseId,
-        userId: data.userId,
+        profileId: data.profileId,
         bytes: 0,
         extension: data.extension,
         state: 'UPLOADING',
@@ -39,14 +35,6 @@ export class MediaService {
 
   async findOne(id: number) {
     return await this.prisma.media.findFirst({ where: { id: id } });
-  }
-
-  update(id: number, updateMediaDto: UpdateMediaDto) {
-    return `This action updates a #${id} media`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} media`;
   }
 
   getType(mime: string): MediaType | null {

@@ -7,6 +7,7 @@ import {
   Req,
   Body,
   HttpStatus,
+  ConflictException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/localAuth.guard';
@@ -16,6 +17,7 @@ import { RegisterDto } from './dto/register.dto';
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiConflictResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -44,6 +46,15 @@ export class AuthController {
     status: HttpStatus.CREATED,
     description: `The new user is registered successfully`,
   })
+  @ApiConflictResponse({
+    example: {
+      message: 'There is a user with this email already!',
+      error: 'Conflict',
+      statusCode: 409,
+    },
+    status: HttpStatus.CONFLICT,
+    description: `There is a user with this email`
+  })
   @HttpCode(HttpStatus.CREATED)
   @Post('register')
   async register(
@@ -51,7 +62,9 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<AuthRes> {
     const user = await this.authService.register(registrationData);
-
+    if (user == false) {
+      throw new ConflictException(`There is a user with this email already!`);
+    }
     // Manage token
     const accessToken = this.authService.getCookieWithJwtAccessToken(user);
     const refreshToken = this.authService.getCookieWithJwtRefresgToken(user);

@@ -34,7 +34,7 @@ export class CoursesEnrollmentsService {
       // You can select the instructor with the instructorId to check if it's 404 or 403/401
       const course = await tx.course.findFirst({
         where: {
-          CourseInstructors: {
+          Instructors: {
             some: {
               instructorId: instructorId,
             },
@@ -42,7 +42,7 @@ export class CoursesEnrollmentsService {
           id: createManyCourseEnrollments.courseId,
         },
         select: {
-          CourseEnrollments: {
+          Students: {
             where: {
               studentId: {
                 in: createManyCourseEnrollments.studentIds,
@@ -66,9 +66,9 @@ export class CoursesEnrollmentsService {
       let addId = false;
       for (const newId of createManyCourseEnrollments.studentIds) {
         addId = true;
-        for (let i = 0; i < course.CourseEnrollments.length; i++) {
-          if (course.CourseEnrollments[i].studentId === newId) {
-            i = course.CourseEnrollments.length;
+        for (let i = 0; i < course.Students.length; i++) {
+          if (course.Students[i].studentId === newId) {
+            i = course.Students.length;
             addId = false;
           }
         }
@@ -99,14 +99,14 @@ export class CoursesEnrollmentsService {
     const course = await this.prisma.course.findFirst({
       where: {
         id: courseId,
-        CourseInstructors: {
+        Instructors: {
           some: {
             instructorId: instructorId,
           },
         },
       },
       select: {
-        CourseEnrollments: {
+        Students: {
           select: {
             Student: {
               select: SELECT_ENROLLED_STUDENTS,
@@ -139,7 +139,7 @@ export class CoursesEnrollmentsService {
         `You have no access to this course or it doesn't exist`,
       );
     }
-    return course.CourseEnrollments.map((enrollment) => enrollment.Student);
+    return course.Students.map((enrollment) => enrollment.Student);
   }
 
   async removeMany(
@@ -155,7 +155,7 @@ export class CoursesEnrollmentsService {
           },
           courseId: courseId,
           Course: {
-            CourseInstructors: {
+            Instructors: {
               some: {
                 instructorId: instructorId,
               },

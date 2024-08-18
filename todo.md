@@ -1,4 +1,5 @@
 # Tasks
+
 - [x] Add the initial models
 - [x] Add the initial auth module
 - [x] Add modules courses, units & lessons
@@ -16,3 +17,10 @@
 - [x] Add util method `useTransaction` & logger to `PrismaService`
 - [x] Add module courses-enrollments
 - [x] Add OpenApi to courses-enrollments
+- [ ] Add quizzes module
+- [ ] Add OpenApi to quizzes module
+- [ ] Add questions module
+- [ ] Add OpenApi to questions module
+- [ ] Add email module
+- [ ] Add the necessary service mothods for email
+- [ ] Add websockets

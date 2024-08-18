@@ -3,16 +3,17 @@ import { PrismaService } from 'src/modules/prisma/prisma.service';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 const defaultUserSelect = {
   id: true,
   roleName: true,
   name: true,
-}
+};
 const defaultUserSelectWithPassword = {
   ...defaultUserSelect,
   password: true,
-}
+};
 
 @Injectable()
 export class AuthService {
@@ -21,17 +22,31 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(data:RegisterDto) {
-    const user = await this.prisma.user.create({
-      data: {
-        email: data.email,
-        name: data.name,
-        password: await bcrypt.hash(data.password, 10),
-        roleName: data.roleName,
-      },
-      select: defaultUserSelect
-    });
-    return user
+  async register(data: RegisterDto) {
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          email: data.email,
+          name: data.name,
+          password: await bcrypt.hash(data.password, 10),
+          roleName: data.roleName,
+        },
+        select: defaultUserSelect,
+      });
+      return user;
+    } catch (error) {
+      if (error instanceof PrismaClientKnownRequestError) {
+        console.log({ error }, error.meta.target);
+
+        if (
+          error.code === 'P2002' &&
+          (error.meta.target as Array<string>).includes('email')
+        ) {
+          return false;
+        }
+      }
+      throw error;
+    }
   }
 
   async validateUserLogin(email: string, password: string) {
@@ -77,7 +92,7 @@ export class AuthService {
     });
     const isValid =
       (await bcrypt.compare(refreshToken, session.refreshToken)) &&
-      (session.expiresAt > new Date());
+      session.expiresAt > new Date();
     if (isValid) {
       return session;
     }

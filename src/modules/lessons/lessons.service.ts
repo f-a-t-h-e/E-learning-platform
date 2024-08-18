@@ -72,8 +72,8 @@ export class LessonsService {
     const foundResult = await this.prisma.lesson.findFirst({
       where: {
         id: lessonId,
-        course: {
-          CourseInstructors: {
+        Course: {
+          Instructors: {
             some: {
               instructorId: userId,
             },
@@ -93,8 +93,8 @@ export class LessonsService {
     const foundResult = await this.prisma.lesson.findFirst({
       where: {
         id: lessonId,
-        course: {
-          CourseInstructors: {
+        Course: {
+          Instructors: {
             some: {
               instructorId: userId,
             },
