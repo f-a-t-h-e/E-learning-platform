@@ -33,7 +33,7 @@ import { CoursesEnrollmentsService } from './courses-enrollments.service';
 
 @ApiBearerAuth()
 @ApiErrorResponses()
-@ApiTags('courses-enrollments')
+@ApiTags('Courses Enrollments')
 @Controller('courses-enrollments')
 export class CoursesEnrollmentsController {
   constructor(

@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { RolesGuard } from './modules/auth/guards/roles.guard';
+
 import { CoursesModule } from './modules/courses/courses.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
@@ -9,8 +13,8 @@ import { LessonsModule } from './modules/lessons/lessons.module';
 import { LessonsContentsModule } from './modules/lessons-contents/lessons-contents.module';
 import { MediaModule } from './modules/media/media.module';
 import { CoursesEnrollmentsModule } from './modules/courses-enrollments/courses-enrollments.module';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './modules/auth/guards/roles.guard';
+import { QuizzesModule } from './modules/quizzes/quizzes.module';
+import { QuizQuestionsModule } from './modules/quiz-questions/quiz-questions.module';
 
 @Module({
   imports: [
@@ -21,6 +25,8 @@ import { RolesGuard } from './modules/auth/guards/roles.guard';
     UnitsModule,
     LessonsModule,
     LessonsContentsModule,
+    QuizzesModule,
+    QuizQuestionsModule,
     MediaModule,
   ],
   controllers: [AppController],

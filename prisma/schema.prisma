@@ -244,21 +244,21 @@ model Quiz {
   createdAt          DateTime         @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime         @updatedAt @db.Timestamptz(3)
   // Relations
-  Questions          QuizeQuestion[]
+  Questions          QuizQuestion[]
   QuizSubmission     QuizSubmission[]
 }
 
-model QuizeQuestion {
-  id            Int                   @id @default(autoincrement())
+model QuizQuestion {
+  id            Int                  @id @default(autoincrement())
   quizId        Int
-  Quiz          Quiz                  @relation(fields: [quizId], references: [id])
+  Quiz          Quiz                 @relation(fields: [quizId], references: [id])
   questionText  String
-  fullMark      Int                   @default(0) @db.SmallInt
-  passMark      Int                   @default(0) @db.SmallInt
+  fullMark      Int                  @default(0) @db.SmallInt
+  passMark      Int                  @default(0) @db.SmallInt
   correctAnswer String?
   questionType  QuestionType // Enum for different question types
   // Relations
-  Options       QuizeQuestionOption[]
+  Options       QuizQuestionOption[]
   QuizAnswer    QuizAnswer[]
 }
 
@@ -270,12 +270,14 @@ enum QuestionType {
 }
 
 // @todo add optional url to a file
-model QuizeQuestionOption {
-  id         Int           @id @default(autoincrement())
+model QuizQuestionOption {
+  id         Int          @db.SmallInt
   questionId Int
-  Question   QuizeQuestion @relation(fields: [questionId], references: [id])
+  Question   QuizQuestion @relation(fields: [questionId], references: [id])
   optionText String
-  mark       Int           @default(0) @db.SmallInt
+  mark       Int          @default(0) @db.SmallInt
+
+  @@id([id, questionId])
 }
 
 model QuizSubmission {
@@ -298,7 +300,7 @@ model QuizAnswer {
   // isCorrect    Boolean?
   mark         Int            @db.SmallInt
   Submission   QuizSubmission @relation(fields: [submissionId], references: [id])
-  Question     QuizeQuestion  @relation(fields: [questionId], references: [id])
+  Question     QuizQuestion   @relation(fields: [questionId], references: [id])
 }
 
 model Forum {

@@ -30,7 +30,7 @@ import { UnauthorizedResponse } from 'src/common/entities/error-response.entity'
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
 
 @ApiErrorResponses()
-@ApiTags('lessons-contents')
+@ApiTags('Lessons Contents')
 @Controller('lessons-contents')
 export class LessonsContentsController {
   constructor(

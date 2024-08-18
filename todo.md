@@ -17,10 +17,12 @@
 - [x] Add util method `useTransaction` & logger to `PrismaService`
 - [x] Add module courses-enrollments
 - [x] Add OpenApi to courses-enrollments
-- [ ] Add quizzes module
-- [ ] Add OpenApi to quizzes module
-- [ ] Add questions module
-- [ ] Add OpenApi to questions module
+- [x] Add quizzes module
+- [x] Add OpenApi to quizzes module
+- [x] Add questions module
+- [x] Add OpenApi to questions module
+- [ ] Complete the authorization for the quizzes module
+- [ ] Complete the authorization for the quiz-questions module
 - [ ] Add email module
 - [ ] Add the necessary service mothods for email
 - [ ] Add websockets
