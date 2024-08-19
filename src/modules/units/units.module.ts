@@ -7,5 +7,6 @@ import { CoursesModule } from '../courses/courses.module';
   imports: [CoursesModule],
   controllers: [UnitsController],
   providers: [UnitsService],
+  exports: [UnitsService],
 })
 export class UnitsModule {}

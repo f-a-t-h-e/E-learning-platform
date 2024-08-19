@@ -20,6 +20,13 @@ export class LessonEntity implements Lesson {
   description: string;
 
   @ApiProperty({
+    description: 'URL where the lesson banner is stored',
+    example: '/uploads/course/1/45/unit/0/303/lesson/0/202/banner/2354.jpg',
+    nullable: true,
+  })
+  banner: string | null;
+
+  @ApiProperty({
     description:
       'The unique identifier of the course to which this lesson belongs',
     example: 101,

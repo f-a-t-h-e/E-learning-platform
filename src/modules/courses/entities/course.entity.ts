@@ -20,6 +20,13 @@ export class CourseEntity implements Course {
   description: string;
 
   @ApiProperty({
+    description: 'URL where the course banner is stored',
+    example: '/uploads/course/1/45/banner/234.jpg',
+    nullable: true,
+  })
+  banner: string | null;
+
+  @ApiProperty({
     description: 'The date and time when the course was created',
     example: '2023-01-01T00:00:00Z',
   })

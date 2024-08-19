@@ -53,7 +53,7 @@ export class AuthController {
       statusCode: 409,
     },
     status: HttpStatus.CONFLICT,
-    description: `There is a user with this email`
+    description: `There is a user with this email`,
   })
   @HttpCode(HttpStatus.CREATED)
   @Post('register')
@@ -73,6 +73,9 @@ export class AuthController {
 
     /**
      * @todo Confirm email
+     */
+    /**
+     * @todo Save the session
      */
 
     return {

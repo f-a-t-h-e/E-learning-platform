@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptions } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsEmail, IsIn, IsNotEmpty, MinLength } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty } from 'class-validator';
+import { CreateUserProfileDto } from 'src/modules/user-profile/dto/create-user-profile.dto';
 
 const AVAILABLE_ROLES = ['student', 'teacher'] as const;
 
@@ -11,7 +11,7 @@ const roleNameOptions: ApiPropertyOptions = {
   example: 'student', // Example of a role
 };
 
-export class RegisterDto {
+export class RegisterDto extends CreateUserProfileDto {
   @ApiProperty({
     description: 'The user email address',
     example: 'user@example.com',
@@ -25,14 +25,6 @@ export class RegisterDto {
   })
   @IsNotEmpty()
   password: string;
-
-  @ApiProperty({
-    description: 'The user name',
-    example: 'John Doe',
-  })
-  @MinLength(3)
-  @Transform(({ value }) => value?.trim())
-  name: string;
 
   @ApiProperty(roleNameOptions)
   @IsIn(AVAILABLE_ROLES)

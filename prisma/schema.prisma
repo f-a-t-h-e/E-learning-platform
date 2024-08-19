@@ -14,23 +14,16 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
+  id        Int          @id @default(autoincrement())
+  email     String       @unique
   password  String
-  name      String
-  role      Role      @relation(fields: [roleName], references: [name])
+  role      Role         @relation(fields: [roleName], references: [name])
   roleName  String
-  profile   Profile?
-  // 
-  // Done
-  // 
+  profile   UserProfile?
   Sessions  Session[]
-  // 
   // timestamp
-  createdAt DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
-  // Forums
-  // 
+  createdAt DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime     @updatedAt @db.Timestamptz(3)
 }
 
 model Session {
@@ -42,15 +35,17 @@ model Session {
   expiresAt    DateTime @db.Timestamptz(3)
 }
 
-model Profile {
+model UserProfile {
   userId             Int                @unique
   user               User               @relation(fields: [userId], references: [id])
+  username           String             @unique
   firstName          String
   secondName         String?
   thirdName          String?
   lastName           String
   bio                String?
   avatar             String?
+  banner             String?
   phone              String?
   // timestamp
   createdAt          DateTime           @default(now()) @db.Timestamptz(3)
@@ -85,6 +80,7 @@ model Course {
   id               Int                @id @default(autoincrement())
   title            String
   description      String?
+  banner           String?
   // timestamp
   createdAt        DateTime           @default(now()) @db.Timestamptz(3)
   updatedAt        DateTime           @updatedAt @db.Timestamptz(3)
@@ -104,12 +100,12 @@ model Course {
 
 model CourseEnrollment {
   courseId  Int
-  Course    Course   @relation(fields: [courseId], references: [id])
+  Course    Course      @relation(fields: [courseId], references: [id])
   studentId Int
-  Student   Profile  @relation(fields: [studentId], references: [userId])
+  Student   UserProfile @relation(fields: [studentId], references: [userId])
   // timestamp
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime    @updatedAt @db.Timestamptz(3)
 
   @@unique([studentId, courseId])
 }
@@ -118,7 +114,7 @@ model CourseInstructor {
   courseId     Int
   Course       Course                    @relation(fields: [courseId], references: [id])
   instructorId Int
-  Instructor   Profile                   @relation(fields: [instructorId], references: [userId])
+  Instructor   UserProfile               @relation(fields: [instructorId], references: [userId])
   position     CourseInstructorPositions
 
   @@unique([instructorId, courseId])
@@ -130,21 +126,24 @@ enum CourseInstructorPositions {
 }
 
 model Media {
-  id        Int        @id @default(autoincrement())
-  url       String
-  type      MediaType
-  extension String
-  state     MediaState
-  bytes     BigInt
-  profileId Int
-  Profile   Profile    @relation(fields: [profileId], references: [userId])
-  courseId  Int?
-  course    Course?    @relation(fields: [courseId], references: [id])
-  lessonId  Int?
-  lesson    Lesson?    @relation(fields: [lessonId], references: [id])
+  id          Int         @id @default(autoincrement())
+  url         String
+  type        MediaType
+  extension   String
+  state       MediaState
+  bytes       BigInt
+  profileId   Int
+  UserProfile UserProfile @relation(fields: [profileId], references: [userId])
+  courseId    Int?
+  Course      Course?     @relation(fields: [courseId], references: [id])
+  unitId      Int?
+  Unit        Unit?       @relation(fields: [unitId], references: [id])
+  lessonId    Int?
+  Lesson      Lesson?     @relation(fields: [lessonId], references: [id])
+  target      MediaTarget
   // timestamp
-  createdAt DateTime   @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime   @updatedAt @db.Timestamptz(3)
+  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime    @updatedAt @db.Timestamptz(3)
 }
 
 enum MediaType {
@@ -160,31 +159,53 @@ enum MediaState {
   UPLOADED
 }
 
+enum MediaTarget {
+  // 'profile-picture'
+  PROFILE_PICTURE
+  // 'profile-banner'
+  PROFILE_BANNER
+  // 'course-banner'
+  COURSE_BANNER
+  // 'course-material'
+  COURSE_MATERIAL
+  // 'unit-banner'
+  UNIT_BANNER
+  // 'unit-material'
+  UNIT_MATERIAL
+  // 'lesson-banner'
+  LESSON_BANNER
+  // 'lesson-material'
+  LESSON_MATERIAL
+}
+
 model Unit {
-  id          Int      @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   title       String
   description String?
+  banner      String?
   courseId    Int
   // Owner
   addedBy     Int
-  AddedBy     Profile  @relation(fields: [addedBy], references: [userId])
-  Course      Course   @relation(fields: [courseId], references: [id])
+  AddedBy     UserProfile @relation(fields: [addedBy], references: [userId])
+  Course      Course      @relation(fields: [courseId], references: [id])
   // timestamp
-  createdAt   DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime    @updatedAt @db.Timestamptz(3)
   // Relations
   Lessons     Lesson[]
   Quizzes     Quiz[]
+  Media       Media[]
 }
 
 model Lesson {
   id            Int              @id @default(autoincrement())
   title         String
+  banner        String?
   unitId        Int
   courseId      Int
   description   String?
   addedBy       Int
-  AddedBy       Profile          @relation(fields: [addedBy], references: [userId])
+  AddedBy       UserProfile      @relation(fields: [addedBy], references: [userId])
   Unit          Unit             @relation(fields: [unitId], references: [id])
   Course        Course           @relation(fields: [courseId], references: [id])
   LessonContent LessonContent?
@@ -213,13 +234,13 @@ enum ContentType {
 }
 
 model LessonFeedback {
-  id        Int     @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   lessonId  Int
-  Lesson    Lesson  @relation(fields: [lessonId], references: [id])
+  Lesson    Lesson      @relation(fields: [lessonId], references: [id])
   profileId Int
-  Profile   Profile @relation(fields: [profileId], references: [userId])
+  Profile   UserProfile @relation(fields: [profileId], references: [userId])
   feedback  String
-  Course    Course? @relation(fields: [courseId], references: [id])
+  Course    Course?     @relation(fields: [courseId], references: [id])
   courseId  Int?
 }
 
@@ -286,7 +307,7 @@ model QuizSubmission {
   studentId Int
   marks     Int?
   Quiz      Quiz         @relation(fields: [quizId], references: [id])
-  Student   Profile      @relation(fields: [studentId], references: [userId])
+  Student   UserProfile  @relation(fields: [studentId], references: [userId])
   createdAt DateTime     @default(now()) @db.Timestamptz(3)
   // Relations
   Answers   QuizAnswer[]
@@ -308,7 +329,7 @@ model Forum {
   title        String
   description  String?
   createdBy    Int
-  Owner        Profile       @relation(fields: [createdBy], references: [userId])
+  Owner        UserProfile   @relation(fields: [createdBy], references: [userId])
   courseId     Int?
   Course       Course?       @relation(fields: [courseId], references: [id])
   // timestamp
@@ -323,7 +344,7 @@ model ForumMember {
   forumId   Int
   Forum     Forum          @relation(fields: [forumId], references: [id])
   memberId  Int
-  Member    Profile        @relation(fields: [memberId], references: [userId])
+  Member    UserProfile    @relation(fields: [memberId], references: [userId])
   position  ForumPositions
   // timestamp
   createdAt DateTime       @default(now()) @db.Timestamptz(3)
@@ -343,7 +364,7 @@ model ForumPost {
   title     String
   content   String
   writerId  Int
-  Writer    Profile        @relation(fields: [writerId], references: [userId])
+  Writer    UserProfile    @relation(fields: [writerId], references: [userId])
   forumId   Int
   Forum     Forum          @relation(fields: [forumId], references: [id])
   // timestamp
@@ -354,42 +375,42 @@ model ForumPost {
 }
 
 model ForumComment {
-  id        Int       @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   content   String
   postId    Int
-  post      ForumPost @relation(fields: [postId], references: [id])
+  post      ForumPost   @relation(fields: [postId], references: [id])
   writerId  Int
-  Writer    Profile   @relation(fields: [writerId], references: [userId])
+  Writer    UserProfile @relation(fields: [writerId], references: [userId])
   // timestamp
-  createdAt DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime  @updatedAt @db.Timestamptz(3)
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime    @updatedAt @db.Timestamptz(3)
 }
 
 model CourseProgress {
-  id        Int     @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   courseId  Int
-  course    Course  @relation(fields: [courseId], references: [id])
+  course    Course      @relation(fields: [courseId], references: [id])
   studentId Int
-  Student   Profile @relation(fields: [studentId], references: [userId])
+  Student   UserProfile @relation(fields: [studentId], references: [userId])
   progress  Float
 }
 
 model Attendance {
-  id        Int      @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   courseId  Int
-  Course    Course   @relation(fields: [courseId], references: [id])
+  Course    Course      @relation(fields: [courseId], references: [id])
   profileId Int
-  Profile   Profile  @relation(fields: [profileId], references: [userId])
-  date      DateTime @db.Timestamptz(3)
+  Profile   UserProfile @relation(fields: [profileId], references: [userId])
+  date      DateTime    @db.Timestamptz(3)
 }
 
 model Certificate {
-  id        Int      @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   courseId  Int
-  Course    Course   @relation(fields: [courseId], references: [id])
+  Course    Course      @relation(fields: [courseId], references: [id])
   profileId Int
-  Profile   Profile  @relation(fields: [profileId], references: [userId])
-  issueDate DateTime @db.Timestamptz(3)
+  Profile   UserProfile @relation(fields: [profileId], references: [userId])
+  issueDate DateTime    @db.Timestamptz(3)
 }
 
 model Chat {
@@ -407,7 +428,7 @@ model Chat {
 model ChatParticipant {
   id                    Int                   @id @default(autoincrement())
   profileId             Int
-  Profile               Profile               @relation(fields: [profileId], references: [userId])
+  Profile               UserProfile           @relation(fields: [profileId], references: [userId])
   chatId                Int
   Chat                  Chat                  @relation(fields: [chatId], references: [id])
   joinedAt              DateTime              @default(now()) @db.Timestamptz(3)

@@ -27,9 +27,20 @@ export class AuthService {
       const user = await this.prisma.user.create({
         data: {
           email: data.email,
-          name: data.name,
           password: await bcrypt.hash(data.password, 10),
           roleName: data.roleName,
+          profile: {
+            create: {
+              username: data.username,
+              firstName: data.firstName,
+              lastName: data.lastName,
+              secondName: data.secondName,
+              thirdName: data.thirdName,
+              bio: data.bio,
+              avatar: data.avatar,
+              phone: data.phone,
+            },
+          },
         },
         select: defaultUserSelect,
       });

@@ -43,4 +43,11 @@ export class UnitEntity implements Unit {
     example: '2023-01-02T00:00:00Z',
   })
   updatedAt: Date;
+
+  @ApiProperty({
+    description: 'URL where the unit banner is stored',
+    example: '/uploads/course/1/45/unit/0/303/banner/1034.jpg',
+    nullable: true,
+  })
+  banner: string | null;
 }

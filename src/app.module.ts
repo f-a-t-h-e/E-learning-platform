@@ -16,6 +16,7 @@ import { CoursesEnrollmentsModule } from './modules/courses-enrollments/courses-
 import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { QuizQuestionsModule } from './modules/quiz-questions/quiz-questions.module';
 import { QuizSubmissionsModule } from './modules/quiz-submissions/quiz-submissions.module';
+import { UserProfileModule } from './modules/user-profile/user-profile.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { QuizSubmissionsModule } from './modules/quiz-submissions/quiz-submissio
     QuizQuestionsModule,
     QuizSubmissionsModule,
     MediaModule,
+    UserProfileModule,
   ],
   controllers: [AppController],
   providers: [

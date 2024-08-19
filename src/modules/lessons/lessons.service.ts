@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { Lesson } from '@prisma/client';
 
 @Injectable()
 export class LessonsService {
@@ -36,11 +37,14 @@ export class LessonsService {
 
   async findOne(id: number, getContent?: boolean) {
     const include = getContent
-    ? {
-        LessonContent: true,
-      }
-    : undefined;
-    const lesson = await this.prisma.lesson.findFirst({ where: { id: id }, include });
+      ? {
+          LessonContent: true,
+        }
+      : undefined;
+    const lesson = await this.prisma.lesson.findFirst({
+      where: { id: id },
+      include,
+    });
     return lesson;
   }
 
@@ -103,11 +107,24 @@ export class LessonsService {
       },
       select: {
         courseId: true,
+        unitId: true,
       },
     });
     if (foundResult) {
-      return foundResult.courseId;
+      return foundResult;
     }
     return false as false;
+  }
+
+  async updateBanner(id: Lesson['id'], url: string) {
+    await this.prisma.lesson.updateMany({
+      where: {
+        id: id,
+      },
+      data: {
+        banner: url,
+      },
+    });
+    // @todo You can do some notification in case you want to get closer to a social media platform
   }
 }

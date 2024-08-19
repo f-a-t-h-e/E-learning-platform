@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MediaType } from '@prisma/client';
-import { IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
+import { MediaTarget, MediaType } from '@prisma/client';
+import {
+  IsEnum,
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateMediaDto {
   @ApiProperty({
@@ -11,7 +18,19 @@ export class CreateMediaDto {
   })
   @IsOptional()
   @IsNumber({ allowNaN: false, maxDecimalPlaces: 0, allowInfinity: false })
+  @Min(1)
   courseId?: number;
+
+  @ApiProperty({
+    description: `The unitId that you want to relate this media to`,
+    nullable: true,
+    type: Number,
+    example: 1,
+  })
+  @IsOptional()
+  @IsNumber({ allowNaN: false, maxDecimalPlaces: 0, allowInfinity: false })
+  @Min(1)
+  unitId?: number;
 
   @ApiProperty({
     description: `The lessonId that you want to relate this media to`,
@@ -21,6 +40,7 @@ export class CreateMediaDto {
   })
   @IsOptional()
   @IsNumber({ allowNaN: false, maxDecimalPlaces: 0, allowInfinity: false })
+  @Min(1)
   lessonId?: number;
 
   @ApiProperty({
@@ -41,4 +61,12 @@ export class CreateMediaDto {
   })
   @IsString()
   extension: string;
+
+  @ApiProperty({
+    enum: MediaTarget,
+    description: 'The target location for the media file',
+    example: MediaTarget.PROFILE_PICTURE,
+  })
+  @IsEnum(MediaTarget)
+  target: MediaTarget;
 }

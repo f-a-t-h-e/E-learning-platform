@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { Course } from '@prisma/client';
 
 @Injectable()
 export class CoursesService {
@@ -75,6 +76,18 @@ export class CoursesService {
     });
 
     return TEACHERS_POSITIONS.includes(instructore.position) && instructore;
+  }
+
+  async updateBanner(id: Course['id'], url: string) {
+    await this.prisma.course.updateMany({
+      where: {
+        id: id,
+      },
+      data: {
+        banner: url,
+      },
+    });
+    // @todo You can do some notification in case you want to get closer to a social media platform
   }
 }
 
