@@ -23,38 +23,56 @@
 - [x] Add OpenApi to quizzes module
 - [x] Add questions module
 - [x] Add OpenApi to questions module
+
 - [ ] Improve the authorization for the quizzes module
+
   - [ ] Refine role-based permissions for quizzes.
   - [ ] Implement specific access controls for quiz creation and editing.
   - [ ] Test and validate authorization rules for quizzes.
+
 - [ ] Improve the authorization for the quiz-questions module
+
   - [ ] Secure quiz-question endpoints with appropriate roles.
   - [ ] Test and validate authorization rules for quiz questions.
+
 - [ ] Add email module
+
   - [ ] Create the email module structure.
   - [ ] Set up email configuration (e.g., SMTP settings).
   - [ ] Implement a service method to send emails.
   - [ ] Add methods to handle email templates.
   - [ ] Test email sending functionality.
+
 - [ ] Add websockets
+
   - [ ] Set up WebSocket gateway in NestJS.
   - [ ] Implement real-time messaging for quizzes or lessons.
   - [ ] Test WebSocket connections and event handling.
+
 - [x] Add quiz-submissions module
 - [x] Add OpenApi to quiz-submissions module
+
 - [ ] Improve the authorization for quiz-submissions
+
   - [ ] Secure quiz-submission endpoints with appropriate roles.
   - [ ] Test and validate authorization rules for quiz submissions.
+
 - [ ] Add functionality to evaluate quiz-submissions
+
   - [ ] Implement logic to evaluate quiz submissions.
   - [ ] Add score calculation based on correct answers.
   - [ ] Test quiz evaluation functionality.
 
-- [x] Improve the media upload functionality
+- [ ] Improve the media upload functionality
 
   - [x] Support basic upload for `"PROFILE_PICTURE" | "PROFILE_BANNER" | "COURSE_BANNER" | "COURSE_MATERIAL" | "UNIT_BANNER" | "UNIT_MATERIAL" | "LESSON_BANNER" | "LESSON_MATERIAL"`
   - [x] Automate updating the refrence to the media on media upload complete
   - [ ] Improve authorizaion for adding the media files
+
+- [ ] Send the material
+  - [ ] Send the material of the courses
+  - [ ] Send the material of the units
+  - [ ] Send the material of the lessons
 
 # New Tasks
 

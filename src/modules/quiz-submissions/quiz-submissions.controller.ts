@@ -9,6 +9,7 @@ import {
   Query,
   ParseIntPipe,
   UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
 import { QuizSubmissionsService } from './quiz-submissions.service';
 import { CreateQuizSubmissionDto } from './dto/create-quiz-submission.dto';
@@ -25,6 +26,9 @@ import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.dec
 import { RolesDecorator } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import JwtGuard from '../auth/guards/jwt.guard';
+import { CoursesEnrollmentsService } from '../courses-enrollments/courses-enrollments.service';
+import { User } from 'src/common/decorators/user.decorator';
+import { RequestUser } from '../auth/entities/request-user.entity';
 
 @ApiBearerAuth()
 @ApiErrorResponses()
@@ -42,8 +46,19 @@ export class QuizSubmissionsController {
     status: 201,
     description: 'Quiz submission successfully created.',
   })
-  create(@Body() createQuizSubmissionDto: CreateQuizSubmissionDto) {
-    return this.quizSubmissionsService.create(createQuizSubmissionDto);
+  async create(
+    @Body() createQuizSubmissionDto: CreateQuizSubmissionDto,
+    @User() user: RequestUser,
+  ) {
+    const courseId =
+      await this.quizSubmissionsService.isUserEnrolledInQuizCourse(
+        user.id,
+        createQuizSubmissionDto.quizId,
+      );
+    return this.quizSubmissionsService.create(
+      createQuizSubmissionDto,
+      courseId,
+    );
   }
 
   @Get()
@@ -74,8 +89,10 @@ export class QuizSubmissionsController {
     status: 200,
     description: 'Successfully retrieved the quiz submission.',
   })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.quizSubmissionsService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    const submission=  this.quizSubmissionsService.findOne(id, true);
+    // @todo Authorize this
+    return submission
   }
 
   @Patch(':id')
@@ -90,9 +107,10 @@ export class QuizSubmissionsController {
     status: 200,
     description: 'Quiz submission successfully updated.',
   })
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateQuizSubmissionDto: UpdateQuizSubmissionDto,
+    @User() user: RequestUser,
   ) {
     return this.quizSubmissionsService.update(id, updateQuizSubmissionDto);
   }
@@ -109,7 +127,11 @@ export class QuizSubmissionsController {
     status: 200,
     description: 'Quiz submission successfully deleted.',
   })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(@Param('id', ParseIntPipe) id: number, @User() user: RequestUser) {
+    const target = await this.quizSubmissionsService.findOne(id);
+    if (target.studentId !== user.id) {
+      throw new ForbiddenException(`You don't own this submission`)
+    }
     return this.quizSubmissionsService.remove(id);
   }
 }

@@ -43,7 +43,7 @@ export class QuizQuestionsService {
 
   async findOne(id: number) {
     return this.prisma.quizQuestion.findUnique({
-      where: { id },
+      where: { quizQuestionId: id },
     });
   }
 
@@ -51,13 +51,16 @@ export class QuizQuestionsService {
     const { Options, ...quizQuestionData } = updateQuizQuestionDto;
 
     return this.prisma.quizQuestion.update({
-      where: { id },
+      where: { quizQuestionId: id },
       data: {
         ...quizQuestionData,
         Options: {
           upsert: Options?.map((option) => ({
             where: {
-              id_questionId: { id: option.id, questionId: option.questionId },
+              quizeQuestionOptionId_questionId: {
+                questionId: option.questionId,
+                quizeQuestionOptionId: option.quizeQuestionOptionId,
+              },
             },
             update: {
               ...option,
@@ -76,7 +79,7 @@ export class QuizQuestionsService {
 
   async remove(id: number) {
     return this.prisma.quizQuestion.delete({
-      where: { id },
+      where: { quizQuestionId: id },
     });
   }
 

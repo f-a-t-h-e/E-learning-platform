@@ -1,4 +1,4 @@
-import { CourseEnrollment } from '@prisma/client';
+import { CourseEnrollment, CourseEnrollmentState } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CoursesEnrollmentEntity implements CourseEnrollment {
@@ -25,4 +25,11 @@ export class CoursesEnrollmentEntity implements CourseEnrollment {
     example: '2024-08-18T14:22:33Z',
   })
   updatedAt: Date;
+
+  
+  @ApiProperty({
+    description: 'The state of the course enrollment',
+    enum: CourseEnrollmentState,
+  })
+  state: CourseEnrollmentState;
 }

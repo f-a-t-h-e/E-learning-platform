@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { MediaTarget, MediaType } from '@prisma/client';
+import { CourseMediaTarget, MediaType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserProfileService } from '../user-profile/user-profile.service';
 import path from 'path';
@@ -29,17 +29,17 @@ export class MediaService {
     lessonId?: number;
     url?: string;
     extension: string;
-    target: MediaTarget;
+    target: CourseMediaTarget;
     bytes?: number;
   }) {
-    const media = await this.prisma.media.create({
+    const media = await this.prisma.courseMedia.create({
       data: {
         type: data.type,
         url: data.url || 'id',
         courseId: data.courseId,
         unitId: data.unitId,
         lessonId: data.lessonId,
-        profileId: data.profileId,
+        userId: data.profileId,
         bytes: data.bytes || 0,
         extension: data.extension,
         state: 'UPLOADING',
@@ -49,7 +49,7 @@ export class MediaService {
     return media;
   }
   async findOne(id: number) {
-    return await this.prisma.media.findFirst({ where: { id: id } });
+    return await this.prisma.courseMedia.findFirst({ where: { courseMediaId: id } });
   }
 
   getType(mime: string): MediaType | null {
@@ -62,34 +62,34 @@ export class MediaService {
   }
 
   async completeMedia(id: number, userId: number) {
-    const media = await this.prisma.media.findUnique({
-      where: { id: id },
+    const media = await this.prisma.courseMedia.findUnique({
+      where: { courseMediaId: id },
     });
     if (!media) {
       throw new NotFoundException(`No such media exists`);
     }
-    if (media.profileId !== userId) {
+    if (media.userId !== userId) {
       throw new ForbiddenException(`You have no access to this media`);
     }
     media.state = 'UPLOADED';
     media.url = path.join(
       media.url,
-      `${media.profileId}_${media.id}.${media.extension}`,
+      `${media.userId}_${media.courseMediaId}.${media.extension}`,
     );
-    await this.prisma.media.updateMany({
-      where: { id: id },
+    await this.prisma.courseMedia.updateMany({
+      where: { courseMediaId: id },
       data: {
         state: 'UPLOADED',
         url: media.url,
       },
     });
     switch (media.target) {
-      case 'PROFILE_BANNER':
-        await this.userProfileService.updateBanner(userId, media.url);
-        break;
-      case 'PROFILE_PICTURE':
-        await this.userProfileService.updateAvatar(userId, media.url);
-        break;
+      // case 'PROFILE_BANNER':
+      //   await this.userProfileService.updateBanner(userId, media.url);
+      //   break;
+      // case 'PROFILE_PICTURE':
+      //   await this.userProfileService.updateAvatar(userId, media.url);
+      //   break;
       case 'COURSE_BANNER':
         await this.coursesService.updateBanner(media.courseId, media.url);
         break;

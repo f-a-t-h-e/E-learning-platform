@@ -42,7 +42,7 @@ export class LessonsService {
         }
       : undefined;
     const lesson = await this.prisma.lesson.findFirst({
-      where: { id: id },
+      where: { lessonId: id },
       include,
     });
     return lesson;
@@ -51,7 +51,7 @@ export class LessonsService {
   async update(id: number, updateLessonDto: UpdateLessonDto, courseId: number) {
     const lesson = await this.prisma.lesson.update({
       where: {
-        id: id,
+        lessonId: id,
         courseId: courseId,
       },
       data: {
@@ -64,7 +64,7 @@ export class LessonsService {
   async remove(id: number, courseId: number) {
     const lesson = await this.prisma.lesson.delete({
       where: {
-        id: id,
+        lessonId: id,
         courseId: courseId,
       },
     });
@@ -75,7 +75,7 @@ export class LessonsService {
   async canUserEditLesson(userId: number, lessonId: number) {
     const foundResult = await this.prisma.lesson.findFirst({
       where: {
-        id: lessonId,
+        lessonId: lessonId,
         Course: {
           Instructors: {
             some: {
@@ -96,7 +96,7 @@ export class LessonsService {
   async getCourseFromUserIdAndLessonId(userId: number, lessonId: number) {
     const foundResult = await this.prisma.lesson.findFirst({
       where: {
-        id: lessonId,
+        lessonId: lessonId,
         Course: {
           Instructors: {
             some: {
@@ -116,10 +116,10 @@ export class LessonsService {
     return false as false;
   }
 
-  async updateBanner(id: Lesson['id'], url: string) {
+  async updateBanner(id: Lesson['lessonId'], url: string) {
     await this.prisma.lesson.updateMany({
       where: {
-        id: id,
+        lessonId: id,
       },
       data: {
         banner: url,

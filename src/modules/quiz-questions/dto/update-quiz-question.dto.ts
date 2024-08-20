@@ -9,5 +9,5 @@ export class UpdateQuizQuestionDto extends PartialType(CreateQuizQuestionDto) {
   })
   @IsNotEmpty()
   @IsNumber()
-  id: number;
+  quizQuestionId: number;
 }

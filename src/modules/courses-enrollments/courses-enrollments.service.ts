@@ -1,13 +1,14 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateCourseEnrollmentDto } from './dto/create-course-enrollment.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { User } from '@prisma/client';
+import { CourseEnrollmentState, User, UserProfile } from '@prisma/client';
 import { CreateManyCourseEnrollments } from './dto/create-many-course-enrollments.dto';
 
-const SELECT_ENROLLED_STUDENTS: { [k in keyof Partial<User>]: boolean } = {
-  id: true,
-  name: true,
-};
+const SELECT_ENROLLED_STUDENTS: { [k in keyof Partial<UserProfile>]: boolean } =
+  {
+    userId: true,
+    username: true,
+  };
 
 @Injectable()
 export class CoursesEnrollmentsService {
@@ -20,6 +21,7 @@ export class CoursesEnrollmentsService {
       data: {
         courseId: createCoursesEnrollmentDto.courseId,
         studentId: studentId,
+        state: 'ACTIVE',
       },
     });
     return courseEnrollment;
@@ -39,7 +41,7 @@ export class CoursesEnrollmentsService {
               instructorId: instructorId,
             },
           },
-          id: createManyCourseEnrollments.courseId,
+          courseId: createManyCourseEnrollments.courseId,
         },
         select: {
           Students: {
@@ -62,6 +64,7 @@ export class CoursesEnrollmentsService {
       const inputs: {
         studentId: number;
         courseId: number;
+        state: CourseEnrollmentState;
       }[] = [];
       let addId = false;
       for (const newId of createManyCourseEnrollments.studentIds) {
@@ -76,6 +79,7 @@ export class CoursesEnrollmentsService {
           inputs.push({
             studentId: newId,
             courseId: createManyCourseEnrollments.courseId,
+            state: 'ACTIVE',
           });
         }
       }
@@ -98,7 +102,7 @@ export class CoursesEnrollmentsService {
   async findAllStudentsInCourse(courseId: number, instructorId: number) {
     const course = await this.prisma.course.findFirst({
       where: {
-        id: courseId,
+        courseId: courseId,
         Instructors: {
           some: {
             instructorId: instructorId,
@@ -164,5 +168,16 @@ export class CoursesEnrollmentsService {
         },
       });
     return deletedCourseEnrollment.count;
+  }
+
+  async getStudentEnrollment(userId: number, courseId: number) {
+    const enrollment = await this.prisma.courseEnrollment.findFirst({
+      where: {
+        courseId: courseId,
+        studentId: userId,
+      },
+    });
+
+    return enrollment;
   }
 }

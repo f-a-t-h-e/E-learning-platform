@@ -5,7 +5,7 @@ export class CourseEntity implements Course {
     description: 'The unique identifier for the course',
     example: 1,
   })
-  id: number;
+  courseId: number;
 
   @ApiProperty({
     description: 'The title of the course',

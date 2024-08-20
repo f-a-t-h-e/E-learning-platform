@@ -40,7 +40,7 @@ export class QuizzesService {
 
   async findOne(id: number) {
     return this.prisma.quiz.findUnique({
-      where: { id },
+      where: { quizId: id },
       include: {
         Questions: {
           include: {
@@ -55,7 +55,7 @@ export class QuizzesService {
     // Check if the instructor is associated with the course
     const quiz = await this.prisma.quiz.findUnique({
       where: {
-        id,
+        quizId: id,
         Course: {
           Instructors: {
             some: {
@@ -68,10 +68,10 @@ export class QuizzesService {
         startsAt: true,
         Questions: {
           select: {
-            id: true,
+            quizQuestionId: true,
             Options: {
               select: {
-                id: true,
+                quizeQuestionOptionId: true,
               },
             },
           },
@@ -86,20 +86,20 @@ export class QuizzesService {
     }
 
     return this.prisma.quiz.update({
-      where: { id },
+      where: { quizId: id },
       data: {
         ...updateQuizDto,
         Questions: {
           upsert: updateQuizDto.Questions?.map((question) => ({
-            where: { id: question.id, quizId: id },
+            where: { quizQuestionId: question.quizQuestionId, quizId: id },
             update: {
               ...question,
               id: undefined,
               Options: {
                 upsert: question.Options?.map((option) => ({
                   where: {
-                    id_questionId: {
-                      id: option.id,
+                    quizeQuestionOptionId_questionId: {
+                      quizeQuestionOptionId: option.quizeQuestionOptionId,
                       questionId: option.questionId,
                     },
                   },
@@ -132,7 +132,7 @@ export class QuizzesService {
   }
   async remove(id: number) {
     return this.prisma.quiz.delete({
-      where: { id },
+      where: { quizId: id },
     });
   }
 

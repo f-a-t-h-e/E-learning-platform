@@ -13,7 +13,7 @@ export class LessonsContentsService {
   ) {
     const content = await this.prisma.lessonContent.create({
       data: {
-        id: createLessonsContentDto.id,
+        lessonId: createLessonsContentDto.id,
         content: createLessonsContentDto.content,
         contentType: contentType,
       },
@@ -28,7 +28,7 @@ export class LessonsContentsService {
       },
       select: {
         LessonContent: true,
-        id: true,
+        lessonId: true,
       },
     });
     return contents.map((value) => value.LessonContent);
@@ -36,7 +36,7 @@ export class LessonsContentsService {
 
   async findOne(id: number) {
     const content = await this.prisma.lessonContent.findFirst({
-      where: { id: id },
+      where: { lessonId: id },
     });
     return content;
   }
@@ -49,7 +49,7 @@ export class LessonsContentsService {
   ) {
     const content = await this.prisma.lessonContent.update({
       where: {
-        id: id,
+        lessonId: id,
       },
       data: {
         ...updateLessonsContentDto,
@@ -62,7 +62,7 @@ export class LessonsContentsService {
   async remove(id: number) {
     const content = await this.prisma.lessonContent.delete({
       where: {
-        id: id,
+        lessonId: id,
       },
     });
 

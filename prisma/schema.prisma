@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id        Int          @id @default(autoincrement())
+  userId    Int          @id @default(autoincrement())
   email     String       @unique
   password  String
   role      Role         @relation(fields: [roleName], references: [name])
@@ -27,18 +27,18 @@ model User {
 }
 
 model Session {
-  id           Int      @id @default(autoincrement())
+  sessionId    Int      @id @default(autoincrement())
   refreshToken String
   userId       Int
-  User         User     @relation(fields: [userId], references: [id])
+  User         User     @relation(fields: [userId], references: [userId])
   createdAt    DateTime @default(now()) @db.Timestamptz(3)
   expiresAt    DateTime @db.Timestamptz(3)
 }
 
 model UserProfile {
-  userId             Int                @unique
-  user               User               @relation(fields: [userId], references: [id])
-  username           String             @unique
+  userId             Int                 @unique
+  user               User                @relation(fields: [userId], references: [userId])
+  username           String              @unique
   firstName          String
   secondName         String?
   thirdName          String?
@@ -48,16 +48,16 @@ model UserProfile {
   banner             String?
   phone              String?
   // timestamp
-  createdAt          DateTime           @default(now()) @db.Timestamptz(3)
-  updatedAt          DateTime           @updatedAt @db.Timestamptz(3)
+  createdAt          DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime            @updatedAt @db.Timestamptz(3)
   // Relations
-  ChatParticipations ChatParticipant[]
-  UploadedMedia      Media[]
-  CreatedForums      Forum[]
-  ForumMemberIn      ForumMember[]
-  ForumPosts         ForumPost[]
-  ForumComments      ForumComment[]
-  Attendance         Attendance[]
+  UploadedMedia      CourseMedia[]
+  // ChatParticipations ChatParticipant[]
+  // CreatedForums      Forum[]
+  // ForumMemberIn      ForumMember[]
+  // ForumPosts         ForumPost[]
+  // ForumComments      ForumComment[]
+  Attendance         CourseAttendance[]
   // For instructores
   CreatedUnits       Unit[]
   CreatedLessons     Lesson[]
@@ -65,59 +65,65 @@ model UserProfile {
   // For students
   LessonsFeedbacks   LessonFeedback[]
   CoursesProgress    CourseProgress[]
-  Certificates       Certificate[]
+  Certificates       CourseCertificate[]
   QuizSubmissions    QuizSubmission[]
   CoursesEnrollment  CourseEnrollment[]
 }
 
 model Role {
-  id    Int    @id @default(autoincrement())
   name  String @unique
   users User[]
 }
 
 model Course {
-  id               Int                @id @default(autoincrement())
+  courseId         Int                 @id @default(autoincrement())
   title            String
   description      String?
   banner           String?
   // timestamp
-  createdAt        DateTime           @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime           @updatedAt @db.Timestamptz(3)
+  createdAt        DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime            @updatedAt @db.Timestamptz(3)
   // Relations
   Units            Unit[]
   Lessons          Lesson[]
-  Media            Media[]
+  Media            CourseMedia[]
   Students         CourseEnrollment[]
   Instructors      CourseInstructor[]
-  Attendance       Attendance[]
+  Attendance       CourseAttendance[]
   StudentsProgress CourseProgress[]
   Quizzes          Quiz[]
-  Certificates     Certificate[]
+  Certificates     CourseCertificate[]
   Feedbacks        LessonFeedback[]
-  Forums           Forum[]
+  // Forums           Forum[]
+  QuizSubmissions  QuizSubmission[]
 }
 
 model CourseEnrollment {
   courseId  Int
-  Course    Course      @relation(fields: [courseId], references: [id])
+  Course    Course                @relation(fields: [courseId], references: [courseId])
   studentId Int
-  Student   UserProfile @relation(fields: [studentId], references: [userId])
+  Student   UserProfile           @relation(fields: [studentId], references: [userId])
+  state     CourseEnrollmentState
   // timestamp
-  createdAt DateTime    @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime    @updatedAt @db.Timestamptz(3)
+  createdAt DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime              @updatedAt @db.Timestamptz(3)
 
-  @@unique([studentId, courseId])
+  @@id([courseId, studentId])
+}
+
+enum CourseEnrollmentState {
+  ACTIVE
 }
 
 model CourseInstructor {
   courseId     Int
-  Course       Course                    @relation(fields: [courseId], references: [id])
+  Course       Course                    @relation(fields: [courseId], references: [courseId])
   instructorId Int
   Instructor   UserProfile               @relation(fields: [instructorId], references: [userId])
   position     CourseInstructorPositions
+  state        CourseInstructorState
 
-  @@unique([instructorId, courseId])
+  @@id([courseId, instructorId])
 }
 
 enum CourseInstructorPositions {
@@ -125,25 +131,29 @@ enum CourseInstructorPositions {
   TEACHER
 }
 
-model Media {
-  id          Int         @id @default(autoincrement())
-  url         String
-  type        MediaType
-  extension   String
-  state       MediaState
-  bytes       BigInt
-  profileId   Int
-  UserProfile UserProfile @relation(fields: [profileId], references: [userId])
-  courseId    Int?
-  Course      Course?     @relation(fields: [courseId], references: [id])
-  unitId      Int?
-  Unit        Unit?       @relation(fields: [unitId], references: [id])
-  lessonId    Int?
-  Lesson      Lesson?     @relation(fields: [lessonId], references: [id])
-  target      MediaTarget
+enum CourseInstructorState {
+  ACTIVE
+}
+
+model CourseMedia {
+  courseMediaId Int               @id @default(autoincrement())
+  url           String
+  type          MediaType
+  extension     String
+  state         MediaState
+  bytes         BigInt
+  userId        Int
+  UserProfile   UserProfile       @relation(fields: [userId], references: [userId])
+  courseId      Int?
+  Course        Course?           @relation(fields: [courseId], references: [courseId])
+  unitId        Int?
+  Unit          Unit?             @relation(fields: [unitId], references: [unitId])
+  lessonId      Int?
+  Lesson        Lesson?           @relation(fields: [lessonId], references: [lessonId])
+  target        CourseMediaTarget
   // timestamp
-  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime    @updatedAt @db.Timestamptz(3)
+  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime          @updatedAt @db.Timestamptz(3)
 }
 
 enum MediaType {
@@ -159,11 +169,11 @@ enum MediaState {
   UPLOADED
 }
 
-enum MediaTarget {
-  // 'profile-picture'
-  PROFILE_PICTURE
-  // 'profile-banner'
-  PROFILE_BANNER
+enum CourseMediaTarget {
+  // // 'profile-picture'
+  // PROFILE_PICTURE
+  // // 'profile-banner'
+  // PROFILE_BANNER
   // 'course-banner'
   COURSE_BANNER
   // 'course-material'
@@ -179,26 +189,26 @@ enum MediaTarget {
 }
 
 model Unit {
-  id          Int         @id @default(autoincrement())
+  unitId      Int           @id @default(autoincrement())
   title       String
   description String?
   banner      String?
   courseId    Int
   // Owner
   addedBy     Int
-  AddedBy     UserProfile @relation(fields: [addedBy], references: [userId])
-  Course      Course      @relation(fields: [courseId], references: [id])
+  AddedBy     UserProfile   @relation(fields: [addedBy], references: [userId])
+  Course      Course        @relation(fields: [courseId], references: [courseId])
   // timestamp
-  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime    @updatedAt @db.Timestamptz(3)
+  createdAt   DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @db.Timestamptz(3)
   // Relations
   Lessons     Lesson[]
   Quizzes     Quiz[]
-  Media       Media[]
+  Media       CourseMedia[]
 }
 
 model Lesson {
-  id            Int              @id @default(autoincrement())
+  lessonId      Int              @id @default(autoincrement())
   title         String
   banner        String?
   unitId        Int
@@ -206,23 +216,23 @@ model Lesson {
   description   String?
   addedBy       Int
   AddedBy       UserProfile      @relation(fields: [addedBy], references: [userId])
-  Unit          Unit             @relation(fields: [unitId], references: [id])
-  Course        Course           @relation(fields: [courseId], references: [id])
+  Unit          Unit             @relation(fields: [unitId], references: [unitId])
+  Course        Course           @relation(fields: [courseId], references: [courseId])
   LessonContent LessonContent?
   // timestamp
   createdAt     DateTime         @default(now()) @db.Timestamptz(3)
   updatedAt     DateTime         @updatedAt @db.Timestamptz(3)
   // Relations
   Feedbacks     LessonFeedback[]
-  Media         Media[]
+  Media         CourseMedia[]
   Quizzes       Quiz[]
 }
 
 model LessonContent {
-  id          Int         @id
+  lessonId    Int         @id
   contentType ContentType
   content     String
-  Lesson      Lesson      @relation(fields: [id], references: [id])
+  Lesson      Lesson      @relation(fields: [lessonId], references: [lessonId])
   // timestamp
   createdAt   DateTime    @default(now()) @db.Timestamptz(3)
   updatedAt   DateTime    @updatedAt @db.Timestamptz(3)
@@ -234,27 +244,27 @@ enum ContentType {
 }
 
 model LessonFeedback {
-  id        Int         @id @default(autoincrement())
-  lessonId  Int
-  Lesson    Lesson      @relation(fields: [lessonId], references: [id])
-  profileId Int
-  Profile   UserProfile @relation(fields: [profileId], references: [userId])
-  feedback  String
-  Course    Course?     @relation(fields: [courseId], references: [id])
-  courseId  Int?
+  id       Int         @id @default(autoincrement())
+  lessonId Int
+  Lesson   Lesson      @relation(fields: [lessonId], references: [lessonId])
+  userId   Int
+  Profile  UserProfile @relation(fields: [userId], references: [userId])
+  feedback String
+  Course   Course?     @relation(fields: [courseId], references: [courseId])
+  courseId Int?
 }
 
 // Quizzes and Asignments
 
 model Quiz {
-  id                 Int              @id @default(autoincrement())
+  quizId             Int              @id @default(autoincrement())
   courseId           Int
-  Course             Course           @relation(fields: [courseId], references: [id])
+  Course             Course           @relation(fields: [courseId], references: [courseId])
   title              String
   unitId             Int?
-  Unit               Unit?            @relation(fields: [unitId], references: [id])
+  Unit               Unit?            @relation(fields: [unitId], references: [unitId])
   lessonId           Int?
-  Lesson             Lesson?          @relation(fields: [lessonId], references: [id])
+  Lesson             Lesson?          @relation(fields: [lessonId], references: [lessonId])
   fullMark           Int              @default(0) @db.SmallInt
   passMark           Int              @default(0) @db.SmallInt
   // Dates
@@ -270,17 +280,17 @@ model Quiz {
 }
 
 model QuizQuestion {
-  id            Int                  @id @default(autoincrement())
-  quizId        Int
-  Quiz          Quiz                 @relation(fields: [quizId], references: [id])
-  questionText  String
-  fullMark      Int                  @default(0) @db.SmallInt
-  passMark      Int                  @default(0) @db.SmallInt
-  correctAnswer String?
-  questionType  QuestionType // Enum for different question types
+  quizQuestionId Int                  @id @default(autoincrement())
+  quizId         Int
+  Quiz           Quiz                 @relation(fields: [quizId], references: [quizId])
+  questionText   String
+  fullMark       Int                  @default(0) @db.SmallInt
+  passMark       Int                  @default(0) @db.SmallInt
+  correctAnswer  String?
+  questionType   QuestionType // Enum for different question types
   // Relations
-  Options       QuizQuestionOption[]
-  QuizAnswer    QuizAnswer[]
+  Options        QuizQuestionOption[]
+  QuizAnswer     QuizAnswer[]
 }
 
 enum QuestionType {
@@ -292,184 +302,191 @@ enum QuestionType {
 
 // @todo add optional url to a file
 model QuizQuestionOption {
-  id         Int          @db.SmallInt
-  questionId Int
-  Question   QuizQuestion @relation(fields: [questionId], references: [id])
-  optionText String
-  mark       Int          @default(0) @db.SmallInt
+  quizeQuestionOptionId Int          @db.SmallInt
+  questionId            Int
+  Question              QuizQuestion @relation(fields: [questionId], references: [quizQuestionId])
+  optionText            String
+  mark                  Int          @default(0) @db.SmallInt
 
-  @@id([id, questionId])
+  @@id([quizeQuestionOptionId, questionId])
 }
 
 model QuizSubmission {
-  id        Int          @id @default(autoincrement())
-  quizId    Int
-  studentId Int
-  marks     Int?
-  Quiz      Quiz         @relation(fields: [quizId], references: [id])
-  Student   UserProfile  @relation(fields: [studentId], references: [userId])
-  createdAt DateTime     @default(now()) @db.Timestamptz(3)
+  quizSubmissionId Int          @id @default(autoincrement())
+  quizId           Int
+  studentId        Int
+  marks            Int?
+  courseId         Int
+  Course           Course       @relation(fields: [courseId], references: [courseId])
+  Quiz             Quiz         @relation(fields: [quizId], references: [quizId])
+  Student          UserProfile  @relation(fields: [studentId], references: [userId])
+  createdAt        DateTime     @default(now()) @db.Timestamptz(3)
   // Relations
-  Answers   QuizAnswer[]
+  Answers          QuizAnswer[]
 }
 
 model QuizAnswer {
-  id           Int            @id @default(autoincrement())
+  quizAnswerId Int            @id @default(autoincrement())
   submissionId Int
   questionId   Int
   answer       String
   // isCorrect    Boolean?
   mark         Int?           @db.SmallInt
-  Submission   QuizSubmission @relation(fields: [submissionId], references: [id])
-  Question     QuizQuestion   @relation(fields: [questionId], references: [id])
-}
-
-model Forum {
-  id           Int           @id @default(autoincrement())
-  title        String
-  description  String?
-  createdBy    Int
-  Owner        UserProfile   @relation(fields: [createdBy], references: [userId])
-  courseId     Int?
-  Course       Course?       @relation(fields: [courseId], references: [id])
-  // timestamp
-  createdAt    DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime      @updatedAt @db.Timestamptz(3)
-  // Relations
-  ForumMembers ForumMember[]
-  ForumPosts   ForumPost[]
-}
-
-model ForumMember {
-  forumId   Int
-  Forum     Forum          @relation(fields: [forumId], references: [id])
-  memberId  Int
-  Member    UserProfile    @relation(fields: [memberId], references: [userId])
-  position  ForumPositions
-  // timestamp
-  createdAt DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime       @updatedAt @db.Timestamptz(3)
-
-  @@id([forumId, memberId])
-}
-
-enum ForumPositions {
-  OWNER
-  TEACHER
-  STUDENT
-}
-
-model ForumPost {
-  id        Int            @id @default(autoincrement())
-  title     String
-  content   String
-  writerId  Int
-  Writer    UserProfile    @relation(fields: [writerId], references: [userId])
-  forumId   Int
-  Forum     Forum          @relation(fields: [forumId], references: [id])
-  // timestamp
-  createdAt DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime       @updatedAt @db.Timestamptz(3)
-  // Relations
-  Comments  ForumComment[]
-}
-
-model ForumComment {
-  id        Int         @id @default(autoincrement())
-  content   String
-  postId    Int
-  post      ForumPost   @relation(fields: [postId], references: [id])
-  writerId  Int
-  Writer    UserProfile @relation(fields: [writerId], references: [userId])
-  // timestamp
-  createdAt DateTime    @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime    @updatedAt @db.Timestamptz(3)
+  Submission   QuizSubmission @relation(fields: [submissionId], references: [quizSubmissionId])
+  Question     QuizQuestion   @relation(fields: [questionId], references: [quizQuestionId])
 }
 
 model CourseProgress {
-  id        Int         @id @default(autoincrement())
-  courseId  Int
-  course    Course      @relation(fields: [courseId], references: [id])
-  studentId Int
-  Student   UserProfile @relation(fields: [studentId], references: [userId])
-  progress  Float
+  courseProgressId Int         @id @default(autoincrement())
+  courseId         Int
+  course           Course      @relation(fields: [courseId], references: [courseId])
+  studentId        Int
+  Student          UserProfile @relation(fields: [studentId], references: [userId])
+  progress         Float
 }
 
-model Attendance {
-  id        Int         @id @default(autoincrement())
-  courseId  Int
-  Course    Course      @relation(fields: [courseId], references: [id])
-  profileId Int
-  Profile   UserProfile @relation(fields: [profileId], references: [userId])
-  date      DateTime    @db.Timestamptz(3)
+model CourseAttendance {
+  courseAttendanceId Int         @id @default(autoincrement())
+  courseId           Int
+  Course             Course      @relation(fields: [courseId], references: [courseId])
+  userId             Int
+  Profile            UserProfile @relation(fields: [userId], references: [userId])
+  info               String
+  date               DateTime    @db.Timestamptz(3)
 }
 
-model Certificate {
-  id        Int         @id @default(autoincrement())
-  courseId  Int
-  Course    Course      @relation(fields: [courseId], references: [id])
-  profileId Int
-  Profile   UserProfile @relation(fields: [profileId], references: [userId])
-  issueDate DateTime    @db.Timestamptz(3)
+model CourseCertificate {
+  courseCertificateId Int         @id @default(autoincrement())
+  courseId            Int
+  Course              Course      @relation(fields: [courseId], references: [courseId])
+  userId              Int
+  Profile             UserProfile @relation(fields: [userId], references: [userId])
+  issueDate           DateTime    @db.Timestamptz(3)
 }
 
-model Chat {
-  id           Int               @id @default(autoincrement())
-  title        String?
-  description  String?
-  bannerUrl    String?
-  createdAt    DateTime          @default(now()) @db.Timestamptz(3)
-  // Relations
-  Participants ChatParticipant[]
-  Messages     Message[]
-}
+// @todo Forums
 
-// Keep the id field to have the messages nested inside the ChatParticipations for the profile
-model ChatParticipant {
-  id                    Int                   @id @default(autoincrement())
-  profileId             Int
-  Profile               UserProfile           @relation(fields: [profileId], references: [userId])
-  chatId                Int
-  Chat                  Chat                  @relation(fields: [chatId], references: [id])
-  joinedAt              DateTime              @default(now()) @db.Timestamptz(3)
-  participationStatus   ChatParticipantStatus
-  lastReceivedMessageId Int?
-  lastReadMessageId     Int?
-  LastReceivedMessage   Message?              @relation("last_received_message", fields: [lastReceivedMessageId], references: [id])
-  LastReadMessage       Message?              @relation("last_read_message", fields: [lastReadMessageId], references: [id])
-  // Relations
-  SentMessages          Message[]
-}
+// model Forum {
+//   id           Int           @id @default(autoincrement())
+//   title        String
+//   description  String?
+//   createdBy    Int
+//   Owner        UserProfile   @relation(fields: [createdBy], references: [userId])
+//   courseId     Int?
+//   Course       Course?       @relation(fields: [courseId], references: [courseId])
+//   // timestamp
+//   createdAt    DateTime      @default(now()) @db.Timestamptz(3)
+//   updatedAt    DateTime      @updatedAt @db.Timestamptz(3)
+//   // Relations
+//   ForumMembers ForumMember[]
+//   ForumPosts   ForumPost[]
+// }
 
-enum ChatParticipantStatus {
-  ACTIVE
-  INACTIVE
-}
+// model ForumMember {
+//   forumId   Int
+//   Forum     Forum          @relation(fields: [forumId], references: [id])
+//   memberId  Int
+//   Member    UserProfile    @relation(fields: [memberId], references: [userId])
+//   position  ForumPositions
+//   // timestamp
+//   createdAt DateTime       @default(now()) @db.Timestamptz(3)
+//   updatedAt DateTime       @updatedAt @db.Timestamptz(3)
 
-model Message {
-  id               Int               @id @default(autoincrement())
-  senderId         Int
-  Sender           ChatParticipant   @relation(fields: [senderId], references: [id])
-  chatId           Int
-  Chat             Chat              @relation(fields: [chatId], references: [id])
-  content          String
-  messageType      MessageType
-  replyToMessageId Int?
-  ReplyToMessage   Message?          @relation("message_reply", fields: [replyToMessageId], references: [id])
-  // timestamp
-  createdAt        DateTime          @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime          @updatedAt @db.Timestamptz(3)
-  // Relations
-  LastReceivedBy   ChatParticipant[] @relation("last_received_message")
-  LastReadBy       ChatParticipant[] @relation("last_read_message")
-  Replies          Message[]         @relation("message_reply")
-}
+//   @@id([forumId, memberId])
+// }
 
-enum MessageType {
-  TEXT
-  FILE
-  IMAGE
-  AUDIO
-  VIDEO
-  // DOCUMENT
-}
+// enum ForumPositions {
+//   OWNER
+//   TEACHER
+//   STUDENT
+// }
+
+// model ForumPost {
+//   id        Int            @id @default(autoincrement())
+//   title     String
+//   content   String
+//   writerId  Int
+//   Writer    UserProfile    @relation(fields: [writerId], references: [userId])
+//   forumId   Int
+//   Forum     Forum          @relation(fields: [forumId], references: [id])
+//   // timestamp
+//   createdAt DateTime       @default(now()) @db.Timestamptz(3)
+//   updatedAt DateTime       @updatedAt @db.Timestamptz(3)
+//   // Relations
+//   Comments  ForumComment[]
+// }
+
+// model ForumComment {
+//   id        Int         @id @default(autoincrement())
+//   content   String
+//   postId    Int
+//   post      ForumPost   @relation(fields: [postId], references: [id])
+//   writerId  Int
+//   Writer    UserProfile @relation(fields: [writerId], references: [userId])
+//   // timestamp
+//   createdAt DateTime    @default(now()) @db.Timestamptz(3)
+//   updatedAt DateTime    @updatedAt @db.Timestamptz(3)
+// }
+
+// @todo Chats
+
+// model Chat {
+//   id           Int               @id @default(autoincrement())
+//   title        String?
+//   description  String?
+//   bannerUrl    String?
+//   createdAt    DateTime          @default(now()) @db.Timestamptz(3)
+//   // Relations
+//   Participants ChatParticipant[]
+//   Messages     Message[]
+// }
+
+// // Keep the id field to have the messages nested inside the ChatParticipations for the profile
+// model ChatParticipant {
+//   id                    Int                   @id @default(autoincrement())
+//   profileId             Int
+//   Profile               UserProfile           @relation(fields: [profileId], references: [userId])
+//   chatId                Int
+//   Chat                  Chat                  @relation(fields: [chatId], references: [id])
+//   joinedAt              DateTime              @default(now()) @db.Timestamptz(3)
+//   participationStatus   ChatParticipantStatus
+//   lastReceivedMessageId Int?
+//   lastReadMessageId     Int?
+//   LastReceivedMessage   Message?              @relation("last_received_message", fields: [lastReceivedMessageId], references: [id])
+//   LastReadMessage       Message?              @relation("last_read_message", fields: [lastReadMessageId], references: [id])
+//   // Relations
+//   SentMessages          Message[]
+// }
+
+// enum ChatParticipantStatus {
+//   ACTIVE
+//   INACTIVE
+// }
+
+// model Message {
+//   id               Int               @id @default(autoincrement())
+//   senderId         Int
+//   Sender           ChatParticipant   @relation(fields: [senderId], references: [id])
+//   chatId           Int
+//   Chat             Chat              @relation(fields: [chatId], references: [id])
+//   content          String
+//   messageType      MessageType
+//   replyToMessageId Int?
+//   ReplyToMessage   Message?          @relation("message_reply", fields: [replyToMessageId], references: [id])
+//   // timestamp
+//   createdAt        DateTime          @default(now()) @db.Timestamptz(3)
+//   updatedAt        DateTime          @updatedAt @db.Timestamptz(3)
+//   // Relations
+//   LastReceivedBy   ChatParticipant[] @relation("last_received_message")
+//   LastReadBy       ChatParticipant[] @relation("last_read_message")
+//   Replies          Message[]         @relation("message_reply")
+// }
+
+// enum MessageType {
+//   TEXT
+//   FILE
+//   IMAGE
+//   AUDIO
+//   VIDEO
+//   // DOCUMENT
+// }

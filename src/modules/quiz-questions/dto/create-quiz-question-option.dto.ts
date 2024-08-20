@@ -13,7 +13,7 @@ export class CreateQuizQuestionOptionDto {
   @IsNumber()
   @Min(0)
   @Max(10)
-  id: number;
+  quizeQuestionOptionId: number;
 
   @ApiProperty({
     description: 'Mark awarded for selecting this option',

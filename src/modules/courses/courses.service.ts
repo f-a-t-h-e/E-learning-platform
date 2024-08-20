@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Course } from '@prisma/client';
+import { Course, Prisma } from '@prisma/client';
 
 @Injectable()
 export class CoursesService {
@@ -16,6 +20,7 @@ export class CoursesService {
           create: {
             position: 'OWNER',
             instructorId: userId,
+            state: 'ACTIVE',
           },
         },
       },
@@ -28,40 +33,116 @@ export class CoursesService {
     return courses;
   }
 
-  async findOne(id: number) {
-    const course = await this.prisma.course.findFirst({ where: { id: id } });
+  async findOne(
+    id: number,
+    options = {} as {
+      getUnits?: boolean;
+      getLessons?: boolean;
+      getCourseMaterial?: boolean;
+      allMaterialState?: boolean;
+    },
+  ) {
+    const include: Prisma.CourseInclude = {};
+    if (options.getUnits) {
+      include.Units = {
+        select: {
+          unitId: true,
+          title: true,
+          description: true,
+          createdAt: true,
+          banner: true,
+        },
+      };
+      if (options.getLessons) {
+        include.Units.select = {
+          ...include.Units.select,
+          Lessons: {
+            select: {
+              lessonId: true,
+              title: true,
+              description: true,
+              banner: true,
+              createdAt: true,
+            },
+          },
+        };
+      }
+    } else if (options.getLessons) {
+      include.Lessons = {
+        select: {
+          lessonId: true,
+          title: true,
+          description: true,
+          banner: true,
+          createdAt: true,
+        },
+      };
+    }
+    if (options.getCourseMaterial) {
+      include.Media = {
+        where: {
+          lessonId: null,
+          unitId: null,
+        },
+        select: {
+          courseMediaId: true,
+          target: true,
+          type: true,
+          extension: true,
+          url: true,
+          updatedAt: true,
+        },
+      };
+      if (!options.allMaterialState) {
+        include.Media.where.state = 'UPLOADED';
+      }
+    }
+    const course = await this.prisma.course.findFirst({
+      where: { courseId: id },
+      include: include,
+    });
     return course;
   }
 
-  async update(id: number, updateCourseDto: UpdateCourseDto, userId: number) {
-    const course = await this.prisma.course.update({
+  async authHard({ courseId, userId }: { userId: number; courseId: number }) {
+    const course = await this.prisma.course.findFirst({
       where: {
-        id: id,
+        courseId: courseId,
+      },
+      select: {
         Instructors: {
-          some: {
-            instructorId: userId,
-          },
+          select: { instructorId: true },
         },
+      },
+    });
+    if (!course) {
+      throw new NotFoundException(`This course doesn't exist`);
+    }
+    if (!course.Instructors.find((i) => i.instructorId == userId)) {
+      throw new ForbiddenException(`You have no access to edit this course`);
+    }
+    return true;
+  }
+
+  async update(id: number, updateCourseDto: UpdateCourseDto) {
+    await this.prisma.course.updateMany({
+      where: {
+        courseId: id,
       },
       data: {
         ...updateCourseDto,
       },
     });
-    return course;
+    return true;
   }
 
-  async remove(id: number, userId: number) {
-    const course = await this.prisma.course.delete({
+  async remove(id: number) {
+    await this.prisma.course.deleteMany({
       where: {
-        id: id,
-        Instructors: {
-          some: {
-            instructorId: userId,
-          },
-        },
+        courseId: id,
       },
     });
-    return course;
+    return true;
   }
 
   async isUserATeacherAtCourse(userId: number, courseId: number) {
@@ -78,10 +159,10 @@ export class CoursesService {
     return TEACHERS_POSITIONS.includes(instructore.position) && instructore;
   }
 
-  async updateBanner(id: Course['id'], url: string) {
+  async updateBanner(id: Course['courseId'], url: string) {
     await this.prisma.course.updateMany({
       where: {
-        id: id,
+        courseId: id,
       },
       data: {
         banner: url,

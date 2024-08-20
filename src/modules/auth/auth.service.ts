@@ -98,7 +98,7 @@ export class AuthService {
   async validateRefreshToken(refreshToken: string, tokenId: number) {
     const session = await this.prisma.session.findFirst({
       where: {
-        id: tokenId,
+        sessionId: tokenId,
       },
     });
     const isValid =

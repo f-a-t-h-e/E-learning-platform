@@ -5,7 +5,7 @@ export class LessonEntity implements Lesson {
     description: 'The unique identifier for the lesson',
     example: 1,
   })
-  id: number;
+  lessonId: number;
 
   @ApiProperty({
     description: 'The title of the lesson',

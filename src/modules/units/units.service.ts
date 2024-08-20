@@ -7,7 +7,7 @@ import { Unit } from '@prisma/client';
 @Injectable()
 export class UnitsService {
   constructor(private prisma: PrismaService) {}
-  async create(createUnitDto: CreateUnitDto, userId) {
+  async create(createUnitDto: CreateUnitDto, userId: number) {
     const unit = await this.prisma.unit.create({
       data: {
         title: createUnitDto.title,
@@ -28,15 +28,15 @@ export class UnitsService {
     return Units;
   }
 
-  async findOne(id: number) {
-    const unit = await this.prisma.unit.findFirst({ where: { id: id } });
+  async findOne(unitId: number) {
+    const unit = await this.prisma.unit.findFirst({ where: { unitId: unitId } });
     return unit;
   }
 
   async update(id: number, updateUnitDto: UpdateUnitDto, courseId: number) {
     const unit = await this.prisma.unit.update({
       where: {
-        id: id,
+        unitId: id,
         courseId: courseId,
       },
       data: {
@@ -49,7 +49,7 @@ export class UnitsService {
   async remove(id: number, courseId: number) {
     const unit = await this.prisma.unit.delete({
       where: {
-        id: id,
+        unitId: id,
         courseId: courseId,
       },
     });
@@ -59,7 +59,7 @@ export class UnitsService {
   async getCourseFromUserIdAndUnitId(userId: number, unitId: number) {
     const foundResult = await this.prisma.unit.findFirst({
       where: {
-        id: unitId,
+        unitId: unitId,
         Course: {
           Instructors: {
             some: {
@@ -78,10 +78,10 @@ export class UnitsService {
     return false as false;
   }
 
-  async updateBanner(id: Unit['id'], url: string) {
+  async updateBanner(unitId: Unit['unitId'], url: string) {
     await this.prisma.unit.updateMany({
       where: {
-        id: id,
+        unitId: unitId,
       },
       data: {
         banner: url,

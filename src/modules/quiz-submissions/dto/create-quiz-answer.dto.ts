@@ -16,11 +16,11 @@ export class CreateQuizAnswerDto {
   @IsInt()
   questionId: number;
 
-  @ApiProperty({
-    description:
-      'Unique identifier for the quiz submission to which this answer belongs',
-    example: 401,
-  })
-  @IsInt()
-  submissionId: number;
+  // @ApiProperty({
+  //   description:
+  //     'Unique identifier for the quiz submission to which this answer belongs',
+  //   example: 401,
+  // })
+  // @IsInt()
+  // submissionId: number;
 }

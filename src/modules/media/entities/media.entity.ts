@@ -1,4 +1,4 @@
-import { $Enums, Media } from '@prisma/client';
+import { $Enums, CourseMedia } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
@@ -9,13 +9,13 @@ import {
   IsDate,
 } from 'class-validator';
 
-export class MediaEntity implements Media {
+export class CourseMediaEntity implements CourseMedia {
   @ApiProperty({
     description: 'Unique identifier for the media',
     example: 1,
   })
   @IsNumber()
-  id: number;
+  courseMediaId: number;
 
   @ApiProperty({
     description: 'Size of the media file in bytes',
@@ -56,10 +56,10 @@ export class MediaEntity implements Media {
     description:
       'Target audience or purpose of the media (e.g., STUDENT, INSTRUCTOR)',
     example: 'STUDENT',
-    enum: $Enums.MediaTarget,
+    enum: $Enums.CourseMediaTarget,
   })
-  @IsEnum($Enums.MediaTarget)
-  target: $Enums.MediaTarget;
+  @IsEnum($Enums.CourseMediaTarget)
+  target: $Enums.CourseMediaTarget;
 
   @ApiProperty({
     description: 'Type of the media (e.g., IMAGE, VIDEO, AUDIO)',
@@ -88,7 +88,7 @@ export class MediaEntity implements Media {
     example: 10,
   })
   @IsNumber()
-  profileId: number;
+  userId: number;
 
   @ApiProperty({
     description: 'ID of the associated course, if any',
