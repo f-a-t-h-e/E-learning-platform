@@ -101,7 +101,7 @@ export class QuizSubmissionsService {
       throw new ForbiddenException(`This user is not enrolled in this course`);
     }
 
-    if (quize.Course.Students[0].state !== 'ACTIVE') {
+    if (quize.Course.Students[0].state !== 'active') {
       throw new ForbiddenException(`Your enrollment state is invalid`);
     }
 

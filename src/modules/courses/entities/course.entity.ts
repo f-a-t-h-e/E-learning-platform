@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Course } from '@prisma/client';
+import { $Enums, Course, CourseState } from '@prisma/client';
 export class CourseEntity implements Course {
   @ApiProperty({
     description: 'The unique identifier for the course',
@@ -18,6 +18,30 @@ export class CourseEntity implements Course {
     example: 'This course provides an introduction to the NestJS framework.',
   })
   description: string;
+
+  @ApiProperty({
+    description: 'Attendance mark for the course, can be null',
+    type: Number,
+    nullable: true,
+    example: 15,
+    minimum: 0,
+  })
+  attendanceMark: number | null;
+
+  @ApiProperty({
+    description: 'Marks obtained in quizzes',
+    type: Number,
+    example: 85,
+    minimum: 0,
+  })
+  quizzesMark: number;
+
+  @ApiProperty({
+    description: 'State of the course',
+    enum: CourseState,
+    example: CourseState.avaialble,
+  })
+  state: CourseState;
 
   @ApiProperty({
     description: 'URL where the course banner is stored',

@@ -8,7 +8,15 @@ export class QuizQuestionEntity implements QuizQuestion {
     description: 'Unique identifier for the quiz question',
     example: 1,
   })
-  id: number;
+  quizQuestionId: number;
+
+  @ApiProperty({
+    description: 'The order of the question within the quiz',
+    type: Number,
+    example: 1,
+    minimum: 1,
+  })
+  order: number;
 
   @ApiProperty({
     description: 'Text of the quiz question',
@@ -19,7 +27,7 @@ export class QuizQuestionEntity implements QuizQuestion {
   @ApiProperty({
     description: 'Type of the question',
     enum: $Enums.QuestionType,
-    example: $Enums.QuestionType.MULTIPLE_CHOICE,
+    example: $Enums.QuestionType.multiple_choice,
   })
   questionType: $Enums.QuestionType;
 

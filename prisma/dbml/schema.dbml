@@ -1,0 +1,388 @@
+//// ------------------------------------------------------
+//// THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+//// ------------------------------------------------------
+
+Table User {
+  userId Int [pk, increment]
+  email String [unique, not null]
+  password String [not null]
+  role Role [not null]
+  roleName String [not null]
+  profile UserProfile
+  Sessions Session [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table Session {
+  sessionId Int [pk, increment]
+  refreshToken String [not null]
+  userId Int [not null]
+  User User [not null]
+  createdAt DateTime [default: `now()`, not null]
+  expiresAt DateTime [not null]
+}
+
+Table UserProfile {
+  userId Int [unique, not null]
+  user User [not null]
+  username String [unique, not null]
+  firstName String [not null]
+  secondName String
+  thirdName String
+  lastName String [not null]
+  bio String
+  avatar String
+  banner String
+  phone String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  UploadedMedia CourseMedia [not null]
+  Attendance CourseAttendance [not null]
+  CreatedUnits Unit [not null]
+  CreatedLessons Lesson [not null]
+  InstructoreCourses CourseInstructor [not null]
+  CoursesProgress CourseProgress [not null]
+  Certificates CourseCertificate [not null]
+  QuizSubmissions QuizSubmission [not null]
+  CoursesEnrollment CourseEnrollment [not null]
+}
+
+Table Role {
+  name String [unique, not null]
+  users User [not null]
+}
+
+Table Course {
+  courseId Int [pk, increment]
+  title String [not null]
+  description String
+  banner String
+  quizzesMark Int [not null]
+  attendanceMark Int
+  state CourseState [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  Units Unit [not null]
+  Lessons Lesson [not null]
+  Media CourseMedia [not null]
+  Students CourseEnrollment [not null]
+  Instructors CourseInstructor [not null]
+  Attendance CourseAttendance [not null]
+  StudentsProgress CourseProgress [not null]
+  Quizzes Quiz [not null]
+  Certificates CourseCertificate [not null]
+  QuizSubmissions QuizSubmission [not null]
+}
+
+Table CourseEnrollment {
+  courseEnrollmentId Int [pk, increment]
+  courseId Int [not null]
+  Course Course [not null]
+  studentId Int [not null]
+  Student UserProfile [not null]
+  state CourseEnrollmentState [not null]
+  quizzesMark Int [not null]
+  attendanceMark Int
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  endsAt DateTime
+}
+
+Table CourseInstructor {
+  courseInstructorId Int [pk, increment]
+  courseId Int [not null]
+  Course Course [not null]
+  instructorId Int [not null]
+  Instructor UserProfile [not null]
+  position CourseInstructorPositions [not null]
+  state CourseInstructorState [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  endsAt DateTime
+}
+
+Table CourseMedia {
+  courseMediaId Int [pk, increment]
+  url String [not null]
+  type MediaType [not null]
+  extension String [not null]
+  state MediaState [not null]
+  bytes BigInt [not null]
+  userId Int [not null]
+  UserProfile UserProfile [not null]
+  courseId Int
+  Course Course
+  unitId Int
+  Unit Unit
+  lessonId Int
+  Lesson Lesson
+  target CourseMediaTarget [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table Unit {
+  unitId Int [pk, increment]
+  order Int [not null]
+  title String [not null]
+  description String
+  banner String
+  quizzesMark Int [not null]
+  attendanceMark Int
+  courseId Int [not null]
+  Course Course [not null]
+  userId Int [not null]
+  AddedBy UserProfile [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  Lessons Lesson [not null]
+  Quizzes Quiz [not null]
+  Media CourseMedia [not null]
+}
+
+Table Lesson {
+  lessonId Int [pk, increment]
+  order Int [not null]
+  title String [not null]
+  banner String
+  description String
+  quizzesMark Int [not null]
+  attendanceMark Int
+  unitId Int [not null]
+  Unit Unit [not null]
+  userId Int [not null]
+  AddedBy UserProfile [not null]
+  courseId Int [not null]
+  Course Course [not null]
+  LessonContent LessonContent
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  Media CourseMedia [not null]
+  Quizzes Quiz [not null]
+}
+
+Table LessonContent {
+  lessonId Int [pk]
+  contentType ContentType [not null]
+  content String [not null]
+  Lesson Lesson [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+}
+
+Table Quiz {
+  quizId Int [pk, increment]
+  order Int [not null]
+  courseId Int [not null]
+  Course Course [not null]
+  title String [not null]
+  unitId Int
+  Unit Unit
+  lessonId Int
+  Lesson Lesson
+  fullMark Int [not null, default: 0]
+  passMark Int [not null, default: 0]
+  startsAt DateTime [not null]
+  endsAt DateTime
+  lateSubmissionDate DateTime
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
+  Questions QuizQuestion [not null]
+  QuizSubmission QuizSubmission [not null]
+}
+
+Table QuizQuestion {
+  quizQuestionId Int [pk, increment]
+  order Int [not null]
+  quizId Int [not null]
+  Quiz Quiz [not null]
+  questionText String [not null]
+  fullMark Int [not null, default: 0]
+  passMark Int [not null, default: 0]
+  correctAnswer String
+  questionType QuestionType [not null]
+  Options QuizQuestionOption [not null]
+  QuizAnswer QuizAnswer [not null]
+}
+
+Table QuizQuestionOption {
+  quizeQuestionOptionId Int [not null]
+  questionId Int [not null]
+  Question QuizQuestion [not null]
+  optionText String [not null]
+  mark Int [not null, default: 0]
+
+  indexes {
+    (quizeQuestionOptionId, questionId) [pk]
+  }
+}
+
+Table QuizSubmission {
+  quizSubmissionId Int [pk, increment]
+  quizId Int [not null]
+  Quiz Quiz [not null]
+  studentId Int [not null]
+  Student UserProfile [not null]
+  mark Int
+  courseId Int [not null]
+  Course Course [not null]
+  createdAt DateTime [default: `now()`, not null]
+  Answers QuizAnswer [not null]
+}
+
+Table QuizAnswer {
+  quizAnswerId Int [pk, increment]
+  submissionId Int [not null]
+  questionId Int [not null]
+  answer String [not null]
+  mark Int
+  Submission QuizSubmission [not null]
+  Question QuizQuestion [not null]
+}
+
+Table CourseProgress {
+  courseProgressId Int [pk, increment]
+  courseId Int [not null]
+  course Course [not null]
+  studentId Int [not null]
+  Student UserProfile [not null]
+  progress Float [not null]
+}
+
+Table CourseAttendance {
+  courseAttendanceId Int [pk, increment]
+  courseId Int [not null]
+  Course Course [not null]
+  userId Int [not null]
+  Profile UserProfile [not null]
+  info String [not null]
+  date DateTime [not null]
+}
+
+Table CourseCertificate {
+  courseCertificateId Int [pk, increment]
+  courseId Int [not null]
+  Course Course [not null]
+  userId Int [not null]
+  Profile UserProfile [not null]
+  issueDate DateTime [not null]
+}
+
+Enum CourseState {
+  created
+  avaialble
+}
+
+Enum CourseEnrollmentState {
+  active
+}
+
+Enum CourseInstructorPositions {
+  owner
+  teacher
+}
+
+Enum CourseInstructorState {
+  active
+}
+
+Enum MediaType {
+  image
+  video
+  audio
+  document
+}
+
+Enum MediaState {
+  uploading
+  uploaded
+  failed
+}
+
+Enum CourseMediaTarget {
+  course_banner
+  course_material
+  unit_banner
+  unit_material
+  lesson_banner
+  lesson_material
+}
+
+Enum ContentType {
+  url
+  text
+}
+
+Enum QuestionType {
+  multiple_choice
+  true_false
+  short_answer
+  long_answer
+}
+
+Ref: User.roleName > Role.name
+
+Ref: Session.userId > User.userId
+
+Ref: UserProfile.userId - User.userId
+
+Ref: CourseEnrollment.courseId > Course.courseId
+
+Ref: CourseEnrollment.studentId > UserProfile.userId
+
+Ref: CourseInstructor.courseId > Course.courseId
+
+Ref: CourseInstructor.instructorId > UserProfile.userId
+
+Ref: CourseMedia.userId > UserProfile.userId
+
+Ref: CourseMedia.courseId > Course.courseId
+
+Ref: CourseMedia.unitId > Unit.unitId
+
+Ref: CourseMedia.lessonId > Lesson.lessonId
+
+Ref: Unit.courseId > Course.courseId
+
+Ref: Unit.userId > UserProfile.userId
+
+Ref: Lesson.unitId > Unit.unitId
+
+Ref: Lesson.userId > UserProfile.userId
+
+Ref: Lesson.courseId > Course.courseId
+
+Ref: LessonContent.lessonId - Lesson.lessonId
+
+Ref: Quiz.courseId > Course.courseId
+
+Ref: Quiz.unitId > Unit.unitId
+
+Ref: Quiz.lessonId > Lesson.lessonId
+
+Ref: QuizQuestion.quizId > Quiz.quizId
+
+Ref: QuizQuestionOption.questionId > QuizQuestion.quizQuestionId
+
+Ref: QuizSubmission.quizId > Quiz.quizId
+
+Ref: QuizSubmission.studentId > UserProfile.userId
+
+Ref: QuizSubmission.courseId > Course.courseId
+
+Ref: QuizAnswer.submissionId > QuizSubmission.quizSubmissionId
+
+Ref: QuizAnswer.questionId > QuizQuestion.quizQuestionId
+
+Ref: CourseProgress.courseId > Course.courseId
+
+Ref: CourseProgress.studentId > UserProfile.userId
+
+Ref: CourseAttendance.courseId > Course.courseId
+
+Ref: CourseAttendance.userId > UserProfile.userId
+
+Ref: CourseCertificate.courseId > Course.courseId
+
+Ref: CourseCertificate.userId > UserProfile.userId

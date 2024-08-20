@@ -8,6 +8,29 @@ export class LessonEntity implements Lesson {
   lessonId: number;
 
   @ApiProperty({
+    description: 'The order of the lesson in the sequence',
+    type: Number,
+    example: 1,
+    minimum: 1,
+  })
+  order: number;
+
+  @ApiProperty({
+    description: 'Attendance mark for the lesson, can be null',
+    type: Number,
+    example: null,
+    nullable: true,
+  })
+  attendanceMark: number | null;
+
+  @ApiProperty({
+    description: 'Marks obtained in quizzes for the lesson',
+    type: Number,
+    example: 85,
+  })
+  quizzesMark: number;
+
+  @ApiProperty({
     description: 'The title of the lesson',
     example: 'Introduction to TypeScript',
   })
@@ -43,7 +66,7 @@ export class LessonEntity implements Lesson {
     description: 'The unique identifier of the teacher who added this lesson',
     example: 501,
   })
-  addedBy: number;
+  userId: number;
 
   @ApiProperty({
     description: 'The date and time when the lesson was created',

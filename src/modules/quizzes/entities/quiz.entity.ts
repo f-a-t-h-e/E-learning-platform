@@ -5,7 +5,17 @@ import { Type } from 'class-transformer';
 
 export class QuizEntity implements Quiz {
   @ApiProperty({ description: 'ID of the quiz', example: 1 })
-  id: number;
+  quizId: number;
+
+    
+  @ApiProperty({
+    description: 'The order of the quiz in the sequence',
+    type: Number,
+    example: 1,
+    minimum: 1,
+  })
+  order: number;
+
 
   @ApiProperty({ description: 'Title of the quiz', example: 'Final Exam' })
   title: string;

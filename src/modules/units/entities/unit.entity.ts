@@ -5,7 +5,15 @@ export class UnitEntity implements Unit {
     description: 'The unique identifier for the unit',
     example: 1,
   })
-  id: number;
+  unitId: number;
+
+  @ApiProperty({
+    description: 'The order of the unit in the sequence',
+    type: Number,
+    example: 1,
+    minimum: 1,
+  })
+  order: number;
 
   @ApiProperty({
     description: 'The title of the unit',
@@ -20,6 +28,23 @@ export class UnitEntity implements Unit {
   description: string;
 
   @ApiProperty({
+    description: 'Marks awarded for attendance in the unit',
+    type: Number,
+    example: 75,
+    minimum: 0,
+    nullable: true,
+  })
+  attendanceMark: number | null;
+
+  @ApiProperty({
+    description: 'Marks obtained in quizzes for the unit',
+    type: Number,
+    example: 85,
+    minimum: 0,
+  })
+  quizzesMark: number;
+
+  @ApiProperty({
     description:
       'The unique identifier of the course to which this unit belongs',
     example: 101,
@@ -30,7 +55,7 @@ export class UnitEntity implements Unit {
     description: 'The unique identifier of the teacher who added this unit',
     example: 501,
   })
-  addedBy: number;
+  userId: number;
 
   @ApiProperty({
     description: 'The date and time when the unit was created',

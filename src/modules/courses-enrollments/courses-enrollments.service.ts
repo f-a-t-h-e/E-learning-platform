@@ -21,7 +21,8 @@ export class CoursesEnrollmentsService {
       data: {
         courseId: createCoursesEnrollmentDto.courseId,
         studentId: studentId,
-        state: 'ACTIVE',
+        state: 'active',
+        quizzesMark: 0,
       },
     });
     return courseEnrollment;
@@ -65,6 +66,7 @@ export class CoursesEnrollmentsService {
         studentId: number;
         courseId: number;
         state: CourseEnrollmentState;
+        quizzesMark: number;
       }[] = [];
       let addId = false;
       for (const newId of createManyCourseEnrollments.studentIds) {
@@ -79,7 +81,8 @@ export class CoursesEnrollmentsService {
           inputs.push({
             studentId: newId,
             courseId: createManyCourseEnrollments.courseId,
-            state: 'ACTIVE',
+            state: 'active',
+            quizzesMark: 0,
           });
         }
       }

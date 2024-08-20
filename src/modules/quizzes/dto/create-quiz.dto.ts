@@ -15,6 +15,16 @@ import {
 import { CreateQuizQuestionDto } from 'src/modules/quiz-questions/dto/create-quiz-question.dto';
 
 export class CreateQuizDto {
+  @ApiProperty({
+    description: 'The order of the quiz in the sequence',
+    type: Number,
+    example: 1,
+    minimum: 1,
+  })
+  @IsNumber({}, { message: 'Order must be a number' })
+  @Min(1, { message: 'Order must be at least 1' })
+  order: number;
+
   @ApiProperty({ description: 'Title of the quiz', example: 'Final Exam' })
   @IsNotEmpty()
   @IsString()
@@ -92,7 +102,7 @@ export class CreateQuizDto {
     example: [
       {
         questionText: 'Which country has less population?',
-        questionType: $Enums.QuestionType.MULTIPLE_CHOICE,
+        questionType: $Enums.QuestionType.multiple_choice,
         fullMark: 10,
         passMark: 5,
         Options: [

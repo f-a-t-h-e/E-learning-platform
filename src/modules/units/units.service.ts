@@ -12,8 +12,10 @@ export class UnitsService {
       data: {
         title: createUnitDto.title,
         description: createUnitDto.description,
-        addedBy: userId,
+        userId: userId,
         courseId: createUnitDto.courseId,
+        order: createUnitDto.order,
+        quizzesMark: 0,
       },
     });
     return unit;

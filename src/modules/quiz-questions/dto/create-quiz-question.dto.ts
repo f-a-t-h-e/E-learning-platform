@@ -16,6 +16,16 @@ import { Type } from 'class-transformer';
 
 export class CreateQuizQuestionDto {
   @ApiProperty({
+    description: 'The order of the question within the quiz',
+    type: Number,
+    example: 1,
+    minimum: 1,
+  })
+  @IsNumber({}, { message: 'Order must be a number' })
+  @Min(1, { message: 'Order must be at least 1' })
+  order: number;
+
+  @ApiProperty({
     description: 'Text of the quiz question',
     example: 'Which country has less population?',
   })
@@ -26,7 +36,7 @@ export class CreateQuizQuestionDto {
   @ApiProperty({
     description: 'Type of the question',
     enum: $Enums.QuestionType,
-    example: $Enums.QuestionType.MULTIPLE_CHOICE,
+    example: $Enums.QuestionType.multiple_choice,
   })
   @IsNotEmpty()
   @IsEnum($Enums.QuestionType)

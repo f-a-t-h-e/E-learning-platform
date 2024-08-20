@@ -9,7 +9,7 @@ export class QuizQuestionOptionEntity implements QuizQuestionOption {
   })
   @IsNotEmpty()
   @IsNumber()
-  id: number;
+  quizeQuestionOptionId: number;
 
   @ApiProperty({
     description: 'Mark awarded for selecting this option',

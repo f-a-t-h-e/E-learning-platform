@@ -145,6 +145,40 @@ export class CoursesController {
 
   @ApiBearerAuth()
   @ApiOperation({
+    summary: 'Get one course (for the student)',
+    description: `Get a specific course using its id if you are a student in this course`,
+  })
+  @ApiResponse({
+    type: CourseEntity,
+    status: HttpStatus.OK,
+    description: `The course that you requested`,
+  })
+  @ApiParam({
+    name: 'id',
+    description: `\`course.id\``,
+    type: Number,
+    required: true,
+    example: 7,
+  })
+  @RolesDecorator(Role.Student)
+  @HttpCode(HttpStatus.OK)
+  @Get(':id/edit')
+  async findOneForStudent(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('get-units', ParseBoolPipe) getUnits: boolean,
+    @Query('get-lessons', ParseBoolPipe) getLessons: boolean,
+    @Query('get-course-material', ParseBoolPipe) getCourseMaterial: boolean,
+  ): Promise<CourseEntity> {
+    return this.coursesService.findOne(id, {
+      getCourseMaterial,
+      getLessons,
+      getUnits,
+      allMaterialState: false,
+    });
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
     summary: 'Edit one course',
     description: `Edit a specific course using its id`,
   })

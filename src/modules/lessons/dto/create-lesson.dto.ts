@@ -1,7 +1,17 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLessonDto {
+  @ApiProperty({
+    description: 'The order of the lesson in the sequence',
+    type: Number,
+    example: 1,
+    minimum: 1,
+  })
+  @IsNumber()
+  @Min(0)
+  order: number;
+
   @ApiProperty({
     description: 'The title of the lesson',
     example: 'Introduction to TypeScript Functions',

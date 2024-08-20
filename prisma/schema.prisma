@@ -8,6 +8,12 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// https://notiz.dev/blog/prisma-dbml-generator
+// https://dbdiagram.io/d
+generator dbml {
+  provider = "prisma-dbml-generator"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -63,7 +69,7 @@ model UserProfile {
   CreatedLessons     Lesson[]
   InstructoreCourses CourseInstructor[]
   // For students
-  LessonsFeedbacks   LessonFeedback[]
+  // LessonsFeedbacks   LessonFeedback[]
   CoursesProgress    CourseProgress[]
   Certificates       CourseCertificate[]
   QuizSubmissions    QuizSubmission[]
@@ -80,6 +86,9 @@ model Course {
   title            String
   description      String?
   banner           String?
+  quizzesMark      Int
+  attendanceMark   Int?
+  state            CourseState
   // timestamp
   createdAt        DateTime            @default(now()) @db.Timestamptz(3)
   updatedAt        DateTime            @updatedAt @db.Timestamptz(3)
@@ -93,46 +102,56 @@ model Course {
   StudentsProgress CourseProgress[]
   Quizzes          Quiz[]
   Certificates     CourseCertificate[]
-  Feedbacks        LessonFeedback[]
+  // Feedbacks        LessonFeedback[]
   // Forums           Forum[]
   QuizSubmissions  QuizSubmission[]
 }
 
-model CourseEnrollment {
-  courseId  Int
-  Course    Course                @relation(fields: [courseId], references: [courseId])
-  studentId Int
-  Student   UserProfile           @relation(fields: [studentId], references: [userId])
-  state     CourseEnrollmentState
-  // timestamp
-  createdAt DateTime              @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime              @updatedAt @db.Timestamptz(3)
+enum CourseState {
+  created
+  avaialble
+}
 
-  @@id([courseId, studentId])
+model CourseEnrollment {
+  courseEnrollmentId Int                   @id @default(autoincrement())
+  courseId           Int
+  Course             Course                @relation(fields: [courseId], references: [courseId])
+  studentId          Int
+  Student            UserProfile           @relation(fields: [studentId], references: [userId])
+  state              CourseEnrollmentState
+  quizzesMark        Int
+  attendanceMark     Int?
+  // timestamp
+  createdAt          DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime              @updatedAt @db.Timestamptz(3)
+  endsAt             DateTime?
 }
 
 enum CourseEnrollmentState {
-  ACTIVE
+  active
 }
 
 model CourseInstructor {
-  courseId     Int
-  Course       Course                    @relation(fields: [courseId], references: [courseId])
-  instructorId Int
-  Instructor   UserProfile               @relation(fields: [instructorId], references: [userId])
-  position     CourseInstructorPositions
-  state        CourseInstructorState
-
-  @@id([courseId, instructorId])
+  courseInstructorId Int                       @id @default(autoincrement())
+  courseId           Int
+  Course             Course                    @relation(fields: [courseId], references: [courseId])
+  instructorId       Int
+  Instructor         UserProfile               @relation(fields: [instructorId], references: [userId])
+  position           CourseInstructorPositions
+  state              CourseInstructorState
+  // timestamp
+  createdAt          DateTime                  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime                  @updatedAt @db.Timestamptz(3)
+  endsAt             DateTime?
 }
 
 enum CourseInstructorPositions {
-  OWNER
-  TEACHER
+  owner
+  teacher
 }
 
 enum CourseInstructorState {
-  ACTIVE
+  active
 }
 
 model CourseMedia {
@@ -157,75 +176,81 @@ model CourseMedia {
 }
 
 enum MediaType {
-  IMAGE
-  VIDEO
-  AUDIO
-  DOCUMENT
+  image
+  video
+  audio
+  document
 }
 
 enum MediaState {
-  UPLOADING
-  FAILED
-  UPLOADED
+  uploading
+  uploaded
+  failed
 }
 
 enum CourseMediaTarget {
   // // 'profile-picture'
-  // PROFILE_PICTURE
+  // profile_picture
   // // 'profile-banner'
-  // PROFILE_BANNER
+  // profile_banner
   // 'course-banner'
-  COURSE_BANNER
+  course_banner
   // 'course-material'
-  COURSE_MATERIAL
+  course_material
   // 'unit-banner'
-  UNIT_BANNER
+  unit_banner
   // 'unit-material'
-  UNIT_MATERIAL
+  unit_material
   // 'lesson-banner'
-  LESSON_BANNER
+  lesson_banner
   // 'lesson-material'
-  LESSON_MATERIAL
+  lesson_material
 }
 
 model Unit {
-  unitId      Int           @id @default(autoincrement())
-  title       String
-  description String?
-  banner      String?
-  courseId    Int
+  unitId         Int           @id @default(autoincrement())
+  order          Int           @db.SmallInt
+  title          String
+  description    String?
+  banner         String?
+  quizzesMark    Int
+  attendanceMark Int?
+  courseId       Int
+  Course         Course        @relation(fields: [courseId], references: [courseId])
   // Owner
-  addedBy     Int
-  AddedBy     UserProfile   @relation(fields: [addedBy], references: [userId])
-  Course      Course        @relation(fields: [courseId], references: [courseId])
+  userId         Int
+  AddedBy        UserProfile   @relation(fields: [userId], references: [userId])
   // timestamp
-  createdAt   DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt   DateTime      @updatedAt @db.Timestamptz(3)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
   // Relations
-  Lessons     Lesson[]
-  Quizzes     Quiz[]
-  Media       CourseMedia[]
+  Lessons        Lesson[]
+  Quizzes        Quiz[]
+  Media          CourseMedia[]
 }
 
 model Lesson {
-  lessonId      Int              @id @default(autoincrement())
-  title         String
-  banner        String?
-  unitId        Int
-  courseId      Int
-  description   String?
-  addedBy       Int
-  AddedBy       UserProfile      @relation(fields: [addedBy], references: [userId])
-  Unit          Unit             @relation(fields: [unitId], references: [unitId])
-  Course        Course           @relation(fields: [courseId], references: [courseId])
-  LessonContent LessonContent?
+  lessonId       Int            @id @default(autoincrement())
+  order          Int            @db.SmallInt
+  title          String
+  banner         String?
+  description    String?
+  quizzesMark    Int            @db.SmallInt
+  attendanceMark Int?           @db.SmallInt
+  unitId         Int
+  Unit           Unit           @relation(fields: [unitId], references: [unitId])
+  userId         Int
+  AddedBy        UserProfile    @relation(fields: [userId], references: [userId])
+  courseId       Int
+  Course         Course         @relation(fields: [courseId], references: [courseId])
+  LessonContent  LessonContent?
   // timestamp
-  createdAt     DateTime         @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime         @updatedAt @db.Timestamptz(3)
+  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime       @updatedAt @db.Timestamptz(3)
   // Relations
-  Feedbacks     LessonFeedback[]
-  Media         CourseMedia[]
-  Quizzes       Quiz[]
+  // Feedbacks      LessonFeedback[]
+  Media          CourseMedia[]
+  Quizzes        Quiz[]
 }
 
 model LessonContent {
@@ -239,25 +264,26 @@ model LessonContent {
 }
 
 enum ContentType {
-  URL
-  TEXT
+  url
+  text
 }
 
-model LessonFeedback {
-  id       Int         @id @default(autoincrement())
-  lessonId Int
-  Lesson   Lesson      @relation(fields: [lessonId], references: [lessonId])
-  userId   Int
-  Profile  UserProfile @relation(fields: [userId], references: [userId])
-  feedback String
-  Course   Course?     @relation(fields: [courseId], references: [courseId])
-  courseId Int?
-}
+// model LessonFeedback {
+//   id       Int         @id @default(autoincrement())
+//   lessonId Int
+//   Lesson   Lesson      @relation(fields: [lessonId], references: [lessonId])
+//   userId   Int
+//   Profile  UserProfile @relation(fields: [userId], references: [userId])
+//   feedback String
+//   Course   Course?     @relation(fields: [courseId], references: [courseId])
+//   courseId Int?
+// }
 
 // Quizzes and Asignments
 
 model Quiz {
   quizId             Int              @id @default(autoincrement())
+  order              Int              @db.SmallInt
   courseId           Int
   Course             Course           @relation(fields: [courseId], references: [courseId])
   title              String
@@ -281,23 +307,24 @@ model Quiz {
 
 model QuizQuestion {
   quizQuestionId Int                  @id @default(autoincrement())
+  order          Int                  @db.SmallInt
   quizId         Int
   Quiz           Quiz                 @relation(fields: [quizId], references: [quizId])
   questionText   String
   fullMark       Int                  @default(0) @db.SmallInt
   passMark       Int                  @default(0) @db.SmallInt
   correctAnswer  String?
-  questionType   QuestionType // Enum for different question types
+  questionType   QuestionType
   // Relations
   Options        QuizQuestionOption[]
   QuizAnswer     QuizAnswer[]
 }
 
 enum QuestionType {
-  MULTIPLE_CHOICE
-  TRUE_FALSE
-  SHORT_ANSWER
-  LONG_ANSWER
+  multiple_choice
+  true_false
+  short_answer
+  long_answer
 }
 
 // @todo add optional url to a file
@@ -314,12 +341,12 @@ model QuizQuestionOption {
 model QuizSubmission {
   quizSubmissionId Int          @id @default(autoincrement())
   quizId           Int
+  Quiz             Quiz         @relation(fields: [quizId], references: [quizId])
   studentId        Int
-  marks            Int?
+  Student          UserProfile  @relation(fields: [studentId], references: [userId])
+  mark             Int?         @db.SmallInt
   courseId         Int
   Course           Course       @relation(fields: [courseId], references: [courseId])
-  Quiz             Quiz         @relation(fields: [quizId], references: [quizId])
-  Student          UserProfile  @relation(fields: [studentId], references: [userId])
   createdAt        DateTime     @default(now()) @db.Timestamptz(3)
   // Relations
   Answers          QuizAnswer[]

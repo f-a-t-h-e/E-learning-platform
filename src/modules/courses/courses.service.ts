@@ -16,11 +16,13 @@ export class CoursesService {
       data: {
         title: createCourseDto.title,
         description: createCourseDto.description,
+        quizzesMark: 0,
+        state: "created",
         Instructors: {
           create: {
-            position: 'OWNER',
+            position: 'owner',
             instructorId: userId,
-            state: 'ACTIVE',
+            state: 'active',
           },
         },
       },
@@ -94,7 +96,7 @@ export class CoursesService {
         },
       };
       if (!options.allMaterialState) {
-        include.Media.where.state = 'UPLOADED';
+        include.Media.where.state = 'uploaded';
       }
     }
     const course = await this.prisma.course.findFirst({

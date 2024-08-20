@@ -1,7 +1,17 @@
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUnitDto {
+  @ApiProperty({
+    description: 'The order of the unit in the sequence',
+    type: Number,
+    example: 1,
+    minimum: 1,
+  })
+  @IsNumber({}, { message: 'Order must be a number' })
+  @Min(1, { message: 'Order must be at least 1' })
+  order: number;
+
   @ApiProperty({
     description: 'The title of the unit',
     example: 'Introduction to TypeScript',

@@ -8,7 +8,7 @@ export class QuizAnswerEntity implements QuizAnswer {
     example: 1,
   })
   @IsInt()
-  id: number;
+  quizAnswerId: number;
 
   @ApiProperty({
     description: 'The text of the answer provided by the student',

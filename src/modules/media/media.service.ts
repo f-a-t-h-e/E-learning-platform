@@ -42,7 +42,7 @@ export class MediaService {
         userId: data.profileId,
         bytes: data.bytes || 0,
         extension: data.extension,
-        state: 'UPLOADING',
+        state: 'uploading',
         target: data.target,
       },
     });
@@ -71,7 +71,7 @@ export class MediaService {
     if (media.userId !== userId) {
       throw new ForbiddenException(`You have no access to this media`);
     }
-    media.state = 'UPLOADED';
+    media.state = 'uploaded';
     media.url = path.join(
       media.url,
       `${media.userId}_${media.courseMediaId}.${media.extension}`,
@@ -79,7 +79,7 @@ export class MediaService {
     await this.prisma.courseMedia.updateMany({
       where: { courseMediaId: id },
       data: {
-        state: 'UPLOADED',
+        state: 'uploaded',
         url: media.url,
       },
     });
@@ -90,13 +90,13 @@ export class MediaService {
       // case 'PROFILE_PICTURE':
       //   await this.userProfileService.updateAvatar(userId, media.url);
       //   break;
-      case 'COURSE_BANNER':
+      case 'course_banner':
         await this.coursesService.updateBanner(media.courseId, media.url);
         break;
-      case 'UNIT_BANNER':
+      case 'unit_banner':
         await this.unitsService.updateBanner(media.unitId, media.url);
         break;
-      case 'LESSON_BANNER':
+      case 'lesson_banner':
         await this.lessonsService.updateBanner(media.lessonId, media.url);
         break;
       default:
@@ -110,18 +110,18 @@ export class MediaService {
 const typesMap = [
   {
     test: /^image\//,
-    type: MediaType.IMAGE,
+    type: MediaType.image,
   },
   {
     test: /^video\//,
-    type: MediaType.VIDEO,
+    type: MediaType.video,
   },
   {
     test: /^audio\//,
-    type: MediaType.AUDIO,
+    type: MediaType.audio,
   },
   {
     test: /^(application\/pdf|application\/msword|application\/vnd.openxmlformats-officedocument.wordprocessingml.document)$/,
-    type: MediaType.DOCUMENT,
+    type: MediaType.document,
   },
 ];

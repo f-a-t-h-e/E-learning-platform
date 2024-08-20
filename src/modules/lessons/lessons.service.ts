@@ -12,9 +12,11 @@ export class LessonsService {
       data: {
         title: createLessonDto.title,
         description: createLessonDto.description,
-        addedBy: userId,
+        userId: userId,
         courseId: createLessonDto.courseId,
         unitId: createLessonDto.unitId,
+        quizzesMark: 0,
+        order: createLessonDto.order,
       },
     });
     return lesson;
@@ -85,7 +87,7 @@ export class LessonsService {
         },
       },
       select: {
-        addedBy: true,
+        userId: true,
       },
     });
     if (foundResult) {
