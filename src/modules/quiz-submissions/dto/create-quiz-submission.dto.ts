@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsOptional,
-  IsNumber,
-  IsArray,
-  ValidateNested,
-} from 'class-validator';
+import { IsInt, IsArray, ValidateNested } from 'class-validator';
 import { CreateQuizAnswerDto } from './create-quiz-answer.dto';
 import { Type } from 'class-transformer';
 

@@ -6,18 +6,26 @@ import {
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Course, Prisma } from '@prisma/client';
+import { Course, Prisma, UserProfile } from '@prisma/client';
+import { getStatesForCalculatingGrades } from 'src/common/utils/getStatesForCalculatingGrades';
+import { UnitsService } from '../units/units.service';
 
 @Injectable()
 export class CoursesService {
-  constructor(private prisma: PrismaService) {}
-  async create(createCourseDto: CreateCourseDto, userId) {
+  constructor(
+    private prisma: PrismaService,
+    private readonly unitsService: UnitsService,
+  ) {}
+  async create(
+    createCourseDto: CreateCourseDto,
+    userId: UserProfile['userId'],
+  ) {
     const course = await this.prisma.course.create({
       data: {
         title: createCourseDto.title,
         description: createCourseDto.description,
-        quizzesMark: 0,
-        state: "created",
+        quizFullGrade: 0,
+        state: 'created',
         Instructors: {
           create: {
             position: 'owner',
@@ -113,7 +121,10 @@ export class CoursesService {
       },
       select: {
         Instructors: {
-          select: { instructorId: true },
+          where: {
+            instructorId: userId,
+          },
+          select: { instructorId: true, position: true },
         },
       },
     });
@@ -171,6 +182,79 @@ export class CoursesService {
       },
     });
     // @todo You can do some notification in case you want to get closer to a social media platform
+  }
+
+  async markAsAvailable(inputs: {
+    courseId: Course['courseId'];
+    quizPassGrade?: number;
+    auto?: boolean;
+    // Calculate all and ignore the states
+    allStates?: boolean;
+    state?: 'available' | 'calculatedGrades';
+  }) {
+    const targetState = getStatesForCalculatingGrades(inputs.state);
+    if (inputs.auto) {
+      const units = await this.prisma.unit.findMany({
+        where: {
+          courseId: inputs.courseId,
+          state: inputs.allStates
+            ? { in: ['available', 'calculatedGrades', 'created'] }
+            : { in: targetState },
+        },
+      });
+      for (const unit of units) {
+        // @todo track failure
+        await this.unitsService.markAsAvailable({
+          unitId: unit.unitId,
+          auto: true,
+          state: inputs.state,
+          allStates: inputs.allStates,
+        });
+      }
+    }
+    const result = await this.prisma.useTransaction(async (tx) => {
+      const sumUnit = await tx.unit.aggregate({
+        where: { courseId: inputs.courseId, state: { in: targetState } },
+        _sum: {
+          quizFullGrade: true,
+          quizPassGrade: true,
+        },
+      });
+      const sumQuiz = await tx.quiz.aggregate({
+        where: {
+          courseId: inputs.courseId,
+          unitId: null,
+          lessonId: null,
+          state: { in: targetState },
+        },
+        _sum: {
+          fullGrade: true,
+          passGrade: true,
+        },
+      });
+      const quizFullGrade = sumUnit._sum.quizFullGrade + sumQuiz._sum.fullGrade;
+      const quizPassGrade =
+        typeof inputs.quizPassGrade == 'number'
+          ? inputs.quizPassGrade
+          : sumUnit._sum.quizPassGrade + sumQuiz._sum.passGrade;
+      const updateResult = await tx.course.updateMany({
+        where: {
+          courseId: inputs.courseId,
+        },
+        data: {
+          state: inputs.state || 'calculatedGrades',
+          quizFullGrade: quizFullGrade,
+          quizPassGrade: quizPassGrade,
+        },
+      });
+      return {
+        quizFullGrade,
+        quizPassGrade,
+        updateResult: updateResult.count,
+      };
+    });
+
+    return result;
   }
 }
 

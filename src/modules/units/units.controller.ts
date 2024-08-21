@@ -30,6 +30,10 @@ import {
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
 import { UnitEntity } from './entities/unit.entity';
 import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
+import { RequestUser } from '../auth/entities/request-user.entity';
+import { RolesDecorator } from 'src/common/decorators/roles.decorator';
+import { Role } from 'src/common/enums/role.enum';
+import { MarkAvailableDto } from 'src/common/dto/markAvailable.dto';
 
 @ApiErrorResponses()
 @ApiTags('units')
@@ -161,6 +165,44 @@ export class UnitsController {
       throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.unitsService.update(id, updateUnitDto, courseId);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Mark unit as available or calculate it',
+    description: `Mark the unit as \`available\` for release or just calculate its grades.`,
+  })
+  @ApiParam({
+    name: 'id',
+    description: `The unique identifier of the unit (\`unit.id\`).`,
+    type: Number,
+    required: true,
+    example: 15,
+  })
+  @ApiResponse({
+    type: Boolean,
+    status: HttpStatus.OK,
+    description: `The unit has been successfully marked as available or calculated.`,
+  })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'You must be a teacher of this unit to edit it.',
+  })
+  @HttpCode(HttpStatus.OK)
+  @RolesDecorator(Role.Teacher)
+  @Patch(':id/mark-available')
+  async markAsAvailable(
+    @User() user: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() markAvailableDto: MarkAvailableDto,
+  ) {
+    await this.unitsService.authHard({ unitId: id, userId: user.id });
+    return this.unitsService.markAsAvailable({
+      unitId: id,
+      allStates: markAvailableDto.allStates,
+      auto: markAvailableDto.auto,
+    });
   }
 
   @ApiBearerAuth()

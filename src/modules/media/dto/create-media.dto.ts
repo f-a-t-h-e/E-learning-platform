@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MediaTarget, MediaType } from '@prisma/client';
+import { CourseMediaTarget, MediaType } from '@prisma/client';
 import {
   IsEnum,
   IsIn,
@@ -47,7 +47,7 @@ export class CreateMediaDto {
     description: `The type of the media that you want to upload`,
     nullable: false,
     type: MediaType,
-    example: MediaType.IMAGE,
+    example: MediaType.image,
     enum: MediaType,
   })
   @IsIn(Object.values(MediaType))
@@ -63,10 +63,10 @@ export class CreateMediaDto {
   extension: string;
 
   @ApiProperty({
-    enum: MediaTarget,
+    enum: CourseMediaTarget,
     description: 'The target location for the media file',
-    example: MediaTarget.PROFILE_PICTURE,
+    example: CourseMediaTarget.course_banner,
   })
-  @IsEnum(MediaTarget)
-  target: MediaTarget;
+  @IsEnum(CourseMediaTarget)
+  target: CourseMediaTarget;
 }

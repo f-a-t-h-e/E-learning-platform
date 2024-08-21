@@ -9,5 +9,4 @@ const fn = {
       ) => Promise<FileTypeResult | undefined>),
 };
 
-
 export default fn;

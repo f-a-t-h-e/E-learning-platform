@@ -18,13 +18,13 @@ export class QuizAnswerEntity implements QuizAnswer {
   answer: string;
 
   @ApiProperty({
-    description: 'Marks awarded for the answer',
+    description: 'Grades awarded for the answer',
     example: 5,
     nullable: true,
   })
   @IsOptional()
   @IsNumber()
-  mark: number | null;
+  grade: number | null;
 
   @ApiProperty({
     description: 'Unique identifier for the associated quiz question',

@@ -1,5 +1,10 @@
 import { Response } from 'express';
-import { ACCESS_TOKEN_AGE, ACCESS_TOKEN_NAME, REFRESH_TOKEN_AGE, REFRESH_TOKEN_NAME } from 'src/config/cookies.config';
+import {
+  ACCESS_TOKEN_AGE,
+  ACCESS_TOKEN_NAME,
+  REFRESH_TOKEN_AGE,
+  REFRESH_TOKEN_NAME,
+} from 'src/config/cookies.config';
 
 export function setAccessAndRefreshCookies(
   res: Response,
@@ -10,12 +15,12 @@ export function setAccessAndRefreshCookies(
     secure: true,
     httpOnly: true,
     maxAge: ACCESS_TOKEN_AGE,
-    sameSite: "strict",
+    sameSite: 'strict',
   });
   res.cookie(REFRESH_TOKEN_NAME, refreshToken, {
     secure: true,
     httpOnly: true,
     maxAge: REFRESH_TOKEN_AGE,
-    sameSite: "strict",
+    sameSite: 'strict',
   });
 }

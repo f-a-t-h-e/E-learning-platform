@@ -49,7 +49,9 @@ export class MediaService {
     return media;
   }
   async findOne(id: number) {
-    return await this.prisma.courseMedia.findFirst({ where: { courseMediaId: id } });
+    return await this.prisma.courseMedia.findFirst({
+      where: { courseMediaId: id },
+    });
   }
 
   getType(mime: string): MediaType | null {

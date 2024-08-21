@@ -6,19 +6,12 @@ import {
   Patch,
   Param,
   Delete,
-  UseGuards,
   HttpCode,
   HttpStatus,
   ParseIntPipe,
-  ForbiddenException,
   Query,
   ParseBoolPipe,
 } from '@nestjs/common';
-import { CoursesService } from './courses.service';
-import { CreateCourseDto } from './dto/create-course.dto';
-import { UpdateCourseDto } from './dto/update-course.dto';
-import JwtGuard from '../auth/guards/jwt.guard';
-import { User } from 'src/common/decorators/user.decorator';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -26,11 +19,20 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
-import { CourseEntity } from './entities/course.entity';
 import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
 import { RolesDecorator } from 'src/common/decorators/roles.decorator';
+import { User } from 'src/common/decorators/user.decorator';
 import { Role } from 'src/common/enums/role.enum';
+
+import { RequestUser } from '../auth/entities/request-user.entity';
+
+import { CreateCourseDto } from './dto/create-course.dto';
+import { UpdateCourseDto } from './dto/update-course.dto';
+import { CourseEntity } from './entities/course.entity';
+import { CoursesService } from './courses.service';
+import { MarkAvailableDto } from 'src/common/dto/markAvailable.dto';
 
 @ApiErrorResponses()
 @ApiTags('courses')
@@ -189,7 +191,7 @@ export class CoursesController {
   })
   @ApiParam({
     name: 'id',
-    description: `The unit id of the course`,
+    description: `\`course.id\``,
     type: Number,
     required: true,
     example: 7,
@@ -213,6 +215,43 @@ export class CoursesController {
 
   @ApiBearerAuth()
   @ApiOperation({
+    summary: 'Mark course as available or calculate it',
+    description: `Mark the course as \`available\` for release or just calculate its grades.`,
+  })
+  @ApiParam({
+    name: 'id',
+    description: `The unique identifier of the course (\`course.id\`).`,
+    type: Number,
+    required: true,
+    example: 7,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: `The course has been successfully marked as available or calculated.`,
+  })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'You must be a teacher of this course to edit it.',
+  })
+  @HttpCode(HttpStatus.OK)
+  @RolesDecorator(Role.Teacher)
+  @Patch(':id/mark-available')
+  async markAsAvailable(
+    @User() user: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() markAvailableDto: MarkAvailableDto,
+  ) {
+    await this.coursesService.authHard({ courseId: id, userId: user.id });
+    return this.coursesService.markAsAvailable({
+      courseId: id,
+      allStates: markAvailableDto.allStates,
+      auto: markAvailableDto.auto,
+    });
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
     summary: 'Delete one course',
     description: `Delete a specific course using its id`,
   })
@@ -223,7 +262,7 @@ export class CoursesController {
   })
   @ApiParam({
     name: 'id',
-    description: `The unit id of the course`,
+    description: `\`course.id\``,
     type: Number,
     required: true,
     example: 7,

@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateCourseEnrollmentDto } from './dto/create-course-enrollment.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { CourseEnrollmentState, User, UserProfile } from '@prisma/client';
+import { CourseEnrollmentState, UserProfile } from '@prisma/client';
 import { CreateManyCourseEnrollments } from './dto/create-many-course-enrollments.dto';
 
 const SELECT_ENROLLED_STUDENTS: { [k in keyof Partial<UserProfile>]: boolean } =
@@ -22,7 +22,7 @@ export class CoursesEnrollmentsService {
         courseId: createCoursesEnrollmentDto.courseId,
         studentId: studentId,
         state: 'active',
-        quizzesMark: 0,
+        quizGrade: 0,
       },
     });
     return courseEnrollment;
@@ -66,7 +66,7 @@ export class CoursesEnrollmentsService {
         studentId: number;
         courseId: number;
         state: CourseEnrollmentState;
-        quizzesMark: number;
+        quizGrade: number;
       }[] = [];
       let addId = false;
       for (const newId of createManyCourseEnrollments.studentIds) {
@@ -82,7 +82,7 @@ export class CoursesEnrollmentsService {
             studentId: newId,
             courseId: createManyCourseEnrollments.courseId,
             state: 'active',
-            quizzesMark: 0,
+            quizGrade: 0,
           });
         }
       }

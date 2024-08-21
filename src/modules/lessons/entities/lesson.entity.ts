@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Lesson } from '@prisma/client';
+import { Lesson, LessonState } from '@prisma/client';
 export class LessonEntity implements Lesson {
   @ApiProperty({
     description: 'The unique identifier for the lesson',
@@ -16,19 +16,15 @@ export class LessonEntity implements Lesson {
   order: number;
 
   @ApiProperty({
-    description: 'Attendance mark for the lesson, can be null',
-    type: Number,
-    example: null,
-    nullable: true,
+    description: 'The full grade achievable for the whole lesson',
   })
-  attendanceMark: number | null;
+  quizFullGrade: number;
 
   @ApiProperty({
-    description: 'Marks obtained in quizzes for the lesson',
-    type: Number,
-    example: 85,
+    description: 'The passing grade for the whole lesson',
+    nullable: true,
   })
-  quizzesMark: number;
+  quizPassGrade: number | null;
 
   @ApiProperty({
     description: 'The title of the lesson',
@@ -55,6 +51,7 @@ export class LessonEntity implements Lesson {
     example: 101,
   })
   courseId: number;
+
   @ApiProperty({
     description:
       'The unique identifier of the unit to which this lesson belongs',
@@ -67,6 +64,14 @@ export class LessonEntity implements Lesson {
     example: 501,
   })
   userId: number;
+
+  @ApiProperty({
+    description: 'State of the lesson',
+    enum: LessonState,
+    example: LessonState.available,
+    default: LessonState.created,
+  })
+  state: LessonState;
 
   @ApiProperty({
     description: 'The date and time when the lesson was created',

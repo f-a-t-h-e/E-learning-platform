@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { RequestUser } from './entities/request-user.entity';
 
 const defaultUserSelect = {
   id: true,
@@ -72,10 +73,10 @@ export class AuthService {
     }
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (passwordMatch) {
-      const { password: _, ...result } = user;
-      // @ts-ignore
-      result.email = email;
-      return result;
+      delete user.password;
+      // @ts-expect-error : I don't want to return a new object so I am reuasing it
+      user.email = email;
+      return user;
     }
     return false;
   }

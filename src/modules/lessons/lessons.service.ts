@@ -1,12 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Lesson } from '@prisma/client';
+import { getStatesForCalculatingGrades } from 'src/common/utils/getStatesForCalculatingGrades';
+import { QuizzesService } from '../quizzes/quizzes.service';
 
 @Injectable()
 export class LessonsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly quizzesService: QuizzesService,
+  ) {}
   async create(createLessonDto: CreateLessonDto, userId) {
     const lesson = await this.prisma.lesson.create({
       data: {
@@ -15,7 +24,7 @@ export class LessonsService {
         userId: userId,
         courseId: createLessonDto.courseId,
         unitId: createLessonDto.unitId,
-        quizzesMark: 0,
+        quizFullGrade: 0,
         order: createLessonDto.order,
       },
     });
@@ -73,7 +82,122 @@ export class LessonsService {
     return lesson;
   }
 
+  async markAsAvailable(inputs: {
+    lessonId: number;
+    quizPassGrade?: number;
+    auto?: boolean;
+    allStates?: boolean;
+    state?: 'available' | 'calculatedGrades';
+  }) {
+    const targetState = getStatesForCalculatingGrades(inputs.state);
+    if (inputs.auto) {
+      const quizzes = await this.prisma.quiz.findMany({
+        where: {
+          lessonId: inputs.lessonId,
+          state: inputs.allStates
+            ? { in: ['available', 'calculatedGrades', 'created'] }
+            : { in: targetState },
+        },
+      });
+      for (const quiz of quizzes) {
+        // @todo track failure
+        await this.quizzesService.markAsAvailable({
+          quizId: quiz.quizId,
+          auto: true,
+          state: inputs.state,
+        });
+      }
+    }
+    const result = await this.prisma.useTransaction(async (tx) => {
+      const sums = await tx.quiz.aggregate({
+        where: {
+          lessonId: inputs.lessonId,
+          state: { in: targetState },
+        },
+        _sum: {
+          fullGrade: true,
+          passGrade: true,
+        },
+      });
+      const quizFullGrade = sums._sum.fullGrade;
+      const quizPassGrade =
+        typeof inputs.quizPassGrade == 'number'
+          ? inputs.quizPassGrade
+          : sums._sum.passGrade;
+      if (inputs.auto) {
+        const updateResult = await tx.lesson.updateMany({
+          where: {
+            lessonId: inputs.lessonId,
+          },
+          data: {
+            state: inputs.state || 'calculatedGrades',
+            quizFullGrade: quizFullGrade,
+            quizPassGrade: quizPassGrade,
+          },
+        });
+        return {
+          quizFullGrade,
+          quizPassGrade,
+          updateResult: updateResult.count,
+        };
+      }
+      const updateResult = await tx.lesson.update({
+        where: {
+          lessonId: inputs.lessonId,
+        },
+        data: {
+          state: inputs.state || 'calculatedGrades',
+          quizFullGrade: quizFullGrade,
+          quizPassGrade: quizPassGrade,
+          Course: {
+            update: {
+              state: 'created',
+            },
+          },
+          Unit: {
+            update: {
+              state: 'created',
+            },
+          },
+        },
+      });
+
+      return {
+        quizFullGrade,
+        quizPassGrade,
+        updateResult: updateResult,
+      };
+    });
+
+    return result;
+  }
   // authorization methods
+  async authHard({ lessonId, userId }: { userId: number; lessonId: number }) {
+    const lesson = await this.prisma.lesson.findFirst({
+      where: {
+        lessonId: lessonId,
+      },
+      select: {
+        Course: {
+          select: {
+            Instructors: {
+              where: {
+                instructorId: userId,
+              },
+              select: { instructorId: true, position: true },
+            },
+          },
+        },
+      },
+    });
+    if (!lesson) {
+      throw new NotFoundException(`This lesson doesn't exist`);
+    }
+    if (!lesson.Course.Instructors.find((i) => i.instructorId == userId)) {
+      throw new ForbiddenException(`You have no access to edit this lesson`);
+    }
+    return true;
+  }
   async canUserEditLesson(userId: number, lessonId: number) {
     const foundResult = await this.prisma.lesson.findFirst({
       where: {
@@ -115,7 +239,7 @@ export class LessonsService {
     if (foundResult) {
       return foundResult;
     }
-    return false as false;
+    return false as const;
   }
 
   async updateBanner(id: Lesson['lessonId'], url: string) {

@@ -1,7 +1,7 @@
 import { stat, type Stats } from 'fs';
 
 export async function fileStatAsync(filePath: string) {
-  return new Promise<Stats|0>((resolve, reject) => {
+  return new Promise<Stats | 0>((resolve, reject) => {
     stat(filePath, function (err, stats) {
       if (err) {
         if ('ENOENT' == err.code) {

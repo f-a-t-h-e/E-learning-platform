@@ -49,7 +49,7 @@ class IsArrayHasUniqueStringOrNumberConstraint
   }
 
   defaultMessage(args: ValidationArguments): string {
-    const [allowedTypes, isNotEmpty] = args.constraints;
+    const [, isNotEmpty] = args.constraints;
     if (!Array.isArray(args.object)) {
       return `The field ${args.property} should be an array.`;
     }
@@ -78,7 +78,7 @@ export function IsArrayHasUniqueStringOrNumber<
     message?: string;
   },
 ) {
-  return function (object: Object, propertyName: string) {
+  return function (object: any, propertyName: string) {
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,

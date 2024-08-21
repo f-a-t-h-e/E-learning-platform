@@ -228,7 +228,7 @@ export class MediaController {
     };
   }
 
-  @ApiOperation({ summary: `Get the media details to know your next step`})
+  @ApiOperation({ summary: `Get the media details to know your next step` })
   @ApiParam({
     name: 'id',
     type: Number,

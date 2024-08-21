@@ -17,7 +17,7 @@ export class CreateManyCourseEnrollments {
   })
   @IsArrayHasUniqueStringOrNumber({
     isNotEmpty: true,
-    allowedTypes: ["number"]
+    allowedTypes: ['number'],
   })
   studentIds: number[];
 }

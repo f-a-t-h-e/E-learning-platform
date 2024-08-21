@@ -12,13 +12,13 @@ export class QuizSubmissionEntity implements QuizSubmission {
   quizSubmissionId: number;
 
   @ApiProperty({
-    description: 'Marks obtained by the student in the quiz',
+    description: 'Grades obtained by the student in the quiz',
     example: 85,
     nullable: true,
   })
   @IsOptional()
   @IsNumber()
-  mark: number | null;
+  grade: number | null;
 
   @ApiProperty({
     description: 'The ID of the course associated with the quiz submission',

@@ -32,6 +32,10 @@ import { UnauthorizedResponse } from 'src/common/entities/error-response.entity'
 import { LessonEntity } from './entities/lesson.entity';
 import { TRUTHY_STRING_VALUES } from 'src/common/constants';
 import { ParseTruthyPipe } from 'src/common/pipes/ParseTruthy.pipe';
+import { RequestUser } from '../auth/entities/request-user.entity';
+import { RolesDecorator } from 'src/common/decorators/roles.decorator';
+import { Role } from 'src/common/enums/role.enum';
+import { MarkAvailableDto } from 'src/common/dto/markAvailable.dto';
 
 @ApiErrorResponses()
 @ApiTags('lessons')
@@ -180,6 +184,44 @@ export class LessonsController {
       throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.lessonsService.update(id, updateLessonDto, courseId);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Mark lesson as available or calculate it',
+    description: `Mark the lesson as \`available\` for release or just calculate its grades.`,
+  })
+  @ApiParam({
+    name: 'id',
+    description: `The unique identifier of the lesson (\`lesson.id\`).`,
+    type: Number,
+    required: true,
+    example: 42,
+  })
+  @ApiResponse({
+    type: Boolean,
+    status: HttpStatus.OK,
+    description: `The lesson has been successfully marked as available or calculated.`,
+  })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'You must be a teacher of this lesson to edit it.',
+  })
+  @HttpCode(HttpStatus.OK)
+  @RolesDecorator(Role.Teacher)
+  @Patch(':id/mark-available')
+  async markAsAvailable(
+    @User() user: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() markAvailableDto: MarkAvailableDto,
+  ) {
+    await this.lessonsService.authHard({ lessonId: id, userId: user.id });
+    return this.lessonsService.markAsAvailable({
+      lessonId: id,
+      allStates: markAvailableDto.allStates,
+      auto: markAvailableDto.auto,
+    });
   }
 
   @ApiBearerAuth()

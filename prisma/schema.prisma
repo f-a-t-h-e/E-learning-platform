@@ -86,9 +86,9 @@ model Course {
   title            String
   description      String?
   banner           String?
-  quizzesMark      Int
-  attendanceMark   Int?
-  state            CourseState
+  quizFullGrade    Int                 @default(0)
+  quizPassGrade    Int?
+  state            CourseState         @default(created)
   // timestamp
   createdAt        DateTime            @default(now()) @db.Timestamptz(3)
   updatedAt        DateTime            @updatedAt @db.Timestamptz(3)
@@ -109,7 +109,8 @@ model Course {
 
 enum CourseState {
   created
-  avaialble
+  available
+  calculatedGrades
 }
 
 model CourseEnrollment {
@@ -119,8 +120,7 @@ model CourseEnrollment {
   studentId          Int
   Student            UserProfile           @relation(fields: [studentId], references: [userId])
   state              CourseEnrollmentState
-  quizzesMark        Int
-  attendanceMark     Int?
+  quizGrade          Int
   // timestamp
   createdAt          DateTime              @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime              @updatedAt @db.Timestamptz(3)
@@ -208,49 +208,63 @@ enum CourseMediaTarget {
 }
 
 model Unit {
-  unitId         Int           @id @default(autoincrement())
-  order          Int           @db.SmallInt
-  title          String
-  description    String?
-  banner         String?
-  quizzesMark    Int
-  attendanceMark Int?
-  courseId       Int
-  Course         Course        @relation(fields: [courseId], references: [courseId])
+  unitId        Int           @id @default(autoincrement())
+  order         Int           @db.SmallInt
+  title         String
+  description   String?
+  banner        String?
+  quizFullGrade Int           @default(0)
+  quizPassGrade Int?
+  courseId      Int
+  Course        Course        @relation(fields: [courseId], references: [courseId])
   // Owner
-  userId         Int
-  AddedBy        UserProfile   @relation(fields: [userId], references: [userId])
+  userId        Int
+  AddedBy       UserProfile   @relation(fields: [userId], references: [userId])
+  state         UnitState     @default(created)
   // timestamp
-  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
+  createdAt     DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime      @updatedAt @db.Timestamptz(3)
   // Relations
-  Lessons        Lesson[]
-  Quizzes        Quiz[]
-  Media          CourseMedia[]
+  Lessons       Lesson[]
+  Quizzes       Quiz[]
+  Media         CourseMedia[]
+}
+
+enum UnitState {
+  created
+  available
+  calculatedGrades
 }
 
 model Lesson {
-  lessonId       Int            @id @default(autoincrement())
-  order          Int            @db.SmallInt
-  title          String
-  banner         String?
-  description    String?
-  quizzesMark    Int            @db.SmallInt
-  attendanceMark Int?           @db.SmallInt
-  unitId         Int
-  Unit           Unit           @relation(fields: [unitId], references: [unitId])
-  userId         Int
-  AddedBy        UserProfile    @relation(fields: [userId], references: [userId])
-  courseId       Int
-  Course         Course         @relation(fields: [courseId], references: [courseId])
-  LessonContent  LessonContent?
+  lessonId      Int            @id @default(autoincrement())
+  order         Int            @db.SmallInt
+  title         String
+  banner        String?
+  description   String?
+  quizFullGrade Int            @default(0) @db.SmallInt
+  quizPassGrade Int?           @db.SmallInt
+  unitId        Int
+  Unit          Unit           @relation(fields: [unitId], references: [unitId])
+  userId        Int
+  AddedBy       UserProfile    @relation(fields: [userId], references: [userId])
+  courseId      Int
+  Course        Course         @relation(fields: [courseId], references: [courseId])
+  LessonContent LessonContent?
+  state         LessonState    @default(created)
   // timestamp
-  createdAt      DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime       @updatedAt @db.Timestamptz(3)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime       @updatedAt @db.Timestamptz(3)
   // Relations
   // Feedbacks      LessonFeedback[]
-  Media          CourseMedia[]
-  Quizzes        Quiz[]
+  Media         CourseMedia[]
+  Quizzes       Quiz[]
+}
+
+enum LessonState {
+  created
+  available
+  calculatedGrades
 }
 
 model LessonContent {
@@ -291,12 +305,13 @@ model Quiz {
   Unit               Unit?            @relation(fields: [unitId], references: [unitId])
   lessonId           Int?
   Lesson             Lesson?          @relation(fields: [lessonId], references: [lessonId])
-  fullMark           Int              @default(0) @db.SmallInt
-  passMark           Int              @default(0) @db.SmallInt
+  fullGrade          Int              @default(0) @db.SmallInt
+  passGrade          Int?             @default(0) @db.SmallInt
   // Dates
   startsAt           DateTime         @db.Timestamptz(3)
   endsAt             DateTime?        @db.Timestamptz(3)
   lateSubmissionDate DateTime?        @db.Timestamptz(3)
+  state              QuizState        @default(created)
   // timestamp
   createdAt          DateTime         @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime         @updatedAt @db.Timestamptz(3)
@@ -305,14 +320,20 @@ model Quiz {
   QuizSubmission     QuizSubmission[]
 }
 
+enum QuizState {
+  created
+  available
+  calculatedGrades
+}
+
 model QuizQuestion {
   quizQuestionId Int                  @id @default(autoincrement())
   order          Int                  @db.SmallInt
   quizId         Int
   Quiz           Quiz                 @relation(fields: [quizId], references: [quizId])
   questionText   String
-  fullMark       Int                  @default(0) @db.SmallInt
-  passMark       Int                  @default(0) @db.SmallInt
+  fullGrade      Int                  @default(0) @db.SmallInt
+  passGrade      Int?                 @default(0) @db.SmallInt
   correctAnswer  String?
   questionType   QuestionType
   // Relations
@@ -333,7 +354,7 @@ model QuizQuestionOption {
   questionId            Int
   Question              QuizQuestion @relation(fields: [questionId], references: [quizQuestionId])
   optionText            String
-  mark                  Int          @default(0) @db.SmallInt
+  grade                 Int          @default(0) @db.SmallInt
 
   @@id([quizeQuestionOptionId, questionId])
 }
@@ -344,7 +365,7 @@ model QuizSubmission {
   Quiz             Quiz         @relation(fields: [quizId], references: [quizId])
   studentId        Int
   Student          UserProfile  @relation(fields: [studentId], references: [userId])
-  mark             Int?         @db.SmallInt
+  grade            Int?         @db.SmallInt
   courseId         Int
   Course           Course       @relation(fields: [courseId], references: [courseId])
   createdAt        DateTime     @default(now()) @db.Timestamptz(3)
@@ -358,7 +379,7 @@ model QuizAnswer {
   questionId   Int
   answer       String
   // isCorrect    Boolean?
-  mark         Int?           @db.SmallInt
+  grade        Int?           @db.SmallInt
   Submission   QuizSubmission @relation(fields: [submissionId], references: [quizSubmissionId])
   Question     QuizQuestion   @relation(fields: [questionId], references: [quizQuestionId])
 }

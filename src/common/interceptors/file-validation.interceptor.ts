@@ -5,7 +5,6 @@ import {
   CallHandler,
   UnprocessableEntityException,
   BadRequestException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Request } from 'express';
@@ -19,7 +18,7 @@ import { RequestUser } from '../../modules/auth/entities/request-user.entity';
 import { fileStatAsync } from 'src/common/utils/fileStatAsync';
 import { Reflector } from '@nestjs/core';
 import { MEDIA_TARGET } from '../decorators/file-target.decorator';
-import { MediaTarget } from '@prisma/client';
+import { CourseMediaTarget } from '@prisma/client';
 import { parseMediaParams } from '../utils/parseMediaParams';
 import { fileTargetMap } from '../utils/getFilePath';
 import { validateField } from '../utils/validateField';
@@ -33,7 +32,7 @@ export class FileValidationInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     // Get metadata from the route handler
-    const mediaTarget = this.reflector.get<MediaTarget>(
+    const mediaTarget = this.reflector.get<CourseMediaTarget>(
       MEDIA_TARGET,
       context.getHandler(),
     );
@@ -44,7 +43,6 @@ export class FileValidationInterceptor implements NestInterceptor {
       .switchToHttp()
       .getRequest<Request & { user: RequestUser }>();
     const targetPath = fileTargetMap[mediaTarget](
-      // @ts-ignore
       ...parseMediaParams[mediaTarget](request),
     );
     const id = validateField(request.params, 'id', 'integer');
@@ -53,7 +51,7 @@ export class FileValidationInterceptor implements NestInterceptor {
     if (typeof range !== 'string' && !/(\d+)-(\d+)\/(\d+)/.test(range)) {
       throw new BadRequestException(`Invalid header "content-range"`);
     }
-    let [_, start, end, size] = range.match(
+    let [, start, end, size] = range.match(
       /(\d+)-(\d+)\/(\d+)/,
     ) as unknown as number[];
     (start = +start), (end = +end), (size = +size);
@@ -61,7 +59,7 @@ export class FileValidationInterceptor implements NestInterceptor {
     const busboy = Busboy({ headers: request.headers });
     let validFileType = null as null | string;
     let chunk = null;
-    let countSize = 0;
+    // const countSize = 0;
 
     busboy.on('file', async (_, file) => {
       if (!fn.fileTypeFromStream) {

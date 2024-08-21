@@ -39,7 +39,7 @@ export class CourseMediaEntity implements CourseMedia {
       '/uploads/course/2/14206/unit/3129981/banner/752429.jpg',
       '/uploads/course/2/14206/unit/3129981/lesson/8461193702/banner/752429.jpg',
     ],
-    format: `/uploads/(<entity>/<part-number>/<entity-id>)[]/<target>/<media-id>`
+    format: `/uploads/(<entity>/<part-number>/<entity-id>)[]/<target>/<media-id>`,
   })
   @IsUrl()
   url: string;

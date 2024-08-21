@@ -26,9 +26,9 @@ import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.dec
 import { RolesDecorator } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role.enum';
 import JwtGuard from '../auth/guards/jwt.guard';
-import { CoursesEnrollmentsService } from '../courses-enrollments/courses-enrollments.service';
 import { User } from 'src/common/decorators/user.decorator';
 import { RequestUser } from '../auth/entities/request-user.entity';
+import { CoursesService } from '../courses/courses.service';
 
 @ApiBearerAuth()
 @ApiErrorResponses()
@@ -37,6 +37,7 @@ import { RequestUser } from '../auth/entities/request-user.entity';
 export class QuizSubmissionsController {
   constructor(
     private readonly quizSubmissionsService: QuizSubmissionsService,
+    private readonly coursesService: CoursesService,
   ) {}
 
   @Post()
@@ -89,10 +90,23 @@ export class QuizSubmissionsController {
     status: 200,
     description: 'Successfully retrieved the quiz submission.',
   })
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    const submission=  this.quizSubmissionsService.findOne(id, true);
-    // @todo Authorize this
-    return submission
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @User() user: RequestUser,
+  ) {
+    const submission = await this.quizSubmissionsService.findOne(id, true);
+    if (submission.studentId !== user.id) {
+      if (user.roleName !== 'teacher') {
+        throw new ForbiddenException(
+          `You can't access this submission as it's not yours nor you are an instructor in this course`,
+        );
+      }
+      await this.coursesService.authHard({
+        courseId: submission.courseId,
+        userId: user.id,
+      });
+    }
+    return submission;
   }
 
   @Patch(':id')
@@ -112,6 +126,10 @@ export class QuizSubmissionsController {
     @Body() updateQuizSubmissionDto: UpdateQuizSubmissionDto,
     @User() user: RequestUser,
   ) {
+    const target = await this.quizSubmissionsService.findOne(id);
+    if (target.studentId !== user.id) {
+      throw new ForbiddenException(`You don't own this submission`);
+    }
     return this.quizSubmissionsService.update(id, updateQuizSubmissionDto);
   }
 
@@ -127,10 +145,13 @@ export class QuizSubmissionsController {
     status: 200,
     description: 'Quiz submission successfully deleted.',
   })
-  async remove(@Param('id', ParseIntPipe) id: number, @User() user: RequestUser) {
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @User() user: RequestUser,
+  ) {
     const target = await this.quizSubmissionsService.findOne(id);
     if (target.studentId !== user.id) {
-      throw new ForbiddenException(`You don't own this submission`)
+      throw new ForbiddenException(`You don't own this submission`);
     }
     return this.quizSubmissionsService.remove(id);
   }

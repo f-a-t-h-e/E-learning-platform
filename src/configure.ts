@@ -4,7 +4,6 @@ import cookieParser from 'cookie-parser';
 
 import fn from './common/utils/getFileTypeFromStream';
 
-
 export default async function setup(app: INestApplication<any>) {
   app.use(cookieParser());
   // Configure the api docs

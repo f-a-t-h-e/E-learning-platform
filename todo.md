@@ -74,16 +74,16 @@
   - [ ] Send the material of the units
   - [ ] Send the material of the lessons
 
-- [ ] Track updating `marks`
+- [x] Track updating `grades`
 
-  - [ ] Update marks for the lessons based on the quizzes
-  - [ ] Update marks for the units based on the quizzes/lessons
-  - [ ] Update marks for the courses based on the quizzes/lessons/units
+  - [x] Update grades for the lessons based on the quizzes
+  - [x] Update grades for the units based on the quizzes/lessons
+  - [x] Update grades for the courses based on the quizzes/lessons/units
 
-- [ ] Track updating `marks` for the progress of the students
+- [ ] Track updating `grades` for the progress of the students
 
-  - [ ] Update the submissions `marks` based on the answers marks
-  - [ ] Update the enrollment `marks` based on the submissions
+  - [ ] Update the submissions `grades` based on the answers grades
+  - [ ] Update the enrollment `grades` based on the submissions
 
 # New Tasks
 

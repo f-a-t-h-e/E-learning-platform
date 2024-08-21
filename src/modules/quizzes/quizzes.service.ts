@@ -1,7 +1,12 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
+import { Quiz } from '@prisma/client';
 
 @Injectable()
 export class QuizzesService {
@@ -155,5 +160,104 @@ export class QuizzesService {
         endsAt: { lte: end },
       },
     });
+  }
+  async authHard({ quizId, userId }: { userId: number; quizId: number }) {
+    const quiz = await this.prisma.quiz.findFirst({
+      where: {
+        quizId: quizId,
+      },
+      select: {
+        Course: {
+          select: {
+            Instructors: {
+              where: {
+                instructorId: userId,
+              },
+              select: { instructorId: true, position: true },
+            },
+          },
+        },
+      },
+    });
+    if (!quiz) {
+      throw new NotFoundException(`This quiz doesn't exist`);
+    }
+    if (!quiz.Course.Instructors.find((i) => i.instructorId == userId)) {
+      throw new ForbiddenException(`You have no access to edit this quiz`);
+    }
+    return true;
+  }
+
+  async markAsAvailable(inputs: {
+    quizId: Quiz['quizId'];
+    passGrade?: number;
+    auto?: boolean;
+    state?: 'available' | 'calculatedGrades';
+  }) {
+    const result = await this.prisma.useTransaction(async (tx) => {
+      const sums = await tx.quizQuestion.aggregate({
+        where: { quizId: inputs.quizId },
+        _sum: {
+          fullGrade: true,
+          passGrade: true,
+        },
+      });
+      const fullGrade = sums._sum.fullGrade;
+      const passGrade =
+        typeof inputs.passGrade == 'number'
+          ? inputs.passGrade
+          : sums._sum.passGrade;
+      if (inputs.auto) {
+        const updateResult = await tx.quiz.updateMany({
+          where: {
+            quizId: inputs.quizId,
+          },
+          data: {
+            state: inputs.state || 'calculatedGrades',
+            fullGrade: fullGrade,
+            passGrade: passGrade,
+          },
+        });
+
+        return {
+          fullGrade,
+          passGrade,
+          updateResult: updateResult.count,
+        };
+      }
+      const updateResult = await tx.quiz.update({
+        where: {
+          quizId: inputs.quizId,
+        },
+        data: {
+          state: inputs.state || 'calculatedGrades',
+          fullGrade: fullGrade,
+          passGrade: passGrade,
+          Course: {
+            update: {
+              state: 'calculatedGrades',
+            },
+          },
+          Unit: {
+            update: {
+              state: 'calculatedGrades',
+            },
+          },
+          Lesson: {
+            update: {
+              state: 'calculatedGrades',
+            },
+          },
+        },
+      });
+
+      return {
+        fullGrade,
+        passGrade,
+        updateResult: updateResult,
+      };
+    });
+
+    return result;
   }
 }

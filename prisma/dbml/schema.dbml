@@ -58,9 +58,9 @@ Table Course {
   title String [not null]
   description String
   banner String
-  quizzesMark Int [not null]
-  attendanceMark Int
-  state CourseState [not null]
+  quizFullGrade Int [not null, default: 0]
+  quizPassGrade Int
+  state CourseState [not null, default: 'created']
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   Units Unit [not null]
@@ -82,8 +82,7 @@ Table CourseEnrollment {
   studentId Int [not null]
   Student UserProfile [not null]
   state CourseEnrollmentState [not null]
-  quizzesMark Int [not null]
-  attendanceMark Int
+  quizGrade Int [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   endsAt DateTime
@@ -128,12 +127,13 @@ Table Unit {
   title String [not null]
   description String
   banner String
-  quizzesMark Int [not null]
-  attendanceMark Int
+  quizFullGrade Int [not null, default: 0]
+  quizPassGrade Int
   courseId Int [not null]
   Course Course [not null]
   userId Int [not null]
   AddedBy UserProfile [not null]
+  state UnitState [not null, default: 'created']
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   Lessons Lesson [not null]
@@ -147,8 +147,8 @@ Table Lesson {
   title String [not null]
   banner String
   description String
-  quizzesMark Int [not null]
-  attendanceMark Int
+  quizFullGrade Int [not null, default: 0]
+  quizPassGrade Int
   unitId Int [not null]
   Unit Unit [not null]
   userId Int [not null]
@@ -156,6 +156,7 @@ Table Lesson {
   courseId Int [not null]
   Course Course [not null]
   LessonContent LessonContent
+  state LessonState [not null, default: 'created']
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   Media CourseMedia [not null]
@@ -181,11 +182,12 @@ Table Quiz {
   Unit Unit
   lessonId Int
   Lesson Lesson
-  fullMark Int [not null, default: 0]
-  passMark Int [not null, default: 0]
+  fullGrade Int [not null, default: 0]
+  passGrade Int [default: 0]
   startsAt DateTime [not null]
   endsAt DateTime
   lateSubmissionDate DateTime
+  state QuizState [not null, default: 'created']
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   Questions QuizQuestion [not null]
@@ -198,8 +200,8 @@ Table QuizQuestion {
   quizId Int [not null]
   Quiz Quiz [not null]
   questionText String [not null]
-  fullMark Int [not null, default: 0]
-  passMark Int [not null, default: 0]
+  fullGrade Int [not null, default: 0]
+  passGrade Int [default: 0]
   correctAnswer String
   questionType QuestionType [not null]
   Options QuizQuestionOption [not null]
@@ -211,7 +213,7 @@ Table QuizQuestionOption {
   questionId Int [not null]
   Question QuizQuestion [not null]
   optionText String [not null]
-  mark Int [not null, default: 0]
+  grade Int [not null, default: 0]
 
   indexes {
     (quizeQuestionOptionId, questionId) [pk]
@@ -224,7 +226,7 @@ Table QuizSubmission {
   Quiz Quiz [not null]
   studentId Int [not null]
   Student UserProfile [not null]
-  mark Int
+  grade Int
   courseId Int [not null]
   Course Course [not null]
   createdAt DateTime [default: `now()`, not null]
@@ -236,7 +238,7 @@ Table QuizAnswer {
   submissionId Int [not null]
   questionId Int [not null]
   answer String [not null]
-  mark Int
+  grade Int
   Submission QuizSubmission [not null]
   Question QuizQuestion [not null]
 }
@@ -271,7 +273,8 @@ Table CourseCertificate {
 
 Enum CourseState {
   created
-  avaialble
+  available
+  calculatedGrades
 }
 
 Enum CourseEnrollmentState {
@@ -309,9 +312,27 @@ Enum CourseMediaTarget {
   lesson_material
 }
 
+Enum UnitState {
+  created
+  available
+  calculatedGrades
+}
+
+Enum LessonState {
+  created
+  available
+  calculatedGrades
+}
+
 Enum ContentType {
   url
   text
+}
+
+Enum QuizState {
+  created
+  available
+  calculatedGrades
 }
 
 Enum QuestionType {

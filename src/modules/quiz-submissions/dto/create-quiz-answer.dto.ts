@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsInt, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsInt } from 'class-validator';
 
 export class CreateQuizAnswerDto {
   @ApiProperty({

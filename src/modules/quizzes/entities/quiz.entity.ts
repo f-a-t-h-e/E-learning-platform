@@ -1,4 +1,4 @@
-import { Quiz } from '@prisma/client';
+import { Quiz, QuizState } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 import { QuizQuestionEntity } from 'src/modules/quiz-questions/entities/quiz-question.entity';
 import { Type } from 'class-transformer';
@@ -7,7 +7,6 @@ export class QuizEntity implements Quiz {
   @ApiProperty({ description: 'ID of the quiz', example: 1 })
   quizId: number;
 
-    
   @ApiProperty({
     description: 'The order of the quiz in the sequence',
     type: Number,
@@ -15,7 +14,6 @@ export class QuizEntity implements Quiz {
     minimum: 1,
   })
   order: number;
-
 
   @ApiProperty({ description: 'Title of the quiz', example: 'Final Exam' })
   title: string;
@@ -41,11 +39,11 @@ export class QuizEntity implements Quiz {
   })
   lessonId: number | null;
 
-  @ApiProperty({ description: 'Full mark of the quiz', example: 100 })
-  fullMark: number;
+  @ApiProperty({ description: 'Full grade of the quiz', example: 100 })
+  fullGrade: number;
 
-  @ApiProperty({ description: 'Pass mark of the quiz', example: 60 })
-  passMark: number;
+  @ApiProperty({ description: 'Pass grade of the quiz', example: 60 })
+  passGrade: number;
 
   @ApiProperty({
     description: 'Date when the quiz starts',
@@ -66,6 +64,14 @@ export class QuizEntity implements Quiz {
     nullable: true,
   })
   lateSubmissionDate: Date | null;
+
+  @ApiProperty({
+    description: 'State of the quiz',
+    enum: QuizState,
+    example: QuizState.available,
+    default: QuizState.created,
+  })
+  state: QuizState;
 
   @ApiProperty({
     description: 'Creation date of the quiz',

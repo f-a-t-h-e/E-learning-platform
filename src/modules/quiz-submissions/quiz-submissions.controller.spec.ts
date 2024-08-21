@@ -11,7 +11,9 @@ describe('QuizSubmissionsController', () => {
       providers: [QuizSubmissionsService],
     }).compile();
 
-    controller = module.get<QuizSubmissionsController>(QuizSubmissionsController);
+    controller = module.get<QuizSubmissionsController>(
+      QuizSubmissionsController,
+    );
   });
 
   it('should be defined', () => {

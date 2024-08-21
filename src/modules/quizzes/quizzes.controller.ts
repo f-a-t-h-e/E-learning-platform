@@ -9,6 +9,8 @@ import {
   UseGuards,
   Query,
   ParseIntPipe,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -27,6 +29,8 @@ import { Role } from 'src/common/enums/role.enum';
 import JwtGuard from '../auth/guards/jwt.guard';
 import { User } from 'src/common/decorators/user.decorator';
 import { RequestUser } from '../auth/entities/request-user.entity';
+import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
+import { MarkAvailableDto } from 'src/common/dto/markAvailable.dto';
 
 @ApiBearerAuth()
 @ApiErrorResponses()
@@ -93,6 +97,43 @@ export class QuizzesController {
     @Body() updateQuizDto: UpdateQuizDto,
   ) {
     return this.quizzesService.update(id, updateQuizDto, user.id);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Mark quiz as available or calculate it',
+    description: `Mark the quiz as \`available\` for release or just calculate its grades.`,
+  })
+  @ApiParam({
+    name: 'id',
+    description: `The unique identifier of the quiz (\`quiz.id\`).`,
+    type: Number,
+    required: true,
+    example: 23,
+  })
+  @ApiResponse({
+    type: Boolean,
+    status: HttpStatus.OK,
+    description: `The quiz has been successfully marked as available or calculated.`,
+  })
+  @ApiResponse({
+    type: UnauthorizedResponse,
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'You must be a teacher of this quiz to edit it.',
+  })
+  @HttpCode(HttpStatus.OK)
+  @RolesDecorator(Role.Teacher)
+  @Patch(':id/mark-available')
+  async markAsAvailable(
+    @User() user: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() markAvailableDto: MarkAvailableDto,
+  ) {
+    await this.quizzesService.authHard({ quizId: id, userId: user.id });
+    return this.quizzesService.markAsAvailable({
+      quizId: id,
+      auto: markAvailableDto.auto,
+    });
   }
 
   @Delete(':id')

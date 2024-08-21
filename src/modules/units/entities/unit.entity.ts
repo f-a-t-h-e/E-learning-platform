@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Unit } from '@prisma/client';
+import { Unit, UnitState } from '@prisma/client';
 export class UnitEntity implements Unit {
   @ApiProperty({
     description: 'The unique identifier for the unit',
@@ -28,21 +28,11 @@ export class UnitEntity implements Unit {
   description: string;
 
   @ApiProperty({
-    description: 'Marks awarded for attendance in the unit',
-    type: Number,
-    example: 75,
-    minimum: 0,
+    description: 'URL where the unit banner is stored',
+    example: '/uploads/course/1/45/unit/0/303/banner/1034.jpg',
     nullable: true,
   })
-  attendanceMark: number | null;
-
-  @ApiProperty({
-    description: 'Marks obtained in quizzes for the unit',
-    type: Number,
-    example: 85,
-    minimum: 0,
-  })
-  quizzesMark: number;
+  banner: string | null;
 
   @ApiProperty({
     description:
@@ -58,6 +48,27 @@ export class UnitEntity implements Unit {
   userId: number;
 
   @ApiProperty({
+    description: 'State of the unit',
+    enum: UnitState,
+    example: UnitState.available,
+    default: UnitState.created,
+  })
+  state: UnitState;
+
+  @ApiProperty({
+    description: 'The full grade achievable for the quiz',
+    minimum: 0,
+  })
+  quizFullGrade: number;
+
+  @ApiProperty({
+    description: 'The passing grade for the quiz',
+    minimum: 0,
+    nullable: true,
+  })
+  quizPassGrade: number | null;
+
+  @ApiProperty({
     description: 'The date and time when the unit was created',
     example: '2023-01-01T00:00:00Z',
   })
@@ -68,11 +79,4 @@ export class UnitEntity implements Unit {
     example: '2023-01-02T00:00:00Z',
   })
   updatedAt: Date;
-
-  @ApiProperty({
-    description: 'URL where the unit banner is stored',
-    example: '/uploads/course/1/45/unit/0/303/banner/1034.jpg',
-    nullable: true,
-  })
-  banner: string | null;
 }

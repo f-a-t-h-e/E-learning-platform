@@ -73,13 +73,15 @@ export class UnauthorizedResponse implements ErrorResponse {
 
 export class ForbiddenResponse implements ErrorResponse {
   @ApiProperty({
-    description: 'The HTTP status code indicating that the server understood the request but refuses to authorize it.',
+    description:
+      'The HTTP status code indicating that the server understood the request but refuses to authorize it.',
     example: 403,
   })
   statusCode: 403;
 
   @ApiProperty({
-    description: 'A brief description indicating that access to the resource is forbidden.',
+    description:
+      'A brief description indicating that access to the resource is forbidden.',
     example: 'Forbidden',
   })
   message: string;
