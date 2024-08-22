@@ -6,7 +6,7 @@ import {
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Lesson } from '@prisma/client';
+import { Lesson, UserProfile } from '@prisma/client';
 import { getStatesForCalculatingGrades } from 'src/common/utils/getStatesForCalculatingGrades';
 import { QuizzesService } from '../quizzes/quizzes.service';
 
@@ -16,7 +16,7 @@ export class LessonsService {
     private readonly prisma: PrismaService,
     private readonly quizzesService: QuizzesService,
   ) {}
-  async create(createLessonDto: CreateLessonDto, userId) {
+  async create(createLessonDto: CreateLessonDto, userId:UserProfile["userId"]) {
     const lesson = await this.prisma.lesson.create({
       data: {
         title: createLessonDto.title,

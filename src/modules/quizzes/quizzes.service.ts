@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -6,11 +7,111 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
-import { Quiz } from '@prisma/client';
+import { Prisma, Quiz, UserProfile } from '@prisma/client';
 
 @Injectable()
 export class QuizzesService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async checkRefrencesHard(
+    inputs: CreateQuizDto | UpdateQuizDto,
+    userId: UserProfile['userId'],
+  ) {
+    const courseId = inputs.courseId;
+    const unitId = inputs.unitId;
+    const lessonId = inputs.lessonId;
+    const select: Prisma.CourseSelect = {
+      courseId: true,
+      state: true,
+      Instructors: {
+        where: {
+          instructorId: userId,
+        },
+        select: {
+          position: true,
+          state: true,
+          endsAt: true,
+        },
+      },
+    };
+    if (unitId) {
+      select.Units = {
+        where: {
+          unitId: unitId,
+        },
+        select: {
+          state: true,
+          userId: true,
+        },
+      };
+    }
+    if (lessonId) {
+      select.Lessons = {
+        where: {
+          lessonId: lessonId,
+        },
+        select: {
+          state: true,
+          userId: true,
+        },
+      };
+    }
+    const data = await this.prisma.course.findFirst({
+      where: { courseId: courseId },
+      select: select,
+    });
+
+    const result = {
+      failed: [] as string[],
+    };
+    if (!data) {
+      throw new BadRequestException(
+        `No such course with the given "courseId" exists.`,
+      );
+    }
+    // If the access is forbidden
+    if (!data.Instructors[0]) {
+      throw new ForbiddenException(
+        `You have no access to add quizzes to this course.`,
+      );
+    }
+    if (data.Instructors[0].state !== 'active') {
+      throw new ForbiddenException(
+        `Your role' state as Instructor in this course is not active at the moment.`,
+      );
+    }
+    if (data.Instructors[0].endsAt && data.Instructors[0].endsAt < new Date()) {
+      throw new ForbiddenException(
+        `Your role' as Instructor in this course has expired.`,
+      );
+    }
+    // Check the course state
+    if (data.state == 'available') {
+      throw new BadRequestException(
+        `This course state is "available" You can not edit it at the current state.`,
+      );
+    }
+
+    if (unitId && !data.Units[0]) {
+      throw new BadRequestException(
+        `No such unit with the given "unitId" exists in this course.`,
+      );
+    }
+    if (lessonId) {
+      if (!data.Lessons[0]) {
+        throw new BadRequestException(
+          `No such lesson with the given "lessonId" exists in this course.`,
+        );
+      }
+      if (unitId && data.Lessons[0].unitId != unitId) {
+        // You can correct it or throw, I will throw for simplicity + it shouldn't happen to missmatch
+        throw new BadRequestException(
+          `This lessonId doesn't belong to this unitId, please fix it.`,
+        );
+      }
+    }
+    return true;
+  }
 
   async create(createQuizDto: CreateQuizDto) {
     const { Questions, ...quizData } = createQuizDto;
@@ -56,74 +157,40 @@ export class QuizzesService {
     });
   }
 
-  async update(id: number, updateQuizDto: UpdateQuizDto, instructorId: number) {
-    // Check if the instructor is associated with the course
-    const quiz = await this.prisma.quiz.findUnique({
-      where: {
-        quizId: id,
-        Course: {
-          Instructors: {
-            some: {
-              instructorId: instructorId,
-            },
-          },
-        },
-      },
-      select: {
-        startsAt: true,
-        Questions: {
-          select: {
-            quizQuestionId: true,
-            Options: {
-              select: {
-                quizeQuestionOptionId: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!quiz) {
-      throw new ForbiddenException(
-        `You do not have permission to update this quiz.`,
-      );
-    }
-
+  async update(id: number, updateQuizDto: UpdateQuizDto) {
     return this.prisma.quiz.update({
       where: { quizId: id },
       data: {
         ...updateQuizDto,
         Questions: {
-          upsert: updateQuizDto.Questions?.map((question) => ({
-            where: { quizQuestionId: question.quizQuestionId, quizId: id },
-            update: {
-              ...question,
-              id: undefined,
-              Options: {
-                upsert: question.Options?.map((option) => ({
-                  where: {
-                    quizeQuestionOptionId_questionId: {
-                      quizeQuestionOptionId: option.quizeQuestionOptionId,
-                      questionId: option.questionId,
+          upsert: updateQuizDto.Questions?.map(
+            ({ quizQuestionId, quizId, ...question }) => ({
+              where: { quizQuestionId: quizQuestionId, quizId: id },
+              update: {
+                ...question,
+                Options: {
+                  upsert: question.Options?.map((option) => ({
+                    where: {
+                      quizeQuestionOptionId_questionId: {
+                        quizeQuestionOptionId: option.quizeQuestionOptionId,
+                        questionId: quizQuestionId,
+                      },
                     },
-                  },
-                  update: { ...option, questionId: undefined },
-                  create: { ...option, questionId: undefined },
-                })),
+                    update: option,
+                    create: option,
+                  })),
+                },
               },
-            },
-            create: {
-              ...question,
-              id: undefined,
-              Options: {
-                create: question.Options?.map((option) => ({
-                  ...option,
-                  questionId: undefined,
-                })),
+              create: {
+                ...question,
+                Options: {
+                  create: question.Options?.map((option) => ({
+                    ...option,
+                  })),
+                },
               },
-            },
-          })),
+            }),
+          ),
         },
       },
       include: {
@@ -135,6 +202,7 @@ export class QuizzesService {
       },
     });
   }
+
   async remove(id: number) {
     return this.prisma.quiz.delete({
       where: { quizId: id },
@@ -161,6 +229,7 @@ export class QuizzesService {
       },
     });
   }
+
   async authHard({ quizId, userId }: { userId: number; quizId: number }) {
     const quiz = await this.prisma.quiz.findFirst({
       where: {

@@ -3,11 +3,10 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { IAccessToken } from '../entities/tokens-payloads';
-import { AuthService } from '../auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(private readonly authService: AuthService) {
+  constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
@@ -19,11 +18,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         },
       ]),
       secretOrKey: '123',
-      passReqToCallback: true,
+      passReqToCallback: false,
     });
   }
 
-  async validate(_request: Request, payload: IAccessToken) {
+  async validate(payload: IAccessToken) {
     return payload;
   }
 }

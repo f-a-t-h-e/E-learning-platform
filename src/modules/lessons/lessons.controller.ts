@@ -67,13 +67,13 @@ export class LessonsController {
   create(@User() user: RequestUser, @Body() createLessonDto: CreateLessonDto) {
     if (
       !this.coursesService.isUserATeacherAtCourse(
-        user.id,
+        user.userId,
         createLessonDto.courseId,
       )
     ) {
       throw new ForbiddenException('You are not a teacher in this course!');
     }
-    return this.lessonsService.create(createLessonDto, user.id);
+    return this.lessonsService.create(createLessonDto, user.userId);
   }
 
   @ApiOperation({
@@ -180,7 +180,7 @@ export class LessonsController {
     @Body() updateLessonDto: UpdateLessonDto,
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
-    if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
+    if (!this.coursesService.isUserATeacherAtCourse(user.userId, courseId)) {
       throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.lessonsService.update(id, updateLessonDto, courseId);
@@ -216,7 +216,7 @@ export class LessonsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() markAvailableDto: MarkAvailableDto,
   ) {
-    await this.lessonsService.authHard({ lessonId: id, userId: user.id });
+    await this.lessonsService.authHard({ lessonId: id, userId: user.userId });
     return this.lessonsService.markAsAvailable({
       lessonId: id,
       allStates: markAvailableDto.allStates,
@@ -251,7 +251,7 @@ export class LessonsController {
     @Param('id', ParseIntPipe) id: number,
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
-    if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
+    if (!this.coursesService.isUserATeacherAtCourse(user.userId, courseId)) {
       throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.lessonsService.remove(id, courseId);

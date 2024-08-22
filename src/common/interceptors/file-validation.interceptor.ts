@@ -88,7 +88,7 @@ export class FileValidationInterceptor implements NestInterceptor {
         }
         // Get the file name
         validFileType = fileType.mime;
-        const expectedFileName = `${request.user.id}_${id}.${fileType.ext}`;
+        const expectedFileName = `${request.user.userId}_${id}.${fileType.ext}`;
         const expectedFilePath = path.join(
           process.cwd(),
           ...targetPath,

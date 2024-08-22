@@ -54,7 +54,7 @@ export class CoursesEnrollmentsController {
   ) {
     return this.coursesEnrollmentsService.create(
       createCoursesEnrollmentDto,
-      user.id,
+      user.userId,
     );
   }
 
@@ -72,7 +72,7 @@ export class CoursesEnrollmentsController {
   ) {
     const result = await this.coursesEnrollmentsService.createMany(
       createManyCourseEnrollments,
-      user.id,
+      user.userId,
     );
     if (result.success == false) {
       if (result.error instanceof ForbiddenException) {
@@ -94,7 +94,7 @@ export class CoursesEnrollmentsController {
   ) {
     return this.coursesEnrollmentsService.findAllStudentsInCourse(
       courseId,
-      user.id,
+      user.userId,
     );
   }
 
@@ -110,7 +110,7 @@ export class CoursesEnrollmentsController {
     return this.coursesEnrollmentsService.removeMany(
       updateCourseEnrollments.studentIds,
       updateCourseEnrollments.courseId,
-      user.id,
+      user.userId,
     );
   }
 }

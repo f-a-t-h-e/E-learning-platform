@@ -62,7 +62,7 @@ export class CoursesController {
     @User() user: RequestUser,
     @Body() createCourseDto: CreateCourseDto,
   ): Promise<CourseEntity> {
-    return this.coursesService.create(createCourseDto, user.id);
+    return this.coursesService.create(createCourseDto, user.userId);
   }
 
   @ApiOperation({
@@ -209,7 +209,7 @@ export class CoursesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
-    await this.coursesService.authHard({ courseId: id, userId: user.id });
+    await this.coursesService.authHard({ courseId: id, userId: user.userId });
     return this.coursesService.update(id, updateCourseDto);
   }
 
@@ -242,7 +242,7 @@ export class CoursesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() markAvailableDto: MarkAvailableDto,
   ) {
-    await this.coursesService.authHard({ courseId: id, userId: user.id });
+    await this.coursesService.authHard({ courseId: id, userId: user.userId });
     return this.coursesService.markAsAvailable({
       courseId: id,
       allStates: markAvailableDto.allStates,
@@ -279,7 +279,7 @@ export class CoursesController {
     @User() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    await this.coursesService.authHard({ courseId: id, userId: user.id });
+    await this.coursesService.authHard({ courseId: id, userId: user.userId });
     return this.coursesService.remove(id);
   }
 }

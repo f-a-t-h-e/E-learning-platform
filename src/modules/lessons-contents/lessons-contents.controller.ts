@@ -62,7 +62,7 @@ export class LessonsContentsController {
   ) {
     if (
       !this.lessonsService.canUserEditLesson(
-        user.id,
+        user.userId,
         createLessonsContentDto.id,
       )
     ) {
@@ -128,7 +128,7 @@ export class LessonsContentsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateLessonsContentDto: UpdateLessonsContentDto,
   ) {
-    if (!this.lessonsService.canUserEditLesson(user.id, id)) {
+    if (!this.lessonsService.canUserEditLesson(user.userId, id)) {
       throw new ForbiddenException(
         `You have to be a teacher in this course to edit a lesson' content`,
       );
@@ -155,7 +155,7 @@ export class LessonsContentsController {
   @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@User() user: RequestUser, @Param('id', ParseIntPipe) id: number) {
-    if (!this.lessonsService.canUserEditLesson(user.id, id)) {
+    if (!this.lessonsService.canUserEditLesson(user.userId, id)) {
       throw new ForbiddenException(
         `You have to be a teacher in this course to delete a lesson' content`,
       );

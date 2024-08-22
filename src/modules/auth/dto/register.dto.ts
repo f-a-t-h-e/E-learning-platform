@@ -4,13 +4,6 @@ import { CreateUserProfileDto } from 'src/modules/user-profile/dto/create-user-p
 
 const AVAILABLE_ROLES = ['student', 'teacher'] as const;
 
-// Define options for the 'roleName' property
-const roleNameOptions: ApiPropertyOptions = {
-  description: 'The role of the user',
-  enum: AVAILABLE_ROLES,
-  example: 'student', // Example of a role
-};
-
 export class RegisterDto extends CreateUserProfileDto {
   @ApiProperty({
     description: 'The user email address',
@@ -26,7 +19,11 @@ export class RegisterDto extends CreateUserProfileDto {
   @IsNotEmpty()
   password: string;
 
-  @ApiProperty(roleNameOptions)
+  @ApiProperty({
+    description: 'The role of the user',
+    enum: AVAILABLE_ROLES,
+    example: 'student',
+  })
   @IsIn(AVAILABLE_ROLES)
   roleName: (typeof AVAILABLE_ROLES)[number];
 }

@@ -32,16 +32,16 @@ export class QuizQuestionEntity implements QuizQuestion {
   questionType: $Enums.QuestionType;
 
   @ApiProperty({
-    description: 'Full mark of the quiz question',
+    description: 'Full grade of the quiz question',
     example: 10,
   })
-  fullMark: number;
+  fullGrade: number;
 
   @ApiProperty({
-    description: 'Pass mark of the quiz question',
+    description: 'Pass grade of the quiz question',
     example: 5,
   })
-  passMark: number;
+  passGrade: number;
 
   @ApiProperty({
     description: 'Correct answer for the quiz question, if applicable',
@@ -60,8 +60,8 @@ export class QuizQuestionEntity implements QuizQuestion {
     type: [QuizQuestionOptionEntity],
     description: 'Array of options for the quiz question',
     example: [
-      { mark: 1, optionText: 'Afghanistan', questionId: 1, id: 0 },
-      { mark: 0, optionText: 'Pakistan', questionId: 1, id: 1 },
+      { grade: 1, optionText: 'Afghanistan', questionId: 1, id: 0 },
+      { grade: 0, optionText: 'Pakistan', questionId: 1, id: 1 },
     ],
     required: false,
   })

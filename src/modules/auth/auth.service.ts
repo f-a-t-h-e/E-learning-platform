@@ -7,9 +7,9 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { RequestUser } from './entities/request-user.entity';
 
 const defaultUserSelect = {
-  id: true,
+  userId: true,
   roleName: true,
-  name: true,
+  // name: true,
 };
 const defaultUserSelectWithPassword = {
   ...defaultUserSelect,
@@ -19,7 +19,7 @@ const defaultUserSelectWithPassword = {
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
+    private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -45,11 +45,9 @@ export class AuthService {
         },
         select: defaultUserSelect,
       });
-      return user;
+      return {...user, username: data.username};
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        console.log({ error }, error.meta.target);
-
         if (
           error.code === 'P2002' &&
           (error.meta.target as Array<string>).includes('email')

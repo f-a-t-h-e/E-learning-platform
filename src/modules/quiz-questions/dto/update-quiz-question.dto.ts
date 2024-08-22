@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateQuizQuestionDto } from './create-quiz-question.dto';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsInt, IsNotEmpty } from 'class-validator';
 
 export class UpdateQuizQuestionDto extends PartialType(CreateQuizQuestionDto) {
   @ApiProperty({
@@ -8,6 +8,6 @@ export class UpdateQuizQuestionDto extends PartialType(CreateQuizQuestionDto) {
     example: 1,
   })
   @IsNotEmpty()
-  @IsNumber()
+  @IsInt()
   quizQuestionId: number;
 }

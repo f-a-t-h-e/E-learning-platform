@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDate,
+  IsDateString,
   IsInt,
   IsString,
   IsUrl,
@@ -23,7 +23,7 @@ export class CreateMediaResponseDto implements Media {
   courseId: number;
 
   @ApiProperty({ description: 'The creation date of the media' })
-  @IsDate()
+  @IsDateString()
   createdAt: Date;
 
   @ApiProperty({ description: 'The file extension of the media' })
@@ -54,7 +54,7 @@ export class CreateMediaResponseDto implements Media {
   type: $Enums.MediaType;
 
   @ApiProperty({ description: 'The last update date of the media' })
-  @IsDate()
+  @IsDateString()
   updatedAt: Date;
 
   @ApiProperty({ description: 'The URL of the media' })

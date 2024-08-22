@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber } from 'class-validator';
+import { IsInt, Min } from 'class-validator';
 import { IsArrayHasUniqueStringOrNumber } from 'src/common/decorators/IsArrayUnique.decorator';
 
 export class CreateManyCourseEnrollments {
@@ -7,8 +7,10 @@ export class CreateManyCourseEnrollments {
     description:
       'The unique identifier of the course for which you want to enroll students.',
     example: 101,
+    minimum: 1
   })
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   courseId: number;
 
   @ApiProperty({

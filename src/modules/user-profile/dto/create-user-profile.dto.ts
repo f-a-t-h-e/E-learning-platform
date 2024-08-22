@@ -66,7 +66,7 @@ export class CreateUserProfileDto {
 
   @ApiProperty({
     description: 'Phone number of the user',
-    example: '+1234567890',
+    example: '+201234567890',
     required: false,
   })
   @IsOptional()

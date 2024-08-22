@@ -87,6 +87,8 @@
 
 # New Tasks
 
+- [ ] Validate the order of the quizQuestions, lessons & units on marking as available
+
 - [ ] Add notifications module
 
   - [ ] Create the notifications module structure.

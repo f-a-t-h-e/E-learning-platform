@@ -1,20 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString } from 'class-validator';
+import { IsInt, IsString } from 'class-validator';
 
 export class RequestUser {
   @ApiProperty({
     description: 'The unique identifier of the user',
     example: 1,
   })
-  @IsNumber()
-  id: number;
+  @IsInt()
+  userId: number;
 
   @ApiProperty({
-    description: 'The name of the user',
-    example: 'Mohammed Ahmed',
+    description: 'The username of the user',
+    example: 'mohammed123',
   })
   @IsString()
-  name: string;
+  username: string;
 
   @ApiProperty({
     description: 'The role of the user',

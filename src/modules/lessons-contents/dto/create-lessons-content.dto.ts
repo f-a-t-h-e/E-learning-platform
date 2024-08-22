@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsInt, IsNumber, IsString, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLessonsContentDto {
@@ -7,8 +7,9 @@ export class CreateLessonsContentDto {
       'The unique identifier of the lesson that you want to add content to',
     example: 1,
   })
-  @IsNumber()
-  id: number;
+  @IsInt()
+  @Min(1)
+  lessonId: number;
 
   @ApiProperty({
     description: 'The content of the lesson',

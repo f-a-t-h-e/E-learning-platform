@@ -13,11 +13,11 @@ export class UpdateQuizDto extends PartialType(CreateQuizDto) {
       {
         questionText: 'Which country has less population?',
         questionType: 'MULTIPLE_CHOICE',
-        fullMark: 10,
-        passMark: 5,
+        fullGrade: 10,
+        passGrade: 5,
         options: [
-          { mark: 1, optionText: 'Afghanistan', questionId: 1, id: 0 },
-          { mark: 0, optionText: 'Pakistan', questionId: 1, id: 1 },
+          { grade: 1, optionText: 'Afghanistan', questionId: 1, id: 0 },
+          { grade: 0, optionText: 'Pakistan', questionId: 1, id: 1 },
         ],
       },
     ],

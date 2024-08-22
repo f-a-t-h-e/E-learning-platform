@@ -9,44 +9,51 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   private readonly logger = new Logger(PrismaService.name);
 
   constructor() {
-    super({
-      log: [
-        {
-          emit: 'event',
-          level: 'query',
-        },
-        {
-          emit: 'event',
-          level: 'info',
-        },
-        {
-          emit: 'event',
-          level: 'warn',
-        },
-        {
-          emit: 'event',
-          level: 'error',
-        },
-      ],
-    });
+    let params;
+    if (process.env.NODE_ENV == 'development') {
+      params = {
+        log: [
+          {
+            emit: 'event',
+            level: 'query',
+          },
+          {
+            emit: 'event',
+            level: 'info',
+          },
+          {
+            emit: 'event',
+            level: 'warn',
+          },
+          {
+            emit: 'event',
+            level: 'error',
+          },
+        ],
+      };
+    } else {
+      params = {};
+    }
+    super(params);
+    if (process.env.NODE_ENV == 'development') {
+      this.$on('query' as never, (e: Prisma.QueryEvent) => {
+        this.logger.log(`Query: ${e.query}`);
+        this.logger.log(`Params: ${e.params}`);
+        this.logger.log(`Duration: ${e.duration}ms`);
+      });
 
-    this.$on('query' as never, (e: Prisma.QueryEvent) => {
-      this.logger.log(`Query: ${e.query}`);
-      this.logger.log(`Params: ${e.params}`);
-      this.logger.log(`Duration: ${e.duration}ms`);
-    });
+      this.$on('info' as never, (e: Prisma.LogEvent) => {
+        this.logger.log(`Info: ${e.message}`);
+      });
 
-    this.$on('info' as never, (e: Prisma.LogEvent) => {
-      this.logger.log(`Info: ${e.message}`);
-    });
+      this.$on('warn' as never, (e: Prisma.LogEvent) => {
+        this.logger.warn(`Warning: ${e.message}`);
+      });
 
-    this.$on('warn' as never, (e: Prisma.LogEvent) => {
-      this.logger.warn(`Warning: ${e.message}`);
-    });
-
-    this.$on('error' as never, (e: Prisma.LogEvent) => {
-      this.logger.error(`Error: ${e.message}`);
-    });
+      this.$on('error' as never, (e: Prisma.LogEvent) => {
+        this.logger.error(`Error: ${e.message}`);
+      });
+    }
   }
 
   async onModuleInit() {

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class PutLessonDto {
   @ApiProperty({
@@ -8,8 +8,8 @@ export class PutLessonDto {
     example: 1,
     minimum: 1,
   })
-  @IsNumber()
-  @Min(0)
+  @IsInt()
+  @Min(1)
   order: number;
 
   @ApiProperty({
@@ -22,9 +22,11 @@ export class PutLessonDto {
   @ApiProperty({
     description:
       'The unique identifier of the unit to which this lesson belongs',
-    example: 201,
+    example: 1,
+    minimum: 1,
   })
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   unitId: number;
 
   @ApiProperty({

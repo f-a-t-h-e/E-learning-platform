@@ -3,7 +3,7 @@ import { CourseMediaTarget, MediaType } from '@prisma/client';
 import {
   IsEnum,
   IsIn,
-  IsNumber,
+  IsInt,
   IsOptional,
   IsString,
   Min,
@@ -17,7 +17,7 @@ export class CreateMediaDto {
     example: 1,
   })
   @IsOptional()
-  @IsNumber({ allowNaN: false, maxDecimalPlaces: 0, allowInfinity: false })
+  @IsInt()
   @Min(1)
   courseId?: number;
 
@@ -28,7 +28,7 @@ export class CreateMediaDto {
     example: 1,
   })
   @IsOptional()
-  @IsNumber({ allowNaN: false, maxDecimalPlaces: 0, allowInfinity: false })
+  @IsInt()
   @Min(1)
   unitId?: number;
 
@@ -39,7 +39,7 @@ export class CreateMediaDto {
     example: 1,
   })
   @IsOptional()
-  @IsNumber({ allowNaN: false, maxDecimalPlaces: 0, allowInfinity: false })
+  @IsInt()
   @Min(1)
   lessonId?: number;
 

@@ -18,7 +18,7 @@ export const getFileTargetPart = (n: number) => {
 };
 
 export const fileTargetMap = {
-  PROFILE_PICTURE: (userId: User['id']) => {
+  PROFILE_PICTURE: (userId: User['userId']) => {
     return [
       'uploads',
       'user-profile',
@@ -27,7 +27,7 @@ export const fileTargetMap = {
       'photo',
     ];
   },
-  PROFILE_BANNER: (userId: User['id']) => {
+  PROFILE_BANNER: (userId: User['userId']) => {
     return [
       'uploads',
       'user-profile',
@@ -36,7 +36,7 @@ export const fileTargetMap = {
       'banner',
     ];
   },
-  COURSE_BANNER: (courseId: Course['id']) => {
+  COURSE_BANNER: (courseId: Course['courseId']) => {
     return [
       'uploads',
       'course',
@@ -45,7 +45,7 @@ export const fileTargetMap = {
       'banner',
     ];
   },
-  COURSE_MATERIAL: (courseId: Course['id']) => {
+  COURSE_MATERIAL: (courseId: Course['courseId']) => {
     return [
       'uploads',
       'course',
@@ -54,7 +54,7 @@ export const fileTargetMap = {
       'material',
     ];
   },
-  UNIT_BANNER: (courseId: Course['id'], unitId: Unit['id']) => {
+  UNIT_BANNER: (courseId: Course['courseId'], unitId: Unit['unitId']) => {
     return [
       'uploads',
       'course',
@@ -66,7 +66,7 @@ export const fileTargetMap = {
       'banner',
     ];
   },
-  UNIT_MATERIAL: (courseId: Course['id'], unitId: Unit['id']) => {
+  UNIT_MATERIAL: (courseId: Course['courseId'], unitId: Unit['unitId']) => {
     return [
       'uploads',
       'course',
@@ -79,9 +79,9 @@ export const fileTargetMap = {
     ];
   },
   LESSON_BANNER: (
-    courseId: Course['id'],
-    unitId: Unit['id'],
-    lessonId: Lesson['id'],
+    courseId: Course['courseId'],
+    unitId: Unit['unitId'],
+    lessonId: Lesson['lessonId'],
   ) => {
     return [
       'uploads',
@@ -98,9 +98,9 @@ export const fileTargetMap = {
     ];
   },
   LESSON_MATERIAL: (
-    courseId: Course['id'],
-    unitId: Unit['id'],
-    lessonId: Lesson['id'],
+    courseId: Course['courseId'],
+    unitId: Unit['unitId'],
+    lessonId: Lesson['lessonId'],
   ) => {
     return [
       'uploads',

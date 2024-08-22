@@ -2,17 +2,16 @@ import {
   IsNotEmpty,
   IsString,
   IsEnum,
-  IsNumber,
   IsOptional,
   Min,
-  Max,
   ValidateNested,
   IsArray,
+  IsInt,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { $Enums } from '@prisma/client';
-import { CreateQuizQuestionOptionDto } from './create-quiz-question-option.dto';
 import { Type } from 'class-transformer';
+import { SubCreateQuizQuestionOptionDto } from './sub-create-quiz-question-option.dto';
 
 export class CreateQuizQuestionDto {
   @ApiProperty({
@@ -21,8 +20,8 @@ export class CreateQuizQuestionDto {
     example: 1,
     minimum: 1,
   })
-  @IsNumber({}, { message: 'Order must be a number' })
-  @Min(1, { message: 'Order must be at least 1' })
+  @IsInt()
+  @Min(1)
   order: number;
 
   @ApiProperty({
@@ -43,53 +42,54 @@ export class CreateQuizQuestionDto {
   questionType: $Enums.QuestionType;
 
   @ApiProperty({
-    description: 'Full mark of the quiz question',
+    description: 'Full grade of the quiz question',
     example: 10,
+    minimum: 0
   })
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  fullMark: number;
+  @IsInt()
+  @Min(0)
+  fullGrade: number;
 
   @ApiProperty({
-    description: 'Pass mark of the quiz question',
+    description: 'Pass grade of the quiz question',
     example: 5,
+    minimum: 0,
   })
-  @IsNotEmpty()
-  @IsNumber()
+  @IsOptional()
+  @IsInt()
   @Min(0)
-  @Max(10)
-  passMark: number;
+  passGrade?: number | null;
 
   @ApiProperty({
     description: 'Correct answer for the quiz question, if applicable',
     example: 'Egypt',
     nullable: true,
+    required: false
   })
   @IsOptional()
   @IsString()
-  correctAnswer: string | null;
+  correctAnswer?: string | null;
 
   @ApiProperty({
     description: 'ID of the quiz to which this question belongs',
     example: 1,
   })
   @IsNotEmpty()
-  @IsNumber()
+  @IsInt()
   quizId: number;
 
   @ApiProperty({
-    type: [CreateQuizQuestionOptionDto],
+    type: [SubCreateQuizQuestionOptionDto],
     description: 'Array of options for the quiz question',
     example: [
-      { mark: 1, optionText: 'Afghanistan', questionId: 1, id: 0 },
-      { mark: 0, optionText: 'Pakistan', questionId: 1, id: 1 },
+      { grade: 1, optionText: 'Afghanistan', quizeQuestionOptionId: 1 },
+      { grade: 0, optionText: 'Pakistan', quizeQuestionOptionId: 2 },
     ],
     required: false,
   })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateQuizQuestionOptionDto)
-  Options?: CreateQuizQuestionOptionDto[];
+  @Type(() => SubCreateQuizQuestionOptionDto)
+  Options?: SubCreateQuizQuestionOptionDto[];
 }

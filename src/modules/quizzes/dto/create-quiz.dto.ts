@@ -3,16 +3,16 @@ import { $Enums } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
-  IsNumber,
   IsString,
-  IsDate,
+  IsDateString,
   Min,
-  Max,
   IsOptional,
   IsArray,
   ValidateNested,
+  Max,
+  IsInt,
 } from 'class-validator';
-import { CreateQuizQuestionDto } from 'src/modules/quiz-questions/dto/create-quiz-question.dto';
+import { SubCreateQuizQuestionDto } from './sub-create-quiz-question.dto';
 
 export class CreateQuizDto {
   @ApiProperty({
@@ -21,8 +21,8 @@ export class CreateQuizDto {
     example: 1,
     minimum: 1,
   })
-  @IsNumber({}, { message: 'Order must be a number' })
-  @Min(1, { message: 'Order must be at least 1' })
+  @IsInt()
+  @Min(1)
   order: number;
 
   @ApiProperty({ description: 'Title of the quiz', example: 'Final Exam' })
@@ -30,84 +30,114 @@ export class CreateQuizDto {
   @IsString()
   title: string;
 
-  @ApiProperty({ description: 'ID of the associated course', example: 101 })
-  @IsNotEmpty()
-  @IsNumber()
+  @ApiProperty({
+    description: 'ID of the associated course',
+    example: 1,
+    minimum: 1,
+  })
+  @IsInt()
+  @Min(1)
   courseId: number;
 
   @ApiProperty({
     description: 'ID of the associated unit',
-    example: 202,
+    example: 1,
     nullable: true,
+    minimum: 1,
+    required: false,
   })
-  @IsNotEmpty()
-  @IsNumber()
   @IsOptional()
+  @IsInt()
+  @Min(1)
   unitId?: number | null;
 
   @ApiProperty({
     description: 'ID of the associated lesson',
-    example: 303,
+    example: 1,
     nullable: true,
+    minimum: 1,
+    required: false,
   })
-  @IsNotEmpty()
-  @IsNumber()
   @IsOptional()
+  @IsInt()
+  @Min(1)
   lessonId?: number | null;
 
-  @ApiProperty({ description: 'Full mark of the quiz', example: 100 })
-  @IsNotEmpty()
-  @IsNumber()
+  @ApiProperty({
+    description: 'Full grade of the quiz',
+    example: 10,
+    minimum: 0,
+  })
+  @IsInt()
   @Min(0)
-  fullMark: number;
-
-  @ApiProperty({ description: 'Pass mark of the quiz', example: 60 })
-  @IsNotEmpty()
-  @IsNumber()
+  fullGrade: number;
+  
+  @ApiProperty({
+    description: 'Pass grade of the quiz',
+    example: 6,
+    minimum: 0,
+    nullable: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
   @Min(0)
-  @Max(100)
-  passMark: number;
+  passGrade?: number|null;
 
   @ApiProperty({
     description: 'Date when the quiz starts',
-    example: '2024-09-01T00:00:00Z',
+    example: '2024-09-23T00:00:00Z',
   })
-  @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   startsAt: Date;
 
   @ApiProperty({
     description: 'Date when the quiz ends',
-    example: '2024-09-10T23:59:59Z',
+    example: '2024-09-25T23:59:59Z',
     nullable: true,
+    required: false,
   })
-  @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   @IsOptional()
   endsAt?: Date | null;
 
   @ApiProperty({
     description: 'Date for late submission',
-    example: '2024-09-12T23:59:59Z',
+    example: '2024-09-27T23:59:59Z',
     nullable: true,
+    required: false,
   })
-  @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   @IsOptional()
   lateSubmissionDate?: Date | null;
 
   @ApiProperty({
-    type: [CreateQuizQuestionDto],
+    description: `How many times students can submit a solution, \`null\` for infinite submissions (note that it won't be inserted as infinite but will allow infinite re-submit)`,
+    examples: [1, 3, null],
+    nullable: true,
+    minimum: 1,
+    maximum: 10,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(10)
+  attemptsAllowed?: number | null;
+
+  @ApiProperty({
+    type: [SubCreateQuizQuestionDto],
     description: 'Array of questions for the quiz',
     example: [
       {
         questionText: 'Which country has less population?',
         questionType: $Enums.QuestionType.multiple_choice,
-        fullMark: 10,
-        passMark: 5,
+        order: 1,
+        fullGrade: 10,
+        passGrade: 5,
         Options: [
-          { mark: 1, optionText: 'Afghanistan', questionId: 1, id: 0 },
-          { mark: 0, optionText: 'Pakistan', questionId: 1, id: 1 },
+          { grade: 10, optionText: 'Afghanistan', quizeQuestionOptionId: 1 },
+          { grade: 0, optionText: 'Pakistan', quizeQuestionOptionId: 2 },
         ],
       },
     ],
@@ -116,6 +146,6 @@ export class CreateQuizDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => CreateQuizQuestionDto)
-  Questions?: CreateQuizQuestionDto[];
+  @Type(() => SubCreateQuizQuestionDto)
+  Questions?: SubCreateQuizQuestionDto[];
 }

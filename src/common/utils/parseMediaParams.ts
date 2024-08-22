@@ -13,12 +13,12 @@ export const parseMediaParams: {
   ) => Parameters<(typeof fileTargetMap)[K]>;
 } = {
   PROFILE_PICTURE: (req: TParameters) => {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     return [userId];
   },
   PROFILE_BANNER: (req: TParameters) => {
-    const userId = req.user.id;
+    const userId = req.user.userId;
 
     return [userId];
   },

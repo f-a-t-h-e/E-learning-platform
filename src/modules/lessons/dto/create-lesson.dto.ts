@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLessonDto {
@@ -8,8 +8,8 @@ export class CreateLessonDto {
     example: 1,
     minimum: 1,
   })
-  @IsNumber()
-  @Min(0)
+  @IsInt()
+  @Min(1)
   order: number;
 
   @ApiProperty({
@@ -22,17 +22,21 @@ export class CreateLessonDto {
   @ApiProperty({
     description:
       'The unique identifier of the course to which this lesson belongs',
-    example: 101,
+    example: 1,
+    minimum: 1,
   })
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   courseId: number;
 
   @ApiProperty({
     description:
       'The unique identifier of the unit to which this lesson belongs',
     example: 201,
+    minimum: 1,
   })
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   unitId: number;
 
   @ApiProperty({

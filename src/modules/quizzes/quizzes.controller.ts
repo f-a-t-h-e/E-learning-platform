@@ -46,7 +46,11 @@ export class QuizzesController {
     status: 201,
     description: 'The quiz has been successfully created.',
   })
-  create(@Body() createQuizDto: CreateQuizDto) {
+  async create(
+    @Body() createQuizDto: CreateQuizDto,
+    @User() user: RequestUser,
+  ) {
+    await this.quizzesService.checkRefrencesHard(createQuizDto, user.userId);
     return this.quizzesService.create(createQuizDto);
   }
 
@@ -91,12 +95,13 @@ export class QuizzesController {
     description: 'The quiz has been successfully updated.',
   })
   @ApiResponse({ status: 404, description: 'Quiz not found' })
-  update(
+  async update(
     @User() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateQuizDto: UpdateQuizDto,
   ) {
-    return this.quizzesService.update(id, updateQuizDto, user.id);
+    await this.quizzesService.checkRefrencesHard(updateQuizDto, user.userId);
+    return this.quizzesService.update(id, updateQuizDto);
   }
 
   @ApiBearerAuth()
@@ -129,7 +134,7 @@ export class QuizzesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() markAvailableDto: MarkAvailableDto,
   ) {
-    await this.quizzesService.authHard({ quizId: id, userId: user.id });
+    await this.quizzesService.authHard({ quizId: id, userId: user.userId });
     return this.quizzesService.markAsAvailable({
       quizId: id,
       auto: markAvailableDto.auto,

@@ -12,6 +12,8 @@ import {
   HttpCode,
   ParseIntPipe,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { UnitsService } from './units.service';
 import { CreateUnitDto } from './dto/create-unit.dto';
@@ -41,6 +43,7 @@ import { MarkAvailableDto } from 'src/common/dto/markAvailable.dto';
 export class UnitsController {
   constructor(
     private readonly unitsService: UnitsService,
+    @Inject(forwardRef(() => CoursesService))
     private readonly coursesService: CoursesService,
   ) {}
 
@@ -68,13 +71,13 @@ export class UnitsController {
   ): Promise<UnitEntity> {
     if (
       !this.coursesService.isUserATeacherAtCourse(
-        user.id,
+        user.userId,
         createUnitDto.courseId,
       )
     ) {
       throw new ForbiddenException('You are not a teacher in this course!');
     }
-    return this.unitsService.create(createUnitDto, user.id);
+    return this.unitsService.create(createUnitDto, user.userId);
   }
 
   @ApiOperation({
@@ -161,7 +164,7 @@ export class UnitsController {
     @Body() updateUnitDto: UpdateUnitDto,
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
-    if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
+    if (!this.coursesService.isUserATeacherAtCourse(user.userId, courseId)) {
       throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.unitsService.update(id, updateUnitDto, courseId);
@@ -197,7 +200,7 @@ export class UnitsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() markAvailableDto: MarkAvailableDto,
   ) {
-    await this.unitsService.authHard({ unitId: id, userId: user.id });
+    await this.unitsService.authHard({ unitId: id, userId: user.userId });
     return this.unitsService.markAsAvailable({
       unitId: id,
       allStates: markAvailableDto.allStates,
@@ -232,7 +235,7 @@ export class UnitsController {
     @Param('id', ParseIntPipe) id: number,
     @Query('courseId', ParseIntPipe) courseId: number,
   ) {
-    if (!this.coursesService.isUserATeacherAtCourse(user.id, courseId)) {
+    if (!this.coursesService.isUserATeacherAtCourse(user.userId, courseId)) {
       throw new ForbiddenException('You are not a teacher in this course!');
     }
     return this.unitsService.remove(id, courseId);

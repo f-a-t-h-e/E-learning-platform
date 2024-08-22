@@ -42,8 +42,8 @@ import { fileStatAsync } from 'src/common/utils/fileStatAsync';
 import { fileTargetMap } from 'src/common/utils/getFilePath';
 import path from 'path';
 import { UnitsService } from '../units/units.service';
-import { Media } from '@prisma/client';
-import { MediaEntity } from './entities/media.entity';
+import { CourseMedia } from '@prisma/client';
+import { CourseMediaEntity } from './entities/media.entity';
 
 @ApiBearerAuth()
 @ApiErrorResponses()
@@ -64,7 +64,7 @@ export class MediaController {
     description: `The details about the \`media\` that you want to upload`,
   })
   @ApiResponse({
-    type: MediaEntity,
+    type: CourseMediaEntity,
     links: {
       'Get Media Id': {
         operationId: `UploadFileChunks`,
@@ -81,23 +81,23 @@ export class MediaController {
     @Body() createMediaDto: CreateMediaDto,
     @User() user: RequestUser,
   ) {
-    let media: Media;
+    let media: CourseMedia;
     switch (createMediaDto.target) {
-      case 'PROFILE_BANNER':
-      case 'PROFILE_PICTURE':
-        media = await this.mediaService.create({
-          profileId: user.id,
-          extension: createMediaDto.extension,
-          type: createMediaDto.type,
-          target: createMediaDto.target,
-          url: path.join(...fileTargetMap[createMediaDto.target](user.id)),
-        });
-        break;
-      case 'COURSE_BANNER':
-      case 'COURSE_MATERIAL':
+      // case 'PROFILE_BANNER':
+      // case 'PROFILE_PICTURE':
+      //   media = await this.mediaService.create({
+      //     profileId: user.userId,
+      //     extension: createMediaDto.extension,
+      //     type: createMediaDto.type,
+      //     target: createMediaDto.target,
+      //     url: path.join(...fileTargetMap[createMediaDto.target](user.userId)),
+      //   });
+      //   break;
+      case 'course_banner':
+      case 'course_material':
         const isCourseAvailable =
           await this.coursesService.isUserATeacherAtCourse(
-            user.id,
+            user.userId,
             createMediaDto.courseId,
           );
         if (!isCourseAvailable) {
@@ -106,7 +106,7 @@ export class MediaController {
           );
         }
         media = await this.mediaService.create({
-          profileId: user.id,
+          profileId: user.userId,
           extension: createMediaDto.extension,
           courseId: createMediaDto.courseId,
           type: createMediaDto.type,
@@ -116,18 +116,18 @@ export class MediaController {
           ),
         });
         break;
-      case 'UNIT_BANNER':
-      case 'UNIT_MATERIAL':
+      case 'unit_banner':
+      case 'unit_material':
         const unitDetails =
           await this.unitsService.getCourseFromUserIdAndUnitId(
-            user.id,
+            user.userId,
             createMediaDto.unitId,
           );
         if (unitDetails == false) {
           throw new ForbiddenException(`You don't have access to this lesson`);
         }
         media = await this.mediaService.create({
-          profileId: user.id,
+          profileId: user.userId,
           extension: createMediaDto.extension,
           courseId: createMediaDto.courseId,
           type: createMediaDto.type,
@@ -140,18 +140,18 @@ export class MediaController {
           ),
         });
         break;
-      case 'LESSON_BANNER':
-      case 'LESSON_MATERIAL':
+      case 'lesson_banner':
+      case 'lesson_material':
         const lessonDetails =
           await this.lessonsService.getCourseFromUserIdAndLessonId(
-            user.id,
+            user.userId,
             createMediaDto.lessonId,
           );
         if (lessonDetails == false) {
           throw new ForbiddenException(`You don't have access to this lesson`);
         }
         media = await this.mediaService.create({
-          profileId: user.id,
+          profileId: user.userId,
           extension: createMediaDto.extension,
           courseId: createMediaDto.courseId,
           type: createMediaDto.type,
@@ -174,7 +174,7 @@ export class MediaController {
       path.join(
         process.cwd(),
         media.url,
-        `${user.id}_${media.id}.${media.extension}`,
+        `${user.userId}_${media.courseMediaId}.${media.extension}`,
       ),
     );
     return media;
@@ -237,7 +237,7 @@ export class MediaController {
   @ApiResponse({
     status: 200,
     description: `The details that you need to track/continue your file upload process`,
-    type: MediaEntity,
+    type: CourseMediaEntity,
   })
   @Get('track-upload/:id')
   async getUploadStats(
@@ -245,28 +245,28 @@ export class MediaController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     const media = await this.mediaService.findOne(id);
-    if (media.profileId !== user.id) {
+    if (media.userId !== user.userId) {
       throw new ForbiddenException(`You have no access to this media details`);
     }
-    if (media.state == 'FAILED') {
+    if (media.state == 'failed') {
       return {
         message: 'This media file seems to be failed',
         success: false,
       };
     }
-    if (media.state == 'UPLOADED') {
+    if (media.state == 'uploaded') {
       return {
         success: true,
         data: { media },
       };
     }
 
-    if (media.state == 'UPLOADING') {
+    if (media.state == 'uploading') {
       const stats = await fileStatAsync(
         path.join(
           process.cwd(),
           media.url,
-          `${user.id}_${media.id}.${media.extension}`,
+          `${user.userId}_${media.courseMediaId}.${media.extension}`,
         ),
       );
       if (!stats) {
@@ -286,12 +286,12 @@ export class MediaController {
 
   @ApiOperation({ summary: 'Mark the upload for your file as completed' })
   @ApiResponse({
-    type: MediaEntity,
+    type: CourseMediaEntity,
     status: 200,
   })
   @HttpCode(HttpStatus.OK)
   @Patch('complete/:id')
   complete(@Param('id', ParseIntPipe) id: number, @User() user: RequestUser) {
-    return this.mediaService.completeMedia(id, user.id);
+    return this.mediaService.completeMedia(id, user.userId);
   }
 }

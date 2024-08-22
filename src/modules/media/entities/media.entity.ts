@@ -1,27 +1,18 @@
 import { $Enums, CourseMedia } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsUrl,
-  IsDate,
-} from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class CourseMediaEntity implements CourseMedia {
   @ApiProperty({
     description: 'Unique identifier for the media',
     example: 1,
   })
-  @IsNumber()
   courseMediaId: number;
 
   @ApiProperty({
     description: 'Size of the media file in bytes',
     example: 1024000,
   })
-  @IsNumber()
   bytes: bigint;
 
   @ApiProperty({
@@ -41,7 +32,6 @@ export class CourseMediaEntity implements CourseMedia {
     ],
     format: `/uploads/(<entity>/<part-number>/<entity-id>)[]/<target>/<media-id>`,
   })
-  @IsUrl()
   url: string;
 
   @ApiProperty({
@@ -49,7 +39,6 @@ export class CourseMediaEntity implements CourseMedia {
     example: 'ACTIVE',
     enum: $Enums.MediaState,
   })
-  @IsEnum($Enums.MediaState)
   state: $Enums.MediaState;
 
   @ApiProperty({
@@ -58,7 +47,6 @@ export class CourseMediaEntity implements CourseMedia {
     example: 'STUDENT',
     enum: $Enums.CourseMediaTarget,
   })
-  @IsEnum($Enums.CourseMediaTarget)
   target: $Enums.CourseMediaTarget;
 
   @ApiProperty({
@@ -66,28 +54,24 @@ export class CourseMediaEntity implements CourseMedia {
     example: 'IMAGE',
     enum: $Enums.MediaType,
   })
-  @IsEnum($Enums.MediaType)
   type: $Enums.MediaType;
 
   @ApiProperty({
     description: 'Timestamp when the media was created',
     example: '2024-08-19T12:34:56.789Z',
   })
-  @IsDate()
   createdAt: Date;
 
   @ApiProperty({
     description: 'Timestamp when the media was last updated',
     example: '2024-08-19T12:34:56.789Z',
   })
-  @IsDate()
   updatedAt: Date;
 
   @ApiProperty({
     description: 'ID of the associated profile',
     example: 10,
   })
-  @IsNumber()
   userId: number;
 
   @ApiProperty({
@@ -95,8 +79,6 @@ export class CourseMediaEntity implements CourseMedia {
     example: 101,
     nullable: true,
   })
-  @IsOptional()
-  @IsNumber()
   courseId: number | null;
 
   @ApiProperty({
@@ -104,8 +86,6 @@ export class CourseMediaEntity implements CourseMedia {
     example: 202,
     nullable: true,
   })
-  @IsOptional()
-  @IsNumber()
   lessonId: number | null;
 
   @ApiProperty({
@@ -113,7 +93,5 @@ export class CourseMediaEntity implements CourseMedia {
     example: 303,
     nullable: true,
   })
-  @IsOptional()
-  @IsNumber()
   unitId: number | null;
 }

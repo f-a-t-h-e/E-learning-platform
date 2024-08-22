@@ -17,13 +17,15 @@ import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { QuizQuestionsModule } from './modules/quiz-questions/quiz-questions.module';
 import { QuizSubmissionsModule } from './modules/quiz-submissions/quiz-submissions.module';
 import { UserProfileModule } from './modules/user-profile/user-profile.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
+    PrismaModule,
+    JwtModule.register({}),
     AuthModule,
     CoursesModule,
     CoursesEnrollmentsModule,
-    PrismaModule,
     UnitsModule,
     LessonsModule,
     LessonsContentsModule,

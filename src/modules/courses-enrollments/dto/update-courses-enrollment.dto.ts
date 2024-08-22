@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNumber } from 'class-validator';
+import { IsEnum, IsInt, Min } from 'class-validator';
 import { IsArrayHasUniqueStringOrNumber } from 'src/common/decorators/IsArrayUnique.decorator';
 import { ActionsEnum } from 'src/common/enums/actions.enum';
 
@@ -7,8 +7,10 @@ export class UpdateCourseEnrollments {
   @ApiProperty({
     description: `The unique identifier of the course for which you want to alter students' enrollments in.`,
     example: 101,
+    minimum: 1
   })
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   courseId: number;
 
   @ApiProperty({

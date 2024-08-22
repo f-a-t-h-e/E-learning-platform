@@ -66,6 +66,15 @@ export class QuizEntity implements Quiz {
   lateSubmissionDate: Date | null;
 
   @ApiProperty({
+    description: `How many times students can submit a solution, \`null\` for infinite submissions (note that it won't be inserted as infinite but will allow infinite re-submit)`,
+    examples: [1, 3, null],
+    nullable: true,
+    minimum: 1,
+    maximum: 10
+  })
+  attemptsAllowed: number | null;
+
+  @ApiProperty({
     description: 'State of the quiz',
     enum: QuizState,
     example: QuizState.available,
@@ -92,11 +101,11 @@ export class QuizEntity implements Quiz {
       {
         questionText: 'Which country has less population?',
         questionType: 'MULTIPLE_CHOICE',
-        fullMark: 10,
-        passMark: 5,
+        fullGrade: 10,
+        passGrade: 5,
         options: [
-          { mark: 1, optionText: 'Afghanistan', questionId: 1, id: 0 },
-          { mark: 0, optionText: 'Pakistan', questionId: 1, id: 1 },
+          { grade: 1, optionText: 'Afghanistan', questionId: 1, id: 0 },
+          { grade: 0, optionText: 'Pakistan', questionId: 1, id: 1 },
         ],
       },
     ],
