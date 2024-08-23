@@ -54,7 +54,9 @@
 
 - [ ] Improve the authorization for quiz-submissions
 
-  - [ ] Secure quiz-submission endpoints with appropriate roles.
+  - [x] Secure quiz-submission endpoints with appropriate roles.
+  - [x] Authorize the IDs of the answers for the questions
+  - [x] Handle Course submission
   - [ ] Test and validate authorization rules for quiz submissions.
 
 - [ ] Add functionality to evaluate quiz-submissions

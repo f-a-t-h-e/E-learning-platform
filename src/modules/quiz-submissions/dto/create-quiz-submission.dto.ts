@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsArray, ValidateNested } from 'class-validator';
+import { IsInt, IsArray, ValidateNested, IsOptional } from 'class-validator';
 import { CreateQuizAnswerDto } from './create-quiz-answer.dto';
 import { Type } from 'class-transformer';
 
@@ -12,19 +12,13 @@ export class CreateQuizSubmissionDto {
   quizId: number;
 
   @ApiProperty({
-    description: 'Unique identifier for the student who took the quiz',
-    example: 202,
-  })
-  @IsInt()
-  studentId: number;
-
-  @ApiProperty({
     description: 'Array of answers provided for the quiz questions',
     type: [CreateQuizAnswerDto],
     required: false,
   })
   @IsArray()
   @ValidateNested({ each: true })
+  @IsOptional()
   @Type(() => CreateQuizAnswerDto)
   Answers?: CreateQuizAnswerDto[];
 }

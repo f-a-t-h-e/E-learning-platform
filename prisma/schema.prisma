@@ -305,8 +305,11 @@ model Quiz {
   Unit               Unit?            @relation(fields: [unitId], references: [unitId])
   lessonId           Int?
   Lesson             Lesson?          @relation(fields: [lessonId], references: [lessonId])
+  // More details
   fullGrade          Int              @default(0) @db.SmallInt
   passGrade          Int?             @default(0) @db.SmallInt
+  // null value means infinite attempts, 0 means ?
+  attemptsAllowed    Int?             @default(1) @db.SmallInt
   // Dates
   startsAt           DateTime         @db.Timestamptz(3)
   endsAt             DateTime?        @db.Timestamptz(3)
@@ -317,7 +320,7 @@ model Quiz {
   updatedAt          DateTime         @updatedAt @db.Timestamptz(3)
   // Relations
   Questions          QuizQuestion[]
-  QuizSubmission     QuizSubmission[]
+  QuizSubmissions    QuizSubmission[]
 }
 
 enum QuizState {
@@ -367,8 +370,11 @@ model QuizSubmission {
   Student          UserProfile  @relation(fields: [studentId], references: [userId])
   grade            Int?         @db.SmallInt
   courseId         Int
+  // null for the quizzes that don't have infinite attempts limit
+  attempts         Int?         @db.SmallInt()
   Course           Course       @relation(fields: [courseId], references: [courseId])
   createdAt        DateTime     @default(now()) @db.Timestamptz(3)
+  submittedAt      DateTime?    @db.Timestamptz(3)
   // Relations
   Answers          QuizAnswer[]
 }

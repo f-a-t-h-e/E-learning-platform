@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsDate, IsNumber } from 'class-validator';
+import { IsInt, IsOptional, IsDateString, IsNumber } from 'class-validator';
 import { QuizSubmission } from '@prisma/client';
 import { QuizAnswerEntity } from './quiz-answer.entity';
 
@@ -8,7 +8,6 @@ export class QuizSubmissionEntity implements QuizSubmission {
     description: 'Unique identifier for the quiz submission',
     example: 1,
   })
-  @IsInt()
   quizSubmissionId: number;
 
   @ApiProperty({
@@ -16,8 +15,6 @@ export class QuizSubmissionEntity implements QuizSubmission {
     example: 85,
     nullable: true,
   })
-  @IsOptional()
-  @IsNumber()
   grade: number | null;
 
   @ApiProperty({
@@ -32,21 +29,18 @@ export class QuizSubmissionEntity implements QuizSubmission {
     description: 'Unique identifier for the associated quiz',
     example: 101,
   })
-  @IsInt()
   quizId: number;
 
   @ApiProperty({
     description: 'Unique identifier for the student who took the quiz',
     example: 202,
   })
-  @IsInt()
   studentId: number;
 
   @ApiProperty({
     description: 'Timestamp when the quiz submission was created',
     example: new Date(),
   })
-  @IsDate()
   createdAt: Date;
 
   @ApiProperty({

@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsInt, IsOptional, IsNumber } from 'class-validator';
 import { QuizAnswer } from '@prisma/client';
 
 export class QuizAnswerEntity implements QuizAnswer {
@@ -7,14 +6,12 @@ export class QuizAnswerEntity implements QuizAnswer {
     description: 'Unique identifier for the quiz answer',
     example: 1,
   })
-  @IsInt()
   quizAnswerId: number;
 
   @ApiProperty({
     description: 'The text of the answer provided by the student',
     example: 'Paris',
   })
-  @IsString()
   answer: string;
 
   @ApiProperty({
@@ -22,15 +19,12 @@ export class QuizAnswerEntity implements QuizAnswer {
     example: 5,
     nullable: true,
   })
-  @IsOptional()
-  @IsNumber()
   grade: number | null;
 
   @ApiProperty({
     description: 'Unique identifier for the associated quiz question',
     example: 301,
   })
-  @IsInt()
   questionId: number;
 
   @ApiProperty({
@@ -38,6 +32,5 @@ export class QuizAnswerEntity implements QuizAnswer {
       'Unique identifier for the quiz submission to which this answer belongs',
     example: 401,
   })
-  @IsInt()
   submissionId: number;
 }

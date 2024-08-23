@@ -4,7 +4,7 @@ import { IsString, IsInt } from 'class-validator';
 export class CreateQuizAnswerDto {
   @ApiProperty({
     description: 'The text of the answer provided by the student',
-    example: 'Paris',
+    example: 'Afghanistan',
   })
   @IsString()
   answer: string;
