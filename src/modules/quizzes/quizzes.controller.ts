@@ -50,7 +50,14 @@ export class QuizzesController {
     @Body() createQuizDto: CreateQuizDto,
     @User() user: RequestUser,
   ) {
-    await this.quizzesService.checkRefrencesHard(createQuizDto, user.userId);
+    // Authorize & validate data
+    this.quizzesService.validateCreateAuthDetails(
+      await this.quizzesService.getCreateAuthDetails(
+        createQuizDto,
+        user.userId,
+      ),
+      createQuizDto,
+    );
     return this.quizzesService.create(createQuizDto);
   }
 
@@ -100,7 +107,15 @@ export class QuizzesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateQuizDto: UpdateQuizDto,
   ) {
-    await this.quizzesService.checkRefrencesHard(updateQuizDto, user.userId);
+    // Authorize & validate data
+    this.quizzesService.validateUpdateAuthDetails(
+      await this.quizzesService.getUpdateAuthDetails(
+        id,
+        user.userId,
+        updateQuizDto,
+      ),
+      updateQuizDto,
+    );
     return this.quizzesService.update(id, updateQuizDto);
   }
 
@@ -150,7 +165,11 @@ export class QuizzesController {
     description: 'The quiz has been successfully deleted.',
   })
   @ApiResponse({ status: 404, description: 'Quiz not found' })
-  remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @User() user: RequestUser,
+  ) {
+    await this.quizzesService.authHard({ quizId: id, userId: user.userId });
     return this.quizzesService.remove(id);
   }
 }

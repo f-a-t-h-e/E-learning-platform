@@ -7,3 +7,5 @@ export type TQuizSubmissionTokenPayloud = {
   quizSubmissionId: number;
   increaseAttempts: boolean;
 };
+
+export type TFindAllSelectType = 'custom' | 'student' | 'instructor';

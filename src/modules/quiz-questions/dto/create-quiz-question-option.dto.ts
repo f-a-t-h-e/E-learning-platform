@@ -1,26 +1,23 @@
-import { IsNotEmpty, IsString, Min, Max, IsInt } from 'class-validator';
+import { IsString, Min, Max, IsInt } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateQuizQuestionOptionDto {
   @ApiProperty({
-    description:
-      'Unique identifier (for each question) for the option. \nYou can add up to 10 options.',
+    description: 'The order of the option. \nYou can add up to 10 options.',
     example: 1,
     minimum: 1,
     maximum: 11,
   })
-  @IsNotEmpty()
   @IsInt()
   @Min(1)
   @Max(11)
-  quizeQuestionOptionId: number;
+  order: number;
 
   @ApiProperty({
     description: 'Grade awarded for selecting this option',
     example: 1,
     minimum: 0,
   })
-  @IsNotEmpty()
   @IsInt()
   @Min(0)
   grade: number;
@@ -29,7 +26,6 @@ export class CreateQuizQuestionOptionDto {
     description: 'Text of the option',
     example: 'Afghanistan',
   })
-  @IsNotEmpty()
   @IsString()
   optionText: string;
 
@@ -38,7 +34,6 @@ export class CreateQuizQuestionOptionDto {
     example: 1,
     minimum: 1,
   })
-  @IsNotEmpty()
   @IsInt()
   @Min(1)
   questionId: number;

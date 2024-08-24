@@ -7,7 +7,7 @@ export class CreateManyCourseEnrollments {
     description:
       'The unique identifier of the course for which you want to enroll students.',
     example: 101,
-    minimum: 1
+    minimum: 1,
   })
   @IsInt()
   @Min(1)

@@ -39,41 +39,6 @@ export class QuizEntity implements Quiz {
   })
   lessonId: number | null;
 
-  @ApiProperty({ description: 'Full grade of the quiz', example: 100 })
-  fullGrade: number;
-
-  @ApiProperty({ description: 'Pass grade of the quiz', example: 60 })
-  passGrade: number;
-
-  @ApiProperty({
-    description: 'Date when the quiz starts',
-    example: '2024-09-01T00:00:00Z',
-  })
-  startsAt: Date;
-
-  @ApiProperty({
-    description: 'Date when the quiz ends',
-    example: '2024-09-10T23:59:59Z',
-    nullable: true,
-  })
-  endsAt: Date | null;
-
-  @ApiProperty({
-    description: 'Date for late submission',
-    example: '2024-09-12T23:59:59Z',
-    nullable: true,
-  })
-  lateSubmissionDate: Date | null;
-
-  @ApiProperty({
-    description: `How many times students can submit a solution, \`null\` for infinite submissions (note that it won't be inserted as infinite but will allow infinite re-submit)`,
-    examples: [1, 3, null],
-    nullable: true,
-    minimum: 1,
-    maximum: 10
-  })
-  attemptsAllowed: number | null;
-
   @ApiProperty({
     description: 'State of the quiz',
     enum: QuizState,

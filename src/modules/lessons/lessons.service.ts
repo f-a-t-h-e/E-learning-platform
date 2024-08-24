@@ -16,7 +16,10 @@ export class LessonsService {
     private readonly prisma: PrismaService,
     private readonly quizzesService: QuizzesService,
   ) {}
-  async create(createLessonDto: CreateLessonDto, userId:UserProfile["userId"]) {
+  async create(
+    createLessonDto: CreateLessonDto,
+    userId: UserProfile['userId'],
+  ) {
     const lesson = await this.prisma.lesson.create({
       data: {
         title: createLessonDto.title,

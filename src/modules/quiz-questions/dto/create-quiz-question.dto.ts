@@ -37,14 +37,13 @@ export class CreateQuizQuestionDto {
     enum: $Enums.QuestionType,
     example: $Enums.QuestionType.multiple_choice,
   })
-  @IsNotEmpty()
   @IsEnum($Enums.QuestionType)
   questionType: $Enums.QuestionType;
 
   @ApiProperty({
     description: 'Full grade of the quiz question',
     example: 10,
-    minimum: 0
+    minimum: 0,
   })
   @IsInt()
   @Min(0)
@@ -64,7 +63,7 @@ export class CreateQuizQuestionDto {
     description: 'Correct answer for the quiz question, if applicable',
     example: 'Egypt',
     nullable: true,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsString()
@@ -74,7 +73,6 @@ export class CreateQuizQuestionDto {
     description: 'ID of the quiz to which this question belongs',
     example: 1,
   })
-  @IsNotEmpty()
   @IsInt()
   quizId: number;
 
@@ -82,8 +80,8 @@ export class CreateQuizQuestionDto {
     type: [SubCreateQuizQuestionOptionDto],
     description: 'Array of options for the quiz question',
     example: [
-      { grade: 1, optionText: 'Afghanistan', quizeQuestionOptionId: 1 },
-      { grade: 0, optionText: 'Pakistan', quizeQuestionOptionId: 2 },
+      { grade: 1, optionText: 'Afghanistan', order: 1 },
+      { grade: 0, optionText: 'Pakistan', order: 2 },
     ],
     required: false,
   })

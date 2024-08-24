@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { $Enums } from '@prisma/client';
+import { $Enums, QuizReviewType, QuizType } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
@@ -11,6 +11,7 @@ import {
   ValidateNested,
   Max,
   IsInt,
+  IsEnum,
 } from 'class-validator';
 import { SubCreateQuizQuestionDto } from './sub-create-quiz-question.dto';
 
@@ -71,7 +72,7 @@ export class CreateQuizDto {
   @IsInt()
   @Min(0)
   fullGrade: number;
-  
+
   @ApiProperty({
     description: 'Pass grade of the quiz',
     example: 6,
@@ -82,7 +83,7 @@ export class CreateQuizDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  passGrade?: number|null;
+  passGrade?: number | null;
 
   @ApiProperty({
     description: 'Date when the quiz starts',
@@ -124,6 +125,22 @@ export class CreateQuizDto {
   @Min(1)
   @Max(10)
   attemptsAllowed?: number | null;
+
+  @ApiProperty({
+    description: 'The type of review allowed for the quiz',
+    enum: QuizReviewType,
+    example: QuizReviewType.automatic,
+  })
+  @IsEnum(QuizReviewType)
+  reviewType: QuizReviewType;
+
+  @ApiProperty({
+    description: 'The type of quiz',
+    enum: QuizType,
+    example: QuizType.sequential,
+  })
+  @IsEnum(QuizType)
+  type: QuizType;
 
   @ApiProperty({
     type: [SubCreateQuizQuestionDto],

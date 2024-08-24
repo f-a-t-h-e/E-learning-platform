@@ -13,7 +13,6 @@ import {
   QuizQuestion,
   QuizState,
   QuizSubmission,
-  UserProfile,
 } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
@@ -21,6 +20,7 @@ import { CreateQuizSubmissionDto } from './dto/create-quiz-submission.dto';
 import { UpdateQuizSubmissionDto } from './dto/update-quiz-submission.dto';
 import { FieldsOrNullFields } from 'src/common/utils/types';
 import { CreateQuizAnswerDto } from './dto/create-quiz-answer.dto';
+import { TFindAllSelectType } from './types';
 
 /**
  * These are the base details needed for cheching the authorization for the user actions for a quiz submission
@@ -92,9 +92,71 @@ export class QuizSubmissionsService {
     return quizSubmission;
   }
 
-  async findAll(courseId: number) {
+  async findAll<SelectType extends TFindAllSelectType = 'custom'>(
+    options = {} as {
+      filters?: {
+        courseId?: number;
+        instructorId?: number;
+        studetId?: number;
+        quizId?: number;
+      };
+      selectType?: SelectType;
+      // select?: {};
+      // @todo Add pagination
+    },
+  ) {
+    const where: Prisma.QuizSubmissionWhereInput = {};
+    if (options.filters) {
+      if (options.filters.courseId) {
+        where.courseId = options.filters.courseId;
+      }
+      if (options.filters.quizId) {
+        where.quizId = options.filters.quizId;
+      }
+      if (options.filters.instructorId) {
+        where.Course = {
+          ...((where.Course as any) || {}),
+          Instructors: {
+            ...(where.Course.Instructors || {}),
+            some: {
+              ...(where.Course.Instructors.some || {}),
+              instructorId: options.filters.instructorId,
+            },
+          },
+        };
+      }
+      if (options.filters.studetId) {
+        where.studentId = options.filters.studetId;
+      }
+    }
+    // if (options.selectType) {
+    //   if (options.selectType == "student") {
+    //     return this.prisma.quizSubmission.findMany({
+    //       where: where,
+    //       select: {
+    //         quizId: true,
+    //         attempts: true,
+    //         courseId: true,
+    //         createdAt: true,
+    //         grade: true,
+    //         quizSubmissionId: true,
+    //         submittedAt: true,
+    //       }
+    //     });
+    //   }
+    // }
     return this.prisma.quizSubmission.findMany({
-      where: { Quiz: { courseId: courseId } },
+      where: where,
+      select: {
+        quizId: true,
+        attempts: true,
+        courseId: true,
+        createdAt: true,
+        grade: true,
+        quizSubmissionId: true,
+        submittedAt: true,
+        studentId: true,
+      },
     });
   }
 

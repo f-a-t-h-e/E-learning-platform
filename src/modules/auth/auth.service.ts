@@ -45,7 +45,7 @@ export class AuthService {
         },
         select: defaultUserSelect,
       });
-      return {...user, username: data.username};
+      return { ...user, username: data.username };
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (

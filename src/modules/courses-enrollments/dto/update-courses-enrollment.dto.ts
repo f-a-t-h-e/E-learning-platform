@@ -7,7 +7,7 @@ export class UpdateCourseEnrollments {
   @ApiProperty({
     description: `The unique identifier of the course for which you want to alter students' enrollments in.`,
     example: 101,
-    minimum: 1
+    minimum: 1,
   })
   @IsInt()
   @Min(1)

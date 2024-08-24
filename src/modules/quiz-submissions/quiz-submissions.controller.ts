@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   Param,
-  Delete,
   Query,
   ParseIntPipe,
   UseGuards,
@@ -208,11 +207,16 @@ export class QuizSubmissionsController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateQuizSubmissionDto: UpdateQuizSubmissionDto,
+    @Req() req: Request,
   ) {
     let payload: TQuizSubmissionTokenPayloud;
     try {
+      const token = req.cookies[QUIZ_SUBMISSION_TOKEN_NAME];
+      if (!token) {
+        throw new UnauthorizedException();
+      }
       payload = await this.jwtService.verifyAsync<TQuizSubmissionTokenPayloud>(
-        QUIZ_SUBMISSION_TOKEN_NAME,
+        token,
         {
           secret: QUIZ_SUBMISSION_TOKEN_SECRET,
           subject: QUIZ_SUBMISSION_TOKEN_NAME,
@@ -251,8 +255,24 @@ export class QuizSubmissionsController {
     status: 200,
     description: 'Successfully retrieved quiz submissions.',
   })
-  findAll(@Query('courseId', ParseIntPipe) courseId: number) {
-    return this.quizSubmissionsService.findAll(courseId);
+  findAll(
+    @Query('courseId', ParseIntPipe) courseId: number,
+    @User() user: RequestUser,
+  ) {
+    if (user.roleName == 'student') {
+      return this.quizSubmissionsService.findAll({
+        filters: {
+          courseId: courseId,
+          studetId: user.userId,
+        },
+      });
+    }
+    return this.quizSubmissionsService.findAll({
+      filters: {
+        courseId: courseId,
+        instructorId: user.userId,
+      },
+    });
   }
 
   @Get(':id')

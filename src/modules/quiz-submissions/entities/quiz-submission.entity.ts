@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsDateString, IsNumber } from 'class-validator';
 import { QuizSubmission } from '@prisma/client';
 import { QuizAnswerEntity } from './quiz-answer.entity';
 
@@ -36,6 +35,24 @@ export class QuizSubmissionEntity implements QuizSubmission {
     example: 202,
   })
   studentId: number;
+
+  @ApiProperty({
+    description: 'The number of attempts made for the quiz submission',
+    example: 3,
+  })
+  attempts: number;
+
+  @ApiProperty({
+    description: 'The date and time when the submission was made',
+    example: '2024-08-23T15:00:00Z',
+  })
+  submittedAt: Date;
+
+  @ApiProperty({
+    description: 'The date and time when the submission was reviewed',
+    example: '2024-08-24T10:00:00Z',
+  })
+  reviewedAt: Date;
 
   @ApiProperty({
     description: 'Timestamp when the quiz submission was created',

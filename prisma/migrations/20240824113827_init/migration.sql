@@ -1,26 +1,44 @@
 -- CreateEnum
-CREATE TYPE "CourseEnrollmentState" AS ENUM ('ACTIVE');
+CREATE TYPE "CourseState" AS ENUM ('created', 'available', 'calculatedGrades');
 
 -- CreateEnum
-CREATE TYPE "CourseInstructorPositions" AS ENUM ('OWNER', 'TEACHER');
+CREATE TYPE "CourseEnrollmentState" AS ENUM ('active');
 
 -- CreateEnum
-CREATE TYPE "CourseInstructorState" AS ENUM ('ACTIVE');
+CREATE TYPE "CourseInstructorPositions" AS ENUM ('owner', 'teacher');
 
 -- CreateEnum
-CREATE TYPE "MediaType" AS ENUM ('IMAGE', 'VIDEO', 'AUDIO', 'DOCUMENT');
+CREATE TYPE "CourseInstructorState" AS ENUM ('active');
 
 -- CreateEnum
-CREATE TYPE "MediaState" AS ENUM ('UPLOADING', 'FAILED', 'UPLOADED');
+CREATE TYPE "MediaType" AS ENUM ('image', 'video', 'audio', 'document');
 
 -- CreateEnum
-CREATE TYPE "CourseMediaTarget" AS ENUM ('COURSE_BANNER', 'COURSE_MATERIAL', 'UNIT_BANNER', 'UNIT_MATERIAL', 'LESSON_BANNER', 'LESSON_MATERIAL');
+CREATE TYPE "MediaState" AS ENUM ('uploading', 'uploaded', 'failed');
 
 -- CreateEnum
-CREATE TYPE "ContentType" AS ENUM ('URL', 'TEXT');
+CREATE TYPE "CourseMediaTarget" AS ENUM ('course_banner', 'course_material', 'unit_banner', 'unit_material', 'lesson_banner', 'lesson_material');
 
 -- CreateEnum
-CREATE TYPE "QuestionType" AS ENUM ('MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER', 'LONG_ANSWER');
+CREATE TYPE "UnitState" AS ENUM ('created', 'available', 'calculatedGrades');
+
+-- CreateEnum
+CREATE TYPE "LessonState" AS ENUM ('created', 'available', 'calculatedGrades');
+
+-- CreateEnum
+CREATE TYPE "ContentType" AS ENUM ('url', 'text');
+
+-- CreateEnum
+CREATE TYPE "QuizState" AS ENUM ('created', 'available', 'calculatedGrades');
+
+-- CreateEnum
+CREATE TYPE "QuizReviewType" AS ENUM ('automatic', 'manual', 'both');
+
+-- CreateEnum
+CREATE TYPE "QuizType" AS ENUM ('randomized', 'sequential', 'randomizedTimed', 'sequentialTimed');
+
+-- CreateEnum
+CREATE TYPE "QuestionType" AS ENUM ('multiple_choice', 'true_false', 'short_answer', 'long_answer');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -72,6 +90,9 @@ CREATE TABLE "Course" (
     "title" TEXT NOT NULL,
     "description" TEXT,
     "banner" TEXT,
+    "quizFullGrade" INTEGER NOT NULL DEFAULT 0,
+    "quizPassGrade" INTEGER,
+    "state" "CourseState" NOT NULL DEFAULT 'created',
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3) NOT NULL,
 
@@ -84,8 +105,10 @@ CREATE TABLE "CourseEnrollment" (
     "courseId" INTEGER NOT NULL,
     "studentId" INTEGER NOT NULL,
     "state" "CourseEnrollmentState" NOT NULL,
+    "quizGrade" INTEGER NOT NULL,
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3) NOT NULL,
+    "endsAt" TIMESTAMP(3),
 
     CONSTRAINT "CourseEnrollment_pkey" PRIMARY KEY ("courseEnrollmentId")
 );
@@ -97,6 +120,9 @@ CREATE TABLE "CourseInstructor" (
     "instructorId" INTEGER NOT NULL,
     "position" "CourseInstructorPositions" NOT NULL,
     "state" "CourseInstructorState" NOT NULL,
+    "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(3) NOT NULL,
+    "endsAt" TIMESTAMP(3),
 
     CONSTRAINT "CourseInstructor_pkey" PRIMARY KEY ("courseInstructorId")
 );
@@ -123,11 +149,15 @@ CREATE TABLE "CourseMedia" (
 -- CreateTable
 CREATE TABLE "Unit" (
     "unitId" SERIAL NOT NULL,
+    "order" SMALLINT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
     "banner" TEXT,
+    "quizFullGrade" INTEGER NOT NULL DEFAULT 0,
+    "quizPassGrade" INTEGER,
     "courseId" INTEGER NOT NULL,
-    "addedBy" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "state" "UnitState" NOT NULL DEFAULT 'created',
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3) NOT NULL,
 
@@ -137,12 +167,16 @@ CREATE TABLE "Unit" (
 -- CreateTable
 CREATE TABLE "Lesson" (
     "lessonId" SERIAL NOT NULL,
+    "order" SMALLINT NOT NULL,
     "title" TEXT NOT NULL,
     "banner" TEXT,
-    "unitId" INTEGER NOT NULL,
-    "courseId" INTEGER NOT NULL,
     "description" TEXT,
-    "addedBy" INTEGER NOT NULL,
+    "quizFullGrade" SMALLINT NOT NULL DEFAULT 0,
+    "quizPassGrade" SMALLINT,
+    "unitId" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "courseId" INTEGER NOT NULL,
+    "state" "LessonState" NOT NULL DEFAULT 'created',
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3) NOT NULL,
 
@@ -161,28 +195,14 @@ CREATE TABLE "LessonContent" (
 );
 
 -- CreateTable
-CREATE TABLE "LessonFeedback" (
-    "id" SERIAL NOT NULL,
-    "lessonId" INTEGER NOT NULL,
-    "userId" INTEGER NOT NULL,
-    "feedback" TEXT NOT NULL,
-    "courseId" INTEGER,
-
-    CONSTRAINT "LessonFeedback_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Quiz" (
     "quizId" SERIAL NOT NULL,
+    "order" SMALLINT NOT NULL,
     "courseId" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "unitId" INTEGER,
     "lessonId" INTEGER,
-    "fullMark" SMALLINT NOT NULL DEFAULT 0,
-    "passMark" SMALLINT NOT NULL DEFAULT 0,
-    "startsAt" TIMESTAMPTZ(3) NOT NULL,
-    "endsAt" TIMESTAMPTZ(3),
-    "lateSubmissionDate" TIMESTAMPTZ(3),
+    "state" "QuizState" NOT NULL DEFAULT 'created',
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(3) NOT NULL,
 
@@ -190,12 +210,26 @@ CREATE TABLE "Quiz" (
 );
 
 -- CreateTable
+CREATE TABLE "QuizMetaData" (
+    "quizId" INTEGER NOT NULL,
+    "fullGrade" SMALLINT NOT NULL DEFAULT 0,
+    "passGrade" SMALLINT DEFAULT 0,
+    "attemptsAllowed" SMALLINT,
+    "reviewType" "QuizReviewType" NOT NULL,
+    "type" "QuizType" NOT NULL,
+    "startsAt" TIMESTAMPTZ(3) NOT NULL,
+    "endsAt" TIMESTAMPTZ(3),
+    "lateSubmissionDate" TIMESTAMPTZ(3)
+);
+
+-- CreateTable
 CREATE TABLE "QuizQuestion" (
     "quizQuestionId" SERIAL NOT NULL,
+    "order" SMALLINT NOT NULL,
     "quizId" INTEGER NOT NULL,
     "questionText" TEXT NOT NULL,
-    "fullMark" SMALLINT NOT NULL DEFAULT 0,
-    "passMark" SMALLINT NOT NULL DEFAULT 0,
+    "fullGrade" SMALLINT NOT NULL DEFAULT 0,
+    "passGrade" SMALLINT DEFAULT 0,
     "correctAnswer" TEXT,
     "questionType" "QuestionType" NOT NULL,
 
@@ -204,12 +238,13 @@ CREATE TABLE "QuizQuestion" (
 
 -- CreateTable
 CREATE TABLE "QuizQuestionOption" (
-    "quizeQuestionOptionId" SMALLINT NOT NULL,
+    "quizeQuestionOptionId" SERIAL NOT NULL,
+    "order" SMALLINT NOT NULL DEFAULT 1,
     "questionId" INTEGER NOT NULL,
     "optionText" TEXT NOT NULL,
-    "mark" SMALLINT NOT NULL DEFAULT 0,
+    "grade" SMALLINT NOT NULL DEFAULT 0,
 
-    CONSTRAINT "QuizQuestionOption_pkey" PRIMARY KEY ("quizeQuestionOptionId","questionId")
+    CONSTRAINT "QuizQuestionOption_pkey" PRIMARY KEY ("quizeQuestionOptionId")
 );
 
 -- CreateTable
@@ -217,9 +252,11 @@ CREATE TABLE "QuizSubmission" (
     "quizSubmissionId" SERIAL NOT NULL,
     "quizId" INTEGER NOT NULL,
     "studentId" INTEGER NOT NULL,
-    "marks" INTEGER,
-    "courseId" INTEGER NOT NULL,
+    "grade" SMALLINT,
+    "attempts" SMALLINT,
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "submittedAt" TIMESTAMPTZ(3),
+    "reviewedAt" TIMESTAMPTZ(3),
 
     CONSTRAINT "QuizSubmission_pkey" PRIMARY KEY ("quizSubmissionId")
 );
@@ -229,9 +266,9 @@ CREATE TABLE "QuizAnswer" (
     "quizAnswerId" SERIAL NOT NULL,
     "submissionId" INTEGER NOT NULL,
     "questionId" INTEGER NOT NULL,
-    "courseId" INTEGER NOT NULL,
-    "answer" TEXT NOT NULL,
-    "mark" SMALLINT,
+    "answer" TEXT,
+    "chosenOptionId" INTEGER,
+    "grade" SMALLINT,
 
     CONSTRAINT "QuizAnswer_pkey" PRIMARY KEY ("quizAnswerId")
 );
@@ -279,6 +316,9 @@ CREATE UNIQUE INDEX "UserProfile_username_key" ON "UserProfile"("username");
 -- CreateIndex
 CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "QuizMetaData_quizId_key" ON "QuizMetaData"("quizId");
+
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_roleName_fkey" FOREIGN KEY ("roleName") REFERENCES "Role"("name") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -313,31 +353,22 @@ ALTER TABLE "CourseMedia" ADD CONSTRAINT "CourseMedia_unitId_fkey" FOREIGN KEY (
 ALTER TABLE "CourseMedia" ADD CONSTRAINT "CourseMedia_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson"("lessonId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Unit" ADD CONSTRAINT "Unit_addedBy_fkey" FOREIGN KEY ("addedBy") REFERENCES "UserProfile"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Unit" ADD CONSTRAINT "Unit_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("courseId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_addedBy_fkey" FOREIGN KEY ("addedBy") REFERENCES "UserProfile"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Unit" ADD CONSTRAINT "Unit_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfile"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_unitId_fkey" FOREIGN KEY ("unitId") REFERENCES "Unit"("unitId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfile"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Lesson" ADD CONSTRAINT "Lesson_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("courseId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LessonContent" ADD CONSTRAINT "LessonContent_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson"("lessonId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "LessonFeedback" ADD CONSTRAINT "LessonFeedback_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson"("lessonId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "LessonFeedback" ADD CONSTRAINT "LessonFeedback_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfile"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "LessonFeedback" ADD CONSTRAINT "LessonFeedback_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("courseId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Quiz" ADD CONSTRAINT "Quiz_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("courseId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -349,13 +380,13 @@ ALTER TABLE "Quiz" ADD CONSTRAINT "Quiz_unitId_fkey" FOREIGN KEY ("unitId") REFE
 ALTER TABLE "Quiz" ADD CONSTRAINT "Quiz_lessonId_fkey" FOREIGN KEY ("lessonId") REFERENCES "Lesson"("lessonId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "QuizMetaData" ADD CONSTRAINT "QuizMetaData_quizId_fkey" FOREIGN KEY ("quizId") REFERENCES "Quiz"("quizId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "QuizQuestion" ADD CONSTRAINT "QuizQuestion_quizId_fkey" FOREIGN KEY ("quizId") REFERENCES "Quiz"("quizId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "QuizQuestionOption" ADD CONSTRAINT "QuizQuestionOption_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "QuizQuestion"("quizQuestionId") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "QuizSubmission" ADD CONSTRAINT "QuizSubmission_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("courseId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "QuizSubmission" ADD CONSTRAINT "QuizSubmission_quizId_fkey" FOREIGN KEY ("quizId") REFERENCES "Quiz"("quizId") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -364,7 +395,7 @@ ALTER TABLE "QuizSubmission" ADD CONSTRAINT "QuizSubmission_quizId_fkey" FOREIGN
 ALTER TABLE "QuizSubmission" ADD CONSTRAINT "QuizSubmission_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "UserProfile"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "QuizAnswer" ADD CONSTRAINT "QuizAnswer_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("courseId") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "QuizAnswer" ADD CONSTRAINT "QuizAnswer_chosenOptionId_fkey" FOREIGN KEY ("chosenOptionId") REFERENCES "QuizQuestionOption"("quizeQuestionOptionId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "QuizAnswer" ADD CONSTRAINT "QuizAnswer_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "QuizSubmission"("quizSubmissionId") ON DELETE RESTRICT ON UPDATE CASCADE;

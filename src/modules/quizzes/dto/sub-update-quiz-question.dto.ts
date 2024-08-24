@@ -1,15 +1,24 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { CreateQuizQuestionDto } from './create-quiz-question.dto';
-import { IsArray, IsInt, IsOptional, ValidateNested } from 'class-validator';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { SubUpdateQuizQuestionOptionDto } from './sub-update-quiz-question-option.dto';
+import {
+  IsArray,
+  IsInt,
+  IsOptional,
+  Min,
+  ValidateNested,
+} from 'class-validator';
+import { CreateQuizQuestionDto } from 'src/modules/quiz-questions/dto/create-quiz-question.dto';
+import { SubUpdateQuizQuestionOptionDto } from 'src/modules/quiz-questions/dto/sub-update-quiz-question-option.dto';
 
-export class UpdateQuizQuestionDto extends PartialType(CreateQuizQuestionDto) {
+export class SubUpdateQuizQuestionDto extends OmitType(CreateQuizQuestionDto, [
+  'quizId',
+]) {
   @ApiProperty({
     description: 'Unique identifier for the quiz question',
     example: 1,
   })
   @IsInt()
+  @Min(1)
   quizQuestionId: number;
 
   @ApiProperty({

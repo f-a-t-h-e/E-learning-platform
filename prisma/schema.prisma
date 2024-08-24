@@ -296,37 +296,64 @@ enum ContentType {
 // Quizzes and Asignments
 
 model Quiz {
-  quizId             Int              @id @default(autoincrement())
-  order              Int              @db.SmallInt
-  courseId           Int
-  Course             Course           @relation(fields: [courseId], references: [courseId])
-  title              String
-  unitId             Int?
-  Unit               Unit?            @relation(fields: [unitId], references: [unitId])
-  lessonId           Int?
-  Lesson             Lesson?          @relation(fields: [lessonId], references: [lessonId])
-  // More details
-  fullGrade          Int              @default(0) @db.SmallInt
-  passGrade          Int?             @default(0) @db.SmallInt
-  // null value means infinite attempts, 0 means ?
-  attemptsAllowed    Int?             @default(1) @db.SmallInt
-  // Dates
-  startsAt           DateTime         @db.Timestamptz(3)
-  endsAt             DateTime?        @db.Timestamptz(3)
-  lateSubmissionDate DateTime?        @db.Timestamptz(3)
-  state              QuizState        @default(created)
+  quizId          Int              @id @default(autoincrement())
+  order           Int              @db.SmallInt
+  courseId        Int
+  Course          Course           @relation(fields: [courseId], references: [courseId])
+  title           String
+  unitId          Int?
+  Unit            Unit?            @relation(fields: [unitId], references: [unitId])
+  lessonId        Int?
+  Lesson          Lesson?          @relation(fields: [lessonId], references: [lessonId])
+  state           QuizState        @default(created)
   // timestamp
-  createdAt          DateTime         @default(now()) @db.Timestamptz(3)
-  updatedAt          DateTime         @updatedAt @db.Timestamptz(3)
+  createdAt       DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(3)
   // Relations
-  Questions          QuizQuestion[]
-  QuizSubmissions    QuizSubmission[]
+  Questions       QuizQuestion[]
+  QuizSubmissions QuizSubmission[]
+  QuizMetaData    QuizMetaData?
 }
 
 enum QuizState {
   created
   available
   calculatedGrades
+}
+
+model QuizMetaData {
+  quizId             Int            @unique
+  Quiz               Quiz           @relation(fields: [quizId], references: [quizId])
+  // More details
+  fullGrade          Int            @default(0) @db.SmallInt
+  passGrade          Int?           @default(0) @db.SmallInt
+  // null value means infinite attempts, 0 means ?
+  attemptsAllowed    Int?           @db.SmallInt
+  reviewType         QuizReviewType
+  type               QuizType
+  // Dates
+  startsAt           DateTime       @db.Timestamptz(3)
+  endsAt             DateTime?      @db.Timestamptz(3)
+  // if provided, means students can submit at any time
+  // and the counter starts from the time they started
+  // but with a limit to this lateSubmission date
+  lateSubmissionDate DateTime?      @db.Timestamptz(3)
+}
+
+enum QuizReviewType {
+  automatic
+  manual
+  both
+}
+
+enum QuizType {
+  // not timed
+  randomized
+  sequential
+  // timed questions
+  randomizedTimed
+  sequentialTimed
+
 }
 
 model QuizQuestion {
@@ -353,13 +380,13 @@ enum QuestionType {
 
 // @todo add optional url to a file
 model QuizQuestionOption {
-  quizeQuestionOptionId Int          @db.SmallInt
+  quizeQuestionOptionId Int          @id @default(autoincrement())
+  order                 Int          @default(1) @db.SmallInt
   questionId            Int
   Question              QuizQuestion @relation(fields: [questionId], references: [quizQuestionId])
   optionText            String
   grade                 Int          @default(0) @db.SmallInt
-
-  @@id([quizeQuestionOptionId, questionId])
+  ChosenByAnswers       QuizAnswer[]
 }
 
 model QuizSubmission {
@@ -370,24 +397,27 @@ model QuizSubmission {
   Student          UserProfile  @relation(fields: [studentId], references: [userId])
   grade            Int?         @db.SmallInt
   courseId         Int
+  Course           Course       @relation(fields: [courseId], references: [courseId])
   // null for the quizzes that don't have infinite attempts limit
   attempts         Int?         @db.SmallInt()
-  Course           Course       @relation(fields: [courseId], references: [courseId])
   createdAt        DateTime     @default(now()) @db.Timestamptz(3)
   submittedAt      DateTime?    @db.Timestamptz(3)
+  reviewedAt       DateTime?    @db.Timestamptz(3)
   // Relations
   Answers          QuizAnswer[]
 }
 
 model QuizAnswer {
-  quizAnswerId Int            @id @default(autoincrement())
-  submissionId Int
-  questionId   Int
-  answer       String
+  quizAnswerId   Int                 @id @default(autoincrement())
+  submissionId   Int
+  questionId     Int
+  answer         String?             @db.Text
+  chosenOptionId Int?
+  ChosenOption   QuizQuestionOption? @relation(fields: [chosenOptionId], references: [quizeQuestionOptionId])
   // isCorrect    Boolean?
-  grade        Int?           @db.SmallInt
-  Submission   QuizSubmission @relation(fields: [submissionId], references: [quizSubmissionId])
-  Question     QuizQuestion   @relation(fields: [questionId], references: [quizQuestionId])
+  grade          Int?                @db.SmallInt
+  Submission     QuizSubmission      @relation(fields: [submissionId], references: [quizSubmissionId])
+  Question       QuizQuestion        @relation(fields: [questionId], references: [quizQuestionId])
 }
 
 model CourseProgress {

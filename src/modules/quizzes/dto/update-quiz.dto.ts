@@ -1,13 +1,14 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { CreateQuizDto } from './create-quiz.dto';
 import { IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { UpdateQuizQuestionDto } from 'src/modules/quiz-questions/dto/update-quiz-question.dto';
-import { CreateQuizQuestionDto } from 'src/modules/quiz-questions/dto/create-quiz-question.dto';
+import { SubUpdateQuizQuestionDto } from './sub-update-quiz-question.dto';
 
-export class UpdateQuizDto extends PartialType(CreateQuizDto) {
+export class UpdateQuizDto extends OmitType(PartialType(CreateQuizDto), [
+  'courseId',
+]) {
   @ApiProperty({
-    type: [{ ...UpdateQuizQuestionDto, ...CreateQuizQuestionDto }],
+    type: [SubUpdateQuizQuestionDto],
     description: 'Array of questions for the quiz',
     example: [
       {
@@ -26,6 +27,6 @@ export class UpdateQuizDto extends PartialType(CreateQuizDto) {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ({ ...UpdateQuizQuestionDto, ...CreateQuizQuestionDto }))
-  Questions?: (UpdateQuizQuestionDto & CreateQuizQuestionDto)[];
+  @Type(() => SubUpdateQuizQuestionDto)
+  Questions?: SubUpdateQuizQuestionDto[];
 }

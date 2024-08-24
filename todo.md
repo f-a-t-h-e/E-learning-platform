@@ -26,9 +26,27 @@
 
 - [ ] Improve the authorization for the quizzes module
 
-  - [ ] Refine role-based permissions for quizzes.
-  - [ ] Implement specific access controls for quiz creation and editing.
-  - [ ] Test and validate authorization rules for quizzes.
+  - [x] Improve the `create` endpoint
+
+    - [x] Add service method for fetching the needed data for creation validation
+    - [x] Add service method to validate the fetched data
+
+  - [x] Improve the `update` endpoint
+
+    - [x] Add service method for fetching the needed data for updating validation
+    - [x] Add service method to validate the fetched data
+
+  - [ ] Improve getting many quizzes
+
+    - [ ] Add filtering
+    - [ ] Add pagination
+    - [ ] Authorize accessing data
+
+  - [ ] Improve getting one quiz
+
+    - [ ] Add filtering
+    - [ ] Add pagination
+    - [ ] Authorize accessing data
 
 - [ ] Improve the authorization for the quiz-questions module
 
@@ -72,6 +90,7 @@
   - [ ] Improve authorizaion for adding the media files
 
 - [ ] Send the material
+
   - [ ] Send the material of the courses
   - [ ] Send the material of the units
   - [ ] Send the material of the lessons
@@ -87,7 +106,17 @@
   - [ ] Update the submissions `grades` based on the answers grades
   - [ ] Update the enrollment `grades` based on the submissions
 
+- [ ] Improve GET requests for fetching data
+  - [ ] Add `TPagination` type
+  - [ ] Add function that extracts `TPagination` input into the orm structure
+  - [ ] Add filtering
+  - [ ] Add columns selection
+
 # New Tasks
+
+- [ ] Add a repository for the ORM
+
+- [ ] Use "cron jobs"/"queues" for auto-reviewing quizzes
 
 - [ ] Validate the order of the quizQuestions, lessons & units on marking as available
 
