@@ -96,7 +96,7 @@ export class QuizzesController {
   @Patch(':id')
   @RolesDecorator(Role.Teacher)
   @ApiOperation({ summary: 'Update a quiz by ID' })
-  @ApiParam({ name: 'id', description: 'Quiz ID', type: Number })
+  @ApiParam({ name: 'id', description: 'Quiz ID', type: Number, example: 1 })
   @ApiResponse({
     status: 200,
     description: 'The quiz has been successfully updated.',

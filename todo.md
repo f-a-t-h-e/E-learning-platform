@@ -30,11 +30,13 @@
 
     - [x] Add service method for fetching the needed data for creation validation
     - [x] Add service method to validate the fetched data
+    - [x] Test the flow with swagger
 
   - [x] Improve the `update` endpoint
 
     - [x] Add service method for fetching the needed data for updating validation
     - [x] Add service method to validate the fetched data
+    - [x] Test the flow with swagger
 
   - [ ] Improve getting many quizzes
 

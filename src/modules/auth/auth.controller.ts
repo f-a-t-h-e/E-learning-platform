@@ -62,8 +62,11 @@ export class AuthController {
     @Req() req: Request,
   ): Promise<AuthRes> {
     const user = await this.authService.register(registrationData);
-    if (user == false) {
+    if (user == "email") {
       throw new ConflictException(`There is a user with this email already!`);
+    }
+    if (user == "username") {
+      throw new ConflictException(`There is a user with this username already!`);
     }
     // Manage token
     const accessToken = this.authService.getCookieWithJwtAccessToken(user);

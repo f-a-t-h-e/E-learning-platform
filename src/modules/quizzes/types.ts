@@ -2,20 +2,29 @@ import { $Enums } from '@prisma/client';
 
 export type TGetCreateAuthDetailsReturn = {
   courseId: number;
-  state: $Enums.CourseState;
-  Instructors: {
-    position: $Enums.CourseInstructorPositions;
-    state: $Enums.CourseInstructorState;
-    endsAt: Date | null;
-  }[];
-  Units?: {
-    state: $Enums.UnitState;
-  }[];
-  Lessons?: {
-    state: $Enums.LessonState;
-    unitId: number;
-  }[];
-};
+  courseState: $Enums.CourseState;
+
+  position: $Enums.CourseInstructorPositions;
+  instructorState: $Enums.CourseInstructorState;
+  instructorEndsAt: Date | null;
+} & (
+  | {
+      unitState: null;
+    }
+  | {
+      unitState: $Enums.UnitState;
+    }
+) &
+  (
+    | {
+        lessonState: null;
+        unitId: null;
+      }
+    | {
+        lessonState: $Enums.LessonState;
+        unitId: number;
+      }
+  );
 
 export type TGetUpdateAuthDetailsReturn = {
   courseId: number;

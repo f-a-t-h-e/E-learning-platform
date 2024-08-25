@@ -115,6 +115,7 @@ export class CreateQuizDto {
   @ApiProperty({
     description: `How many times students can submit a solution, \`null\` for infinite submissions (note that it won't be inserted as infinite but will allow infinite re-submit)`,
     examples: [1, 3, null],
+    example: 1,
     nullable: true,
     minimum: 1,
     maximum: 10,
@@ -153,8 +154,8 @@ export class CreateQuizDto {
         fullGrade: 10,
         passGrade: 5,
         Options: [
-          { grade: 10, optionText: 'Afghanistan', quizeQuestionOptionId: 1 },
-          { grade: 0, optionText: 'Pakistan', quizeQuestionOptionId: 2 },
+          { grade: 10, optionText: 'Afghanistan', order: 1 },
+          { grade: 0, optionText: 'Pakistan', order: 2 },
         ],
       },
     ],

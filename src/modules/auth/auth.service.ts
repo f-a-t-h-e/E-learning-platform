@@ -48,11 +48,13 @@ export class AuthService {
       return { ...user, username: data.username };
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
-        if (
-          error.code === 'P2002' &&
-          (error.meta.target as Array<string>).includes('email')
-        ) {
-          return false;
+        if (error.code === 'P2002') {
+          if ((error.meta.target as Array<string>).includes('email')) {
+            return 'email';
+          }
+          if ((error.meta.target as Array<string>).includes('username')) {
+            return 'username';
+          }
         }
       }
       throw error;
