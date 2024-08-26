@@ -110,7 +110,7 @@ model Course {
 enum CourseState {
   created
   available
-  calculatedGrades
+  calculated_grades
 }
 
 model CourseEnrollment {
@@ -124,7 +124,7 @@ model CourseEnrollment {
   // timestamp
   createdAt          DateTime              @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime              @updatedAt @db.Timestamptz(3)
-  endsAt             DateTime?
+  endsAt             DateTime?             @db.Timestamptz(3)
 }
 
 enum CourseEnrollmentState {
@@ -142,7 +142,7 @@ model CourseInstructor {
   // timestamp
   createdAt          DateTime                  @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime                  @updatedAt @db.Timestamptz(3)
-  endsAt             DateTime?
+  endsAt             DateTime?                 @db.Timestamptz(3)
 }
 
 enum CourseInstructorPositions {
@@ -233,7 +233,7 @@ model Unit {
 enum UnitState {
   created
   available
-  calculatedGrades
+  calculated_grades
 }
 
 model Lesson {
@@ -264,7 +264,7 @@ model Lesson {
 enum LessonState {
   created
   available
-  calculatedGrades
+  calculated_grades
 }
 
 model LessonContent {
@@ -318,7 +318,7 @@ model Quiz {
 enum QuizState {
   created
   available
-  calculatedGrades
+  calculated_grades
 }
 
 model QuizMetaData {
@@ -351,9 +351,8 @@ enum QuizType {
   randomized
   sequential
   // timed questions
-  randomizedTimed
-  sequentialTimed
-
+  randomized_timed
+  sequential_timed
 }
 
 model QuizQuestion {

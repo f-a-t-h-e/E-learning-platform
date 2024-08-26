@@ -18,9 +18,9 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateQuizSubmissionDto } from './dto/create-quiz-submission.dto';
 import { UpdateQuizSubmissionDto } from './dto/update-quiz-submission.dto';
-import { FieldsOrNullFields } from 'src/common/utils/types';
 import { CreateQuizAnswerDto } from './dto/create-quiz-answer.dto';
 import { TFindAllSelectType } from './types';
+import { FieldsOrNullFields } from 'src/common/types/fieldsOrNullFields.type';
 
 /**
  * These are the base details needed for cheching the authorization for the user actions for a quiz submission

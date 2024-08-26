@@ -28,6 +28,7 @@ import {
 import { LessonsContentEntity } from './entities/lessons-content.entity';
 import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
 import { ApiErrorResponses } from 'src/common/decorators/api-error-responses.decorator';
+import { RequestUser } from '../auth/entities/request-user.entity';
 
 @ApiErrorResponses()
 @ApiTags('Lessons Contents')
@@ -63,7 +64,7 @@ export class LessonsContentsController {
     if (
       !this.lessonsService.canUserEditLesson(
         user.userId,
-        createLessonsContentDto.id,
+        createLessonsContentDto.lessonId,
       )
     ) {
       throw new ForbiddenException(
@@ -73,7 +74,7 @@ export class LessonsContentsController {
     /**
      * @todo Check the content size to determine if you should save it as a file or as a string in the db
      */
-    return this.lessonsContentsService.create(createLessonsContentDto, 'TEXT');
+    return this.lessonsContentsService.create(createLessonsContentDto, 'text');
   }
 
   @ApiOperation({

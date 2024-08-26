@@ -1,11 +1,11 @@
 export const getStatesForCalculatingGrades = (
-  state?: 'available' | 'calculatedGrades',
+  state?: 'available' | 'calculated_grades',
 ) => {
-  const targetStates = [] as ('available' | 'calculatedGrades')[];
+  const targetStates = [] as ('available' | 'calculated_grades')[];
   if (state == 'available') {
     targetStates.push('available');
   } else {
-    targetStates.push('calculatedGrades');
+    targetStates.push('calculated_grades');
     targetStates.push('available');
   }
 

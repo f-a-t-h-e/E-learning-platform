@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "CourseState" AS ENUM ('created', 'available', 'calculatedGrades');
+CREATE TYPE "CourseState" AS ENUM ('created', 'available', 'calculated_grades');
 
 -- CreateEnum
 CREATE TYPE "CourseEnrollmentState" AS ENUM ('active');
@@ -20,22 +20,22 @@ CREATE TYPE "MediaState" AS ENUM ('uploading', 'uploaded', 'failed');
 CREATE TYPE "CourseMediaTarget" AS ENUM ('course_banner', 'course_material', 'unit_banner', 'unit_material', 'lesson_banner', 'lesson_material');
 
 -- CreateEnum
-CREATE TYPE "UnitState" AS ENUM ('created', 'available', 'calculatedGrades');
+CREATE TYPE "UnitState" AS ENUM ('created', 'available', 'calculated_grades');
 
 -- CreateEnum
-CREATE TYPE "LessonState" AS ENUM ('created', 'available', 'calculatedGrades');
+CREATE TYPE "LessonState" AS ENUM ('created', 'available', 'calculated_grades');
 
 -- CreateEnum
 CREATE TYPE "ContentType" AS ENUM ('url', 'text');
 
 -- CreateEnum
-CREATE TYPE "QuizState" AS ENUM ('created', 'available', 'calculatedGrades');
+CREATE TYPE "QuizState" AS ENUM ('created', 'available', 'calculated_grades');
 
 -- CreateEnum
 CREATE TYPE "QuizReviewType" AS ENUM ('automatic', 'manual', 'both');
 
 -- CreateEnum
-CREATE TYPE "QuizType" AS ENUM ('randomized', 'sequential', 'randomizedTimed', 'sequentialTimed');
+CREATE TYPE "QuizType" AS ENUM ('randomized', 'sequential', 'randomized_timed', 'sequential_timed');
 
 -- CreateEnum
 CREATE TYPE "QuestionType" AS ENUM ('multiple_choice', 'true_false', 'short_answer', 'long_answer');
@@ -253,6 +253,7 @@ CREATE TABLE "QuizSubmission" (
     "quizId" INTEGER NOT NULL,
     "studentId" INTEGER NOT NULL,
     "grade" SMALLINT,
+    "courseId" INTEGER NOT NULL,
     "attempts" SMALLINT,
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "submittedAt" TIMESTAMPTZ(3),
@@ -393,6 +394,9 @@ ALTER TABLE "QuizSubmission" ADD CONSTRAINT "QuizSubmission_quizId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "QuizSubmission" ADD CONSTRAINT "QuizSubmission_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "UserProfile"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "QuizSubmission" ADD CONSTRAINT "QuizSubmission_courseId_fkey" FOREIGN KEY ("courseId") REFERENCES "Course"("courseId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "QuizAnswer" ADD CONSTRAINT "QuizAnswer_chosenOptionId_fkey" FOREIGN KEY ("chosenOptionId") REFERENCES "QuizQuestionOption"("quizeQuestionOptionId") ON DELETE SET NULL ON UPDATE CASCADE;

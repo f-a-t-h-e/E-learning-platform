@@ -108,7 +108,7 @@ export class UnitsService {
     quizPassGrade?: number;
     auto?: boolean;
     allStates?: boolean;
-    state?: 'available' | 'calculatedGrades';
+    state?: 'available' | 'calculated_grades';
   }) {
     const targetState = getStatesForCalculatingGrades(inputs.state);
     if (inputs.auto) {
@@ -116,7 +116,7 @@ export class UnitsService {
         where: {
           unitId: inputs.unitId,
           state: inputs.allStates
-            ? { in: ['available', 'calculatedGrades', 'created'] }
+            ? { in: ['available', 'calculated_grades', 'created'] }
             : { in: targetState },
         },
       });
@@ -161,7 +161,7 @@ export class UnitsService {
             unitId: inputs.unitId,
           },
           data: {
-            state: inputs.state || 'calculatedGrades',
+            state: inputs.state || 'calculated_grades',
             quizFullGrade: quizFullGrade,
             quizPassGrade: quizPassGrade,
           },
@@ -178,12 +178,12 @@ export class UnitsService {
           unitId: inputs.unitId,
         },
         data: {
-          state: inputs.state || 'calculatedGrades',
+          state: inputs.state || 'calculated_grades',
           quizFullGrade: quizFullGrade,
           quizPassGrade: quizPassGrade,
           Course: {
             update: {
-              state: 'calculatedGrades',
+              state: 'calculated_grades',
             },
           },
         },

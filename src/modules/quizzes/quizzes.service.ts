@@ -4,94 +4,220 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  CourseEnrollmentState,
+  CourseInstructorPositions,
+  CourseState,
+  Prisma,
+  Quiz,
+  UserProfile,
+} from '@prisma/client';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
-import { Prisma, Quiz, UserProfile } from '@prisma/client';
 import {
   TGetCreateAuthDetailsReturn,
   TGetUpdateAuthDetailsReturn,
 } from './types';
-import { getCreateAuthDetailsQuery } from './sql/getQueries';
+
+import { GetManyQuizzesQueryDto } from './dto/queries/get-many-quizzes-query.dto';
+import { QuizzesRepository } from './repositories/quizzes.repository';
 
 @Injectable()
 export class QuizzesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly repo: QuizzesRepository,
+  ) {}
 
-  async create(createQuizDto: CreateQuizDto) {
-    const {
-      Questions,
-      courseId,
-      lessonId,
-      unitId,
-      order,
-      title,
-      ...QuizMetaData
-    } = createQuizDto;
+  async authInstructorHardPerQuiz(inputs: { userId: number; quizId: number }) {
+    const details = await this.repo.getInstructorAuthPerQuizQuery(inputs);
 
-    return this.prisma.quiz.create({
-      data: {
-        courseId,
-        lessonId,
-        unitId,
-        order,
-        title,
-        Questions: {
-          create: Questions?.map((question) => ({
-            ...question,
-            Options: {
-              create: question.Options?.map((option) => ({
-                ...option,
-              })),
-            },
-          })),
-        },
-        QuizMetaData: {
-          create: {
-            ...QuizMetaData,
-          },
-        },
-      },
-      include: {
-        Questions: {
-          include: {
-            Options: true, // Include options if needed
-          },
-        },
-      },
+    if (!details) {
+      throw new NotFoundException(`This quiz doesn't exist`);
+    }
+    if (!details.instructorId) {
+      throw new ForbiddenException(`You have no access to edit this quiz`);
+    }
+
+    return true;
+  }
+
+  validateInstructorPerQuiz(
+    details:
+      | {
+          course: {
+            state: CourseState;
+            courseInstructors: {
+              state: CourseEnrollmentState;
+              position: CourseInstructorPositions;
+              endsAt: Date;
+            }[];
+          };
+        }
+      | undefined
+      | null,
+  ) {
+    if (!details) {
+      throw new NotFoundException(`This quiz doesn't exist`);
+    }
+    if (!details.course.courseInstructors[0]) {
+      throw new ForbiddenException(`You have no access to edit this quiz`);
+    }
+  }
+
+  async authInstructorHard(inputs: { courseId: number; userId: number }) {
+    const data = await this.repo.getInstructorAuthForCourseQuery(inputs);
+    if (!data) {
+      throw new NotFoundException(`This course doesn't exist`);
+    }
+    if (!data.courseInstructorId) {
+      throw new ForbiddenException(`You have no access to this course`);
+    }
+    if (data.enrollmentState !== 'active') {
+      throw new ForbiddenException(`Your enrollment state is not active`);
+    }
+    if (data.endsAt < new Date()) {
+      throw new ForbiddenException(`Your enrollment has ended`);
+    }
+    return data;
+  }
+
+  async authStudentHard({
+    courseId,
+    userId,
+  }: {
+    userId: number;
+    courseId: number;
+  }) {
+    const details = await this.repo.getStudentAuthQuery({ courseId, userId });
+    if (!details) {
+      throw new NotFoundException(`This course doesn't exist`);
+    }
+    if (!details.enrollmentState) {
+      throw new ForbiddenException(`You are not enrolled in this course`);
+    }
+    if (details.enrollmentState !== 'active') {
+      throw new BadRequestException(
+        `Your enrollment in this course is not active`,
+      );
+    }
+    if (details.endsAt && details.endsAt < new Date()) {
+      throw new BadRequestException(`Your enrollment in this course has ended`);
+    }
+    return details;
+  }
+
+  async authStudentHardPerQuiz({
+    quizId,
+    userId,
+  }: {
+    userId: number;
+    quizId: number;
+  }) {
+    const details = await this.repo.getStudentAuthPerQuizQuery({
+      quizId,
+      userId,
     });
+
+    if (!details) {
+      throw new NotFoundException(`This quiz doesn't exist`);
+    }
+    if (!details.enrollmentState) {
+      throw new ForbiddenException(`You are not enrolled in this course`);
+    }
+    if (details.enrollmentState !== 'active') {
+      throw new BadRequestException(
+        `Your enrollment in this course is not active`,
+      );
+    }
+    if (details.endsAt && details.endsAt < new Date()) {
+      throw new BadRequestException(`Your enrollment in this course has ended`);
+    }
+
+    return details;
   }
 
-  async findAll() {
-    return this.prisma.quiz.findMany();
+  validatestudentPerQuiz(
+    details: Awaited<
+      ReturnType<QuizzesService['repo']['getStudentOneWithAuth']>
+    >,
+  ) {
+    if (!details) {
+      throw new NotFoundException(`This quiz doesn't exist`);
+    }
+    if (details.state != 'available') {
+      throw new NotFoundException(`This quiz is not available`);
+    }
+    if (!details.course.courseEnrollments[0]) {
+      throw new ForbiddenException(`You have no access to edit this quiz`);
+    }
+    if (
+      details.quizMetaData[0].attemptsAllowed &&
+      details.quizMetaData[0].startsAt < new Date()
+    ) {
+      if (!details.quizSubmissions[0]) {
+        throw new ForbiddenException(`You can't see this quiz yet`);
+      }
+    }
   }
 
-  async findOne(id: number) {
-    return this.prisma.quiz.findUnique({
-      where: { quizId: id },
-      include: {
-        Questions: {
-          include: {
-            Options: true,
-          },
-        },
-      },
-    });
+  async findManyForStudent(query: GetManyQuizzesQueryDto) {
+    const data = await this.repo.getManyQuizzesForStudentQuery(query);
+    if (data.length > query.quizPageSize) {
+      data.pop();
+      return {
+        data: data,
+        hasMore: true,
+      };
+    }
+    return {
+      data: data,
+      hasMore: false,
+    };
   }
 
+  async findManyForInstructor(query: GetManyQuizzesQueryDto) {
+    const data = await this.repo.getManyQuizzesForInstructorQuery(query);
+    if (data.length > query.quizPageSize) {
+      data.pop();
+      return {
+        data: data,
+        hasMore: true,
+      };
+    }
+    return {
+      data: data,
+      hasMore: false,
+    };
+  }
+
+  async findInstructorOneWithAuth(inputs: { userId: number; quizId: number }) {
+    const details = await this.repo.getInstructorOneWithAuth(inputs);
+    this.validateInstructorPerQuiz(details);
+    delete details.course;
+    return details as Omit<typeof details, 'course'>;
+  }
+
+  async findStudentOneWithAuth(inputs: { userId: number; quizId: number }) {
+    const details = await this.repo.getStudentOneWithAuth(inputs);
+    this.validatestudentPerQuiz(details);
+    delete details.course;
+    return details as Omit<typeof details, 'course'>;
+  }
+
+  // CREATE
   async getCreateAuthDetails(
     inputs: CreateQuizDto,
     userId: UserProfile['userId'],
   ): Promise<TGetCreateAuthDetailsReturn | null | undefined> {
-    const [query, params] = getCreateAuthDetailsQuery({
+    const data = await this.repo.getCreateAuthDetailsQuery({
       courseId: inputs.courseId,
-      userId: userId,
       lessonId: inputs.lessonId,
       unitId: inputs.unitId,
+      userId: userId,
     });
-    const [data] = await this.prisma.$queryRawUnsafe<
-      TGetCreateAuthDetailsReturn[]
-    >(query, ...params);
     return data;
   }
 
@@ -150,6 +276,51 @@ export class QuizzesService {
     return true;
   }
 
+  async create(createQuizDto: CreateQuizDto) {
+    const {
+      Questions,
+      courseId,
+      lessonId,
+      unitId,
+      order,
+      title,
+      ...QuizMetaData
+    } = createQuizDto;
+
+    return this.prisma.quiz.create({
+      data: {
+        courseId,
+        lessonId,
+        unitId,
+        order,
+        title,
+        Questions: {
+          create: Questions?.map((question) => ({
+            ...question,
+            Options: {
+              create: question.Options?.map((option) => ({
+                ...option,
+              })),
+            },
+          })),
+        },
+        QuizMetaData: {
+          create: {
+            ...QuizMetaData,
+          },
+        },
+      },
+      include: {
+        Questions: {
+          include: {
+            Options: true, // Include options if needed
+          },
+        },
+      },
+    });
+  }
+
+  // UPDATE
   async getUpdateAuthDetails(
     quizId: Quiz['quizId'],
     instructorId: number,
@@ -357,7 +528,7 @@ export class QuizzesService {
       };
     }
     console.log(1);
-    
+
     return this.prisma.quiz.update({
       where: { quizId: id },
       data: data,
@@ -367,69 +538,12 @@ export class QuizzesService {
     });
   }
 
-  async remove(id: number) {
-    return this.prisma.quiz.delete({
-      where: { quizId: id },
-    });
-  }
-
-  async findByCourseId(courseId: number) {
-    return this.prisma.quiz.findMany({
-      where: { courseId },
-    });
-  }
-
-  async findByLessonId(lessonId: number) {
-    return this.prisma.quiz.findMany({
-      where: { lessonId },
-    });
-  }
-
-  async findQuizzesByDateRange(start: Date, end: Date) {
-    return this.prisma.quiz.findMany({
-      where: {
-        QuizMetaData: {
-          startsAt: { gte: start },
-          endsAt: { lte: end },
-        },
-      },
-    });
-  }
-
-  async authHard({ quizId, userId }: { userId: number; quizId: number }) {
-    // selecting it this way to check if the quiz exists, then the possibility of accessing it
-    // for better informative messages (maybe just for development ?)
-    const quiz = await this.prisma.quiz.findFirst({
-      where: {
-        quizId: quizId,
-      },
-      select: {
-        Course: {
-          select: {
-            Instructors: {
-              where: {
-                instructorId: userId,
-              },
-              select: { instructorId: true, position: true },
-            },
-          },
-        },
-      },
-    });
-    if (!quiz) {
-      throw new NotFoundException(`This quiz doesn't exist`);
-    }
-    if (!quiz.Course.Instructors.find((i) => i.instructorId == userId)) {
-      throw new ForbiddenException(`You have no access to edit this quiz`);
-    }
-    return true;
-  }
-
+  // Some Modifications
   async markAsAvailable(inputs: {
     quizId: Quiz['quizId'];
     passGrade?: number;
     auto?: boolean;
-    state?: 'available' | 'calculatedGrades';
+    state?: 'available' | 'calculated_grades';
   }) {
     const result = await this.prisma.useTransaction(async (tx) => {
       const sums = await tx.quizQuestion.aggregate({
@@ -460,7 +574,7 @@ export class QuizzesService {
               quizId: inputs.quizId,
             },
             data: {
-              state: inputs.state || 'calculatedGrades',
+              state: inputs.state || 'calculated_grades',
             },
           }),
           dataUpdatePromise,
@@ -478,20 +592,20 @@ export class QuizzesService {
             quizId: inputs.quizId,
           },
           data: {
-            state: inputs.state || 'calculatedGrades',
+            state: inputs.state || 'calculated_grades',
             Course: {
               update: {
-                state: 'calculatedGrades',
+                state: 'calculated_grades',
               },
             },
             Unit: {
               update: {
-                state: 'calculatedGrades',
+                state: 'calculated_grades',
               },
             },
             Lesson: {
               update: {
-                state: 'calculatedGrades',
+                state: 'calculated_grades',
               },
             },
           },
@@ -512,5 +626,11 @@ export class QuizzesService {
     });
 
     return result;
+  }
+
+  async remove(id: number) {
+    return this.prisma.quiz.delete({
+      where: { quizId: id },
+    });
   }
 }

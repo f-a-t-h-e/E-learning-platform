@@ -9,6 +9,15 @@ export class QuizQuestionOptionEntity implements QuizQuestionOption {
   })
   quizeQuestionOptionId: number;
 
+
+  @ApiProperty({
+    description: 'The order of the option within the question',
+    type: Number,
+    example: 1,
+    minimum: 1,
+  })
+  order: number;
+
   @ApiProperty({
     description: 'Grade awarded for selecting this option',
     example: 1,

@@ -90,7 +90,7 @@ export class LessonsService {
     quizPassGrade?: number;
     auto?: boolean;
     allStates?: boolean;
-    state?: 'available' | 'calculatedGrades';
+    state?: 'available' | 'calculated_grades';
   }) {
     const targetState = getStatesForCalculatingGrades(inputs.state);
     if (inputs.auto) {
@@ -98,7 +98,7 @@ export class LessonsService {
         where: {
           lessonId: inputs.lessonId,
           state: inputs.allStates
-            ? { in: ['available', 'calculatedGrades', 'created'] }
+            ? { in: ['available', 'calculated_grades', 'created'] }
             : { in: targetState },
         },
       });
@@ -133,7 +133,7 @@ export class LessonsService {
             lessonId: inputs.lessonId,
           },
           data: {
-            state: inputs.state || 'calculatedGrades',
+            state: inputs.state || 'calculated_grades',
             quizFullGrade: quizFullGrade,
             quizPassGrade: quizPassGrade,
           },
@@ -149,7 +149,7 @@ export class LessonsService {
           lessonId: inputs.lessonId,
         },
         data: {
-          state: inputs.state || 'calculatedGrades',
+          state: inputs.state || 'calculated_grades',
           quizFullGrade: quizFullGrade,
           quizPassGrade: quizPassGrade,
           Course: {

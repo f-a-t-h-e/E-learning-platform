@@ -1,30 +1,62 @@
-import { $Enums } from '@prisma/client';
+import { $Enums, Quiz, QuizMetaData } from '@prisma/client';
+import { FieldsOrNullFields } from 'src/common/types/fieldsOrNullFields.type';
+
+export type TGetManyQuizzesForStudent = {
+  quizId: number;
+  courseId: number;
+  unitId: number;
+  lessonId: number;
+  order: number;
+  state: $Enums.QuizState;
+  title: string;
+  startsAt: Date;
+  endsAt: Date | null;
+  lateSubmissionDate: Date | null;
+  attemptsAllowed: number | null;
+  fullGrade: number;
+  type: $Enums.QuizType;
+};
+export type TGetManyQuizzesForInstructor = QuizMetaData & Quiz;
+
+export type TGetInstructorAuth = {
+  courseState: $Enums.CourseState;
+} & FieldsOrNullFields<{
+  enrollmentState: $Enums.CourseInstructorState;
+  position: $Enums.CourseInstructorPositions;
+  courseInstructorId: number;
+  endsAt: Date | null;
+}>;
+
+export type TGetStudentAuth = {
+  courseState: $Enums.CourseState;
+} & FieldsOrNullFields<{
+  enrollmentState: $Enums.CourseEnrollmentState;
+  courseEnrollmentId: number;
+  endsAt: Date | null;
+}>;
+
+export type TGetStudentAuthPerQuiz = {
+  quizState: $Enums.QuizState;
+  courseState: $Enums.CourseState;
+} & FieldsOrNullFields<{
+  enrollmentState: $Enums.CourseEnrollmentState;
+  courseEnrollmentId: number;
+  endsAt: Date | null;
+}>;
 
 export type TGetCreateAuthDetailsReturn = {
   courseId: number;
   courseState: $Enums.CourseState;
-
   position: $Enums.CourseInstructorPositions;
   instructorState: $Enums.CourseInstructorState;
   instructorEndsAt: Date | null;
-} & (
-  | {
-      unitState: null;
-    }
-  | {
-      unitState: $Enums.UnitState;
-    }
-) &
-  (
-    | {
-        lessonState: null;
-        unitId: null;
-      }
-    | {
-        lessonState: $Enums.LessonState;
-        unitId: number;
-      }
-  );
+} & FieldsOrNullFields<{
+  unitState: $Enums.UnitState;
+}> &
+  FieldsOrNullFields<{
+    lessonState: $Enums.LessonState;
+    unitId: number;
+  }>;
 
 export type TGetUpdateAuthDetailsReturn = {
   courseId: number;

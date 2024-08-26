@@ -13,7 +13,7 @@ export class LessonsContentsService {
   ) {
     const content = await this.prisma.lessonContent.create({
       data: {
-        lessonId: createLessonsContentDto.id,
+        lessonId: createLessonsContentDto.lessonId,
         content: createLessonsContentDto.content,
         contentType: contentType,
       },

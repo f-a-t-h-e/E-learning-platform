@@ -31,6 +31,8 @@ import { User } from 'src/common/decorators/user.decorator';
 import { RequestUser } from '../auth/entities/request-user.entity';
 import { UnauthorizedResponse } from 'src/common/entities/error-response.entity';
 import { MarkAvailableDto } from 'src/common/dto/markAvailable.dto';
+import { ParseOptionalId } from 'src/common/pipes/ParseOptionalId.pipe';
+import { GetManyQuizzesQueryDto } from './dto/queries/get-many-quizzes-query.dto';
 
 @ApiBearerAuth()
 @ApiErrorResponses()
@@ -64,14 +66,23 @@ export class QuizzesController {
   @Get()
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Get many quizzes' })
-  @ApiQuery({
-    name: 'courseId',
-    type: Number,
-    description: `\`course.id\` that you want to get its quizzes.`,
-  })
   @ApiResponse({ status: 200, description: 'Return many quizzes.' })
-  findMany(@Query('courseId', ParseIntPipe) courseId: number) {
-    return this.quizzesService.findByCourseId(courseId);
+  async findMany(
+    @Query() query: GetManyQuizzesQueryDto,
+    @User() user: RequestUser,
+  ) {
+    if (user.roleName == 'student') {
+      await this.quizzesService.authStudentHard({
+        courseId: query.courseId,
+        userId: user.userId,
+      });
+      return this.quizzesService.findManyForStudent(query);
+    }
+    await this.quizzesService.authInstructorHard({
+      courseId: query.courseId,
+      userId: user.userId,
+    });
+    return this.quizzesService.findManyForInstructor(query);
   }
 
   @Get(':id')
@@ -84,12 +95,19 @@ export class QuizzesController {
     @User() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    const quiz = await this.quizzesService.findOne(id);
     if (user.roleName == 'student') {
-      quiz.Questions.forEach((q) => {
-        delete q.correctAnswer;
+      const quiz = await this.quizzesService.findStudentOneWithAuth({
+        quizId: id,
+        userId: user.userId,
       });
+
+      return quiz;
     }
+
+    const quiz = await this.quizzesService.findInstructorOneWithAuth({
+      quizId: id,
+      userId: user.userId,
+    });
     return quiz;
   }
 
@@ -149,7 +167,10 @@ export class QuizzesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() markAvailableDto: MarkAvailableDto,
   ) {
-    await this.quizzesService.authHard({ quizId: id, userId: user.userId });
+    await this.quizzesService.authInstructorHardPerQuiz({
+      quizId: id,
+      userId: user.userId,
+    });
     return this.quizzesService.markAsAvailable({
       quizId: id,
       auto: markAvailableDto.auto,
@@ -169,7 +190,10 @@ export class QuizzesController {
     @Param('id', ParseIntPipe) id: number,
     @User() user: RequestUser,
   ) {
-    await this.quizzesService.authHard({ quizId: id, userId: user.userId });
+    await this.quizzesService.authInstructorHardPerQuiz({
+      quizId: id,
+      userId: user.userId,
+    });
     return this.quizzesService.remove(id);
   }
 }
