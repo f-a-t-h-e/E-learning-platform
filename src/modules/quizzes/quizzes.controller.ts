@@ -88,7 +88,7 @@ export class QuizzesController {
   @Get(':id')
   @UseGuards(JwtGuard)
   @ApiOperation({ summary: 'Get a quiz by ID' })
-  @ApiParam({ name: 'id', description: 'Quiz ID' })
+  @ApiParam({ name: 'id', description: 'Quiz ID', example: 1 })
   @ApiResponse({ status: 200, description: 'Return the specified quiz.' })
   @ApiResponse({ status: 404, description: 'Quiz not found' })
   async findOne(

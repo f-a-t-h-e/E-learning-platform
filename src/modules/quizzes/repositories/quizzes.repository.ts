@@ -1,13 +1,51 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { and, asc, desc, eq, gte, isNull, lte } from 'drizzle-orm';
 import { DRIZZLE } from 'src/common/providers-constants';
 import { DrizzleService } from 'src/modules/drizzle/drizzle.service';
 import { GetManyQuizzesQueryDto } from '../dto/queries/get-many-quizzes-query.dto';
-import { TGetCreateAuthDetailsReturn } from '../types';
+import { TGetCreateAuthDetailsReturn, TGetManyQuizzesForStudent, TGetStudentAuth } from '../types';
+import { BaseRepository } from 'src/common/base.repository';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { getManyQuizzesForStudentQuery, getStudentAuthQuery } from '../sql';
 
+/**
+ * The result of this is that drizzle was worse than prisma
+ * 
+ * when using db.query it took much more time than the prisma select/include
+ * when using leftJoins for drizzle and raw sql for prisma, there is slightly better performance for raw sql as well
+ * (means I don't need drizzle as I brought it for avoiding raw sql, but it seems it's technique is taking too much time than my own raw sql used with prisma)
+ * 
+ * I GOT NO SINGLE TEST "drizzle" WAS FASTER IN IT IN THIS FILE
+ */
 @Injectable()
-export class QuizzesRepository {
-  constructor(@Inject(DRIZZLE) private readonly database: DrizzleService) {}
+export class QuizzesRepository extends BaseRepository {
+  private selectAll: typeof this.database.tables.quiz._.columns &
+    typeof this.database.tables.quizMetaData._.columns;
+  constructor(
+    @Inject(DRIZZLE) private readonly database: DrizzleService,
+    private readonly prisma: PrismaService,
+  ) {
+    const methods = [
+      'getInstructorAuthPerQuizQuery',
+      'getInstructorAuthForCourseQuery',
+      'getCreateAuthDetailsQuery',
+      'getManyQuizzesForInstructorQuery',
+      'getInstructorOneWithAuth',
+      'getStudentAuthQuery',
+      'getStudentAuthQueryp',
+      'getStudentAuthPerQuizQuery',
+      'getManyQuizzesForStudentQuery',
+      'getManyQuizzesForStudentQueryp',
+      'getStudentOneWithAuth',
+      'getStudentOneWithAuthp',
+    ];
+    super(methods, QuizzesRepository);
+    this.selectAll = {
+      ...this.database.tables.quiz,
+      ...this.database.tables.quizMetaData,
+    } as unknown as typeof this.database.tables.quiz._.columns &
+      typeof this.database.tables.quizMetaData._.columns;
+  }
 
   // INSTRUCTOR QUERIES
   // AUTH
@@ -135,12 +173,8 @@ export class QuizzesRepository {
           ? and(eq(q.unitId, query.unitId), isNull(q.lessonId))
           : and(isNull(q.unitId), isNull(q.lessonId)),
     );
-
     const data = await this.database.db
-      .select({
-        ...q._.columns,
-        ...qmd._.columns,
-      })
+      .select(this.selectAll)
       .from(q)
       .leftJoin(qmd, eq(qmd.quizId, q.quizId))
       .limit((query.quizPageSize || 10) + 1)
@@ -191,6 +225,8 @@ export class QuizzesRepository {
 
   // STUDENT QUERIES
   // AUTH
+  // I believe part of this (first) is for creating a connection or something
+  // first +28ms then ~ +3ms
   async getStudentAuthQuery({
     courseId,
     userId,
@@ -218,6 +254,19 @@ export class QuizzesRepository {
         ),
       )
       .where(eq(this.database.tables.course.courseId, courseId));
+
+    return data;
+  }
+  // first +8ms then +2ms
+  async getStudentAuthQueryp({
+    courseId,
+    userId,
+  }: {
+    userId: number;
+    courseId: number;
+  }) {
+    const [query, params] = getStudentAuthQuery({courseId,userId})
+    const [data] = await this.prisma.$queryRawUnsafe<TGetStudentAuth[]>(query, ...params);
 
     return data;
   }
@@ -261,6 +310,7 @@ export class QuizzesRepository {
     return data;
   }
 
+  // first +7ms then ~ +3ms
   async getManyQuizzesForStudentQuery(query: GetManyQuizzesQueryDto) {
     const q = this.database.tables.quiz;
     const qmd = this.database.tables.quizMetaData;
@@ -305,7 +355,16 @@ export class QuizzesRepository {
       .where(condition);
     return data;
   }
+  // first +5ms then +2ms
+  async getManyQuizzesForStudentQueryp(query: GetManyQuizzesQueryDto) {
+    const [q, p] = getManyQuizzesForStudentQuery(query)
+    const data = await this.prisma.$queryRawUnsafe<TGetManyQuizzesForStudent[]>(q, ...p);
+    return data;
+  }
 
+  // it alternates between +48ms and (+7ms / +6ms) (it hits +48ms more than prisma' hits +17ms and it requires requesting another query )
+  // ((+7ms / +6ms) seems to be the cached one but it lasts for very short time not like prisma)
+  // first (+48ms, +9ms) then (+7ms / +6ms) (for short time only)
   async getStudentOneWithAuth({
     quizId,
     userId,
@@ -348,6 +407,62 @@ export class QuizzesRepository {
         },
         quizMetaData: {
           columns: {
+            attemptsAllowed: true,
+            endsAt: true,
+            fullGrade: true,
+            lateSubmissionDate: true,
+            passGrade: true,
+            startsAt: true,
+            type: true,
+          },
+        },
+      },
+    });
+    return data;
+  }
+  // first (+17ms) then +7ms (for long time with 5 select queries)
+  async getStudentOneWithAuthp({
+    quizId,
+    userId,
+  }: {
+    userId: number;
+    quizId: number;
+  }) {
+    const data = await this.prisma.quiz.findFirst({
+      where: { quizId: quizId },
+      include: {
+        Course: {
+          select: {
+            state: true,
+            Students: {
+              where: {
+                studentId: userId,
+              },
+              select: {
+                state: true,
+                endsAt: true,
+              },
+            },
+          },
+        },
+        Questions: {
+          include: {
+            Options: true,
+          },
+        },
+        QuizSubmissions: {
+          where: { studentId: userId },
+          select: {
+            submittedAt: true,
+            attempts: true,
+            grade: true,
+            reviewedAt: true,
+            quizId: true,
+            createdAt: true,
+          },
+        },
+        QuizMetaData: {
+          select: {
             attemptsAllowed: true,
             endsAt: true,
             fullGrade: true,

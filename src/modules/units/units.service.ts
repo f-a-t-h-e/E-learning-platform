@@ -138,11 +138,13 @@ export class UnitsService {
           quizPassGrade: true,
         },
       });
-      const sumQuiz = await tx.quiz.aggregate({
+      const sumQuiz = await tx.quizMetaData.aggregate({
         where: {
-          unitId: inputs.unitId,
-          lessonId: null,
-          state: { in: targetState },
+          Quiz: {
+            unitId: inputs.unitId,
+            lessonId: null,
+            state: { in: targetState },
+          },
         },
         _sum: {
           fullGrade: true,

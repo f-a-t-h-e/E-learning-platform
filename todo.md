@@ -114,6 +114,7 @@
   - [ ] Add filtering
   - [ ] Add columns selection
 
+- [ ] Don't return the results of the transactions (PrismaService.useTransacion) directly (when using it in the services then the controllers don't return the result to the user)
 # New Tasks
 
 - [ ] Add a repository for the ORM

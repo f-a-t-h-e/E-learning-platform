@@ -18,13 +18,9 @@ import { QuizSubmissionsModule } from './modules/quiz-submissions/quiz-submissio
 import { UserProfileModule } from './modules/user-profile/user-profile.module';
 
 import { GlobalModulesWrapper } from './global-modules.wrapper';
-import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
     GlobalModulesWrapper,
     AuthModule,
     CoursesModule,

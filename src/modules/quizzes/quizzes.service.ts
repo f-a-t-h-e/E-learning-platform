@@ -76,10 +76,10 @@ export class QuizzesService {
       throw new ForbiddenException(`You have no access to this course`);
     }
     if (data.enrollmentState !== 'active') {
-      throw new ForbiddenException(`Your enrollment state is not active`);
+      throw new ForbiddenException(`Your state as an instructor is not active`);
     }
-    if (data.endsAt < new Date()) {
-      throw new ForbiddenException(`Your enrollment has ended`);
+    if (data.endsAt && data.endsAt < new Date()) {
+      throw new ForbiddenException(`Your role as an instructor has ended`);
     }
     return data;
   }

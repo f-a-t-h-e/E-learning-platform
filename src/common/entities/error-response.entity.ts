@@ -39,7 +39,7 @@ export class BadRequestResponse implements ErrorResponse {
   @ApiProperty({
     description:
       'A detailed message explaining what was wrong with the request, such as missing parameters or invalid data.',
-    example: 'The email field is required and cannot be empty.',
+    example: 'Some parameter(s)/field(s) is/are missing/invalid.',
     nullable: true,
     required: false,
   })

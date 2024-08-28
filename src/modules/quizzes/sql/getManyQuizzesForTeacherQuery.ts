@@ -29,8 +29,8 @@ ${
   query.lessonId
     ? `AND q."lessonId" = $6`
     : query.unitId
-      ? `AND q."unitId" = $5 AND q."lessonId" = NULL`
-      : `AND q."unitId" = NULL AND q."lessonId" = NULL`
+      ? `AND q."unitId" = $5 AND q."lessonId" IS NULL`
+      : `AND q."unitId" IS NULL AND q."lessonId" IS NULL`
 }
 )
 ORDER BY

@@ -9,8 +9,8 @@ export const getManyQuizzesForStudentQuery = (
     /*2*/ query.quizCursor || Prisma.DbNull,
     /*3*/ (query.quizPageSize || 10) + 1,
     /*4*/ query.quizSkip || 0 + +(typeof query.quizCursor == 'number'),
-    /*5*/ query.unitId,
-    /*6*/ query.lessonId,
+    /*5*/ query.unitId || Prisma.DbNull,
+    /*6*/ query.lessonId || Prisma.DbNull,
   ];
   const queryString = `
 SELECT
@@ -42,8 +42,8 @@ ${
   query.lessonId
     ? `AND q."lessonId" = $6`
     : query.unitId
-      ? `AND q."unitId" = $5 AND q."lessonId" = NULL`
-      : `AND q."unitId" = NULL AND q."lessonId" = NULL`
+      ? `AND q."unitId" = $5 AND q."lessonId" IS NULL`
+      : `AND q."unitId" IS NULL AND q."lessonId" IS NULL`
 }
 )
 ORDER BY

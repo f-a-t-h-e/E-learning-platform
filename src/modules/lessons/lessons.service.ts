@@ -112,10 +112,12 @@ export class LessonsService {
       }
     }
     const result = await this.prisma.useTransaction(async (tx) => {
-      const sums = await tx.quiz.aggregate({
+      const sums = await tx.quizMetaData.aggregate({
         where: {
-          lessonId: inputs.lessonId,
-          state: { in: targetState },
+          Quiz: {
+            lessonId: inputs.lessonId,
+            state: { in: targetState },
+          },
         },
         _sum: {
           fullGrade: true,
