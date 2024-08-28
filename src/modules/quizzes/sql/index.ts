@@ -1,6 +1,0 @@
-export * from "./getCreateAuthDetailsQuery"
-export * from "./getInstructorAuthForCourseQuery"
-export * from "./getManyQuizzesForStudentQuery"
-export * from "./getManyQuizzesForTeacherQuery"
-export * from "./getStudentAuthPerQuizQuery"
-export * from "./getStudentAuthQuery"
