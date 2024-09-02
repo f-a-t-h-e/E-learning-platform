@@ -4,7 +4,7 @@ import { validateField } from './validateField';
 
 type TParameters = {
   params: { [k: string]: string };
-  user: { id: User['id'] };
+  user: { userId: User['userId'] };
 };
 
 export const parseMediaParams: {

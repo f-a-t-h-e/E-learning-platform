@@ -15,7 +15,7 @@ import {
   QuizSubmission,
 } from '@prisma/client';
 
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../../../../common/prisma/prisma.service';
 import { CreateQuizSubmissionDto } from './dto/create-quiz-submission.dto';
 import { UpdateQuizSubmissionDto } from './dto/update-quiz-submission.dto';
 import { CreateQuizAnswerDto } from './dto/create-quiz-answer.dto';

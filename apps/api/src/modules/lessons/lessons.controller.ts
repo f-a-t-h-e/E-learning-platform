@@ -221,6 +221,8 @@ export class LessonsController {
       lessonId: id,
       allStates: markAvailableDto.allStates,
       auto: markAvailableDto.auto,
+      state: markAvailableDto.state,
+      quizPassGrade: markAvailableDto.passGrade,
     });
   }
 

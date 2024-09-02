@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 
 import { CourseMediaTarget, MediaType } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../../../../common/prisma/prisma.service';
 import path from 'path';
 import { CoursesService } from '../courses/courses.service';
 import { UnitsService } from '../units/units.service';

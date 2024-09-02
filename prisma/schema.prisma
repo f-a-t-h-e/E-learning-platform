@@ -20,16 +20,22 @@ datasource db {
 }
 
 model User {
-  userId    Int          @id @default(autoincrement())
-  email     String       @unique
-  password  String
-  role      Role         @relation(fields: [roleName], references: [name])
-  roleName  String
-  profile   UserProfile?
-  Sessions  Session[]
+  userId        Int                @id @default(autoincrement())
+  email         String             @unique
+  password      String
+  role          Role               @relation(fields: [roleName], references: [name])
+  roleName      String
+  profile       UserProfile?
+  emailVerified EmailVerifiedState @default(pending)
+  Sessions      Session[]
   // timestamp
-  createdAt DateTime     @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime     @updatedAt @db.Timestamptz(3)
+  createdAt     DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime           @updatedAt @db.Timestamptz(3)
+}
+
+enum EmailVerifiedState {
+  pending
+  verified
 }
 
 model Session {

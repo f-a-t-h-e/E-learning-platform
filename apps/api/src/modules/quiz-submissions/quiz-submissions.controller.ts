@@ -45,6 +45,8 @@ import {
   QUIZ_SUBMISSION_TOKEN_SECRET,
 } from '../../config/cookies.config';
 import { TQuizSubmissionTokenPayloud } from './types';
+import { TaskSchedulerService } from '../task-scheduler/task-scheduler.service';
+import { Channels_Enum } from '../../../../../common/enums/channels.enum';
 
 @ApiBearerAuth()
 @ApiErrorResponses()
@@ -55,6 +57,7 @@ export class QuizSubmissionsController {
     private readonly quizSubmissionsService: QuizSubmissionsService,
     private readonly coursesService: CoursesService,
     private readonly jwtService: JwtService,
+    private readonly taskSchedulerService: TaskSchedulerService,
   ) {}
 
   @Post()
@@ -76,9 +79,10 @@ export class QuizSubmissionsController {
     );
     const row1 =
       await this.quizSubmissionsService.validateDetailsForStudent(details);
-    const activeAttempt = details.find((d) => d.quizSubmissionId && d.submissionSubmittedAt == null);
-    console.log({activeAttempt});
-    
+    const activeAttempt = details.find(
+      (d) => d.quizSubmissionId && d.submissionSubmittedAt == null,
+    );
+
     if (
       typeof row1.diffEnd == 'number' &&
       row1.diffEnd < TIME_DIFF_BETWEEN_NOW_AND_END_DATE_FOR_SUBMISSION
@@ -90,40 +94,44 @@ export class QuizSubmissionsController {
         `This quiz hasn't started yet and it's still too early to request a token for it`,
       );
     }
+
     const tokenLifeInSeconds = row1.quizLateSubmissionDate
-      ? row1.diffLate
+      ? Math.round(+row1.diffLate)
       : row1.diffEnd
-        ? row1.diffEnd + TIME_GAP_FOR_SUBMISSION
+        ? Math.round(+row1.diffEnd) + TIME_GAP_FOR_SUBMISSION
         : null;
 
     if (row1.attemptsAllowed) {
-      if (details.filter(d=>!!d.quizSubmissionId && !!d.submissionSubmittedAt).length >= row1.attemptsAllowed) {
+      if (
+        details.filter((d) => !!d.quizSubmissionId && !!d.submissionSubmittedAt)
+          .length >= row1.attemptsAllowed
+      ) {
         throw new BadRequestException(`Too many attempts`);
       }
       // @todo Get the submission that you have submitted earlier to use it to increase it's attempts instead of creating a new one
     }
+    const IDsMap = await this.quizSubmissionsService.getTheQuestionsIds(
+      createQuizSubmissionDto.quizId,
+      true,
+    );
     // Use token
     if (typeof tokenLifeInSeconds == 'number') {
-      const IDsMap = await this.quizSubmissionsService.getTheQuestionsIds(
-        createQuizSubmissionDto.quizId,
-        true,
-      );
       const attempt = activeAttempt
-        ? undefined
+        ? activeAttempt
         : await this.quizSubmissionsService.create({
             courseId: row1.courseId,
             quizId: createQuizSubmissionDto.quizId,
             studentId: user.userId,
             grade: null,
             attempts:
-              typeof activeAttempt.attemptsAllowed !== 'number' ? 0 : null,
+              typeof row1.attemptsAllowed !== 'number' ? 0 : null,
           });
       const submissionToken = await this.jwtService.signAsync(
         {
           quizId: createQuizSubmissionDto.quizId,
           studentId: user.userId,
           questions: IDsMap,
-          quizSubmissionId: (activeAttempt || attempt).quizSubmissionId,
+          quizSubmissionId: attempt.quizSubmissionId,
           increaseAttempts: typeof row1.attemptsAllowed !== 'number',
         } as TQuizSubmissionTokenPayloud,
         {
@@ -138,32 +146,36 @@ export class QuizSubmissionsController {
         maxAge: tokenLifeInSeconds * 1000,
         sameSite: 'strict',
       });
-
+      this.taskSchedulerService.scheduleUniqueEvent({
+        event: {
+          channel: Channels_Enum.review_quiz,
+          data: createQuizSubmissionDto.quizId,
+        },
+        taskId: `${Channels_Enum.review_quiz}:${createQuizSubmissionDto.quizId}`,
+        triggerTime: (row1.quizLateSubmissionDate || row1.quizEndsAt) as Date,
+      });
       return {
         action: 'get-token',
         startsAt: row1.quizStartsAt,
         endsAt: row1.quizEndsAt,
-        quizSubmissionId: (activeAttempt || attempt).quizSubmissionId,
+        quizSubmissionId: attempt.quizSubmissionId,
         token: submissionToken,
       };
     }
+
+    // If it's a quiz with no specific time
+    if (!createQuizSubmissionDto.Answers) {
+      throw new BadRequestException(
+        `This field "Answers" is required for this quiz`,
+      );
+    }
+    this.quizSubmissionsService.validateIDs(
+      createQuizSubmissionDto.Answers,
+      IDsMap,
+    );
     if (activeAttempt) {
       // Use the attempt
       // @todo Check if you will really have such flow, as why to get a token if you have no endDate for the quiz ?
-      const IDsMap = await this.quizSubmissionsService.getTheQuestionsIds(
-        createQuizSubmissionDto.quizId,
-        true,
-      );
-      if (!createQuizSubmissionDto.Answers) {
-        throw new BadRequestException(
-          `This field "Answers" is required for this quiz`,
-        );
-      }
-      this.quizSubmissionsService.validateIDs(
-        createQuizSubmissionDto.Answers,
-        IDsMap,
-      );
-
       await this.quizSubmissionsService.update({
         answers: createQuizSubmissionDto.Answers,
         quizSubmissionId: activeAttempt.quizSubmissionId,
@@ -172,7 +184,15 @@ export class QuizSubmissionsController {
         grade: null,
         // if it's not a number, means you can re-submit infinitly, so you can just increase the attempts
         // this should be false, as if you have an `activeAttempt`, it means you inserted it once you created it ?
-        increaseAttempts: typeof activeAttempt.attemptsAllowed !== 'number',
+        increaseAttempts: typeof row1.attemptsAllowed !== 'number',
+      });
+      this.taskSchedulerService.scheduleUniqueEvent({
+        event: {
+          channel: Channels_Enum.review_quiz_submission,
+          data: activeAttempt.quizSubmissionId,
+        },
+        taskId: `${Channels_Enum.review_quiz_submission}:${activeAttempt.quizSubmissionId}`,
+        triggerTime: new Date(),
       });
       return {
         action: 'submitted-old',
@@ -187,6 +207,14 @@ export class QuizSubmissionsController {
       // @todo Check if you can calculate it now or it should be calculated later
       grade: null,
       attempts: typeof row1.attemptsAllowed === 'number' ? 1 : null,
+    });
+    this.taskSchedulerService.scheduleUniqueEvent({
+      event: {
+        channel: Channels_Enum.review_quiz_submission,
+        data: attempt.quizSubmissionId,
+      },
+      taskId: `${Channels_Enum.review_quiz_submission}:${attempt.quizSubmissionId}`,
+      triggerTime: new Date(),
     });
     return {
       action: 'submitted-new',
@@ -206,7 +234,7 @@ export class QuizSubmissionsController {
     description: 'Quiz submission successfully submitted.',
   })
   @HttpCode(HttpStatus.OK)
-  async update(
+  async submit(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateQuizSubmissionDto: UpdateQuizSubmissionDto,
     @Req() req: Request,

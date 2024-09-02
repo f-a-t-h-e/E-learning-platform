@@ -247,6 +247,8 @@ export class CoursesController {
       courseId: id,
       allStates: markAvailableDto.allStates,
       auto: markAvailableDto.auto,
+      state: markAvailableDto.state,
+      quizPassGrade: markAvailableDto.passGrade,
     });
   }
 

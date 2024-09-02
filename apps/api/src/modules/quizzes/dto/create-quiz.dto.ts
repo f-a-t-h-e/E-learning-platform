@@ -68,6 +68,8 @@ export class CreateQuizDto {
     description: 'Full grade of the quiz',
     example: 10,
     minimum: 0,
+    required: true,
+    nullable: false,
   })
   @IsInt()
   @Min(0)
@@ -87,14 +89,14 @@ export class CreateQuizDto {
 
   @ApiProperty({
     description: 'Date when the quiz starts',
-    example: '2024-09-23T00:00:00Z',
+    example: new Date().toISOString(),
   })
   @IsDateString()
   startsAt: Date;
 
   @ApiProperty({
     description: 'Date when the quiz ends',
-    example: '2024-09-25T23:59:59Z',
+    example: new Date().toISOString(),
     nullable: true,
     required: false,
   })
@@ -104,7 +106,7 @@ export class CreateQuizDto {
 
   @ApiProperty({
     description: 'Date for late submission',
-    example: '2024-09-27T23:59:59Z',
+    example: new Date().toISOString(),
     nullable: true,
     required: false,
   })

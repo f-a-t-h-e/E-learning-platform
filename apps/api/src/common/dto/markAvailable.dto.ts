@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsEnum, IsInt, IsOptional } from 'class-validator';
+
+enum States_Enum {'available'='available', 'calculated_grades'='calculated_grades'}
 
 export class MarkAvailableDto {
   @ApiProperty({
@@ -20,4 +23,22 @@ export class MarkAvailableDto {
   @IsOptional()
   @IsBoolean()
   auto?: boolean;
+
+  @ApiProperty({
+    description: `The state that the entity should be.`,
+    enum: States_Enum,
+    example: States_Enum.available
+  })
+  @IsEnum(States_Enum)
+  state: States_Enum;
+
+  @ApiProperty({
+    description: `The pass grade of the entity.`,
+    type: 'integer',
+    nullable: true,
+    required: false
+  })
+  @IsOptional()
+  @IsInt()
+  passGrade?: number;
 }

@@ -10,12 +10,14 @@ import { Request } from 'express';
 import { ROLES_KEY } from '../../../common/decorators/roles.decorator';
 import { Role } from '../../../common/enums/role.enum';
 import { RequestUser } from '../entities/request-user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -41,7 +43,9 @@ export class RolesGuard implements CanActivate {
 
     try {
       // Verify the token and retrieve the payload
-      const payload = this.jwtService.verify(token, { secret: '123' });
+      const payload = this.jwtService.verify(token, {
+        secret: this.configService.get('JWT_ACCESS_SECRET'),
+      });
 
       request.user = {
         roleName: payload.roleName,

@@ -24,7 +24,7 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION update_student_grades_and_progress(quiz_id INT)
-RETURNS VOID AS $$
+RETURNS SMALLINT AS $$
 DECLARE
     submission RECORD;
     total_grade INT;
@@ -102,7 +102,7 @@ BEGIN
 
         -- Update the quiz submission with the new total grade
         UPDATE "QuizSubmission"
-        SET grade = total_grade
+        SET grade = total_grade, "reviewedAt" = NOW()
         WHERE "quizSubmissionId" = submission."quizSubmissionId";
 
         -- Calculate the difference in grades
@@ -116,5 +116,6 @@ BEGIN
             AND "studentId" = submission."studentId";
         END IF;
     END LOOP;
+    RETURN 1;
 END;
 $$ LANGUAGE plpgsql;

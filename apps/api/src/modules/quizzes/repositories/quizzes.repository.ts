@@ -9,15 +9,15 @@ import {
   TGetStudentAuth,
   TGetStudentAuthPerQuiz,
 } from '../types';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from 'common/prisma/prisma.service';
 import {
   getCreateAuthDetailsQuery,
   getInstructorAuthForCourseQuery,
   getManyQuizzesForInstructorQuery,
-  getManyQuizzesForStudentQuery,
   getStudentAuthPerQuizQuery,
   getStudentAuthQuery,
 } from '../sql';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class QuizzesRepository {
@@ -157,11 +157,59 @@ WHERE
     return data;
   }
 
-  async getManyQuizzesForStudentQuery(query: GetManyQuizzesQueryDto) {
-    const [q, p] = getManyQuizzesForStudentQuery(query);
+  async getManyQuizzesForStudentQuery(
+    query: GetManyQuizzesQueryDto & { quizPageSize: number },
+  ) {
+    const params = [
+      /*1*/ query.courseId,
+      /*2*/ query.quizCursor || Prisma.DbNull,
+      /*3*/ query.quizPageSize,
+      /*4*/ query.quizSkip || 0 + +(typeof query.quizCursor == 'number'),
+      /*5*/ query.unitId || Prisma.DbNull,
+      /*6*/ query.lessonId || Prisma.DbNull,
+    ];
+    const queryString = `
+SELECT
+
+q."quizId",
+q."courseId",
+q."unitId",
+q."lessonId",
+q."order",
+q."state",
+q."title",
+
+qmd."startsAt",
+qmd."endsAt",
+qmd."lateSubmissionDate",
+qmd."attemptsAllowed",
+qmd."fullGrade",
+qmd."type"
+
+FROM "Quiz" AS q
+  LEFT JOIN
+"QuizMetaData" as qmd
+  ON (qmd."quizId" = q."quizId")
+WHERE
+(
+q."courseId" = $1
+${query.quizSkip ? (query.quizSkip < 0 ? `AND q."order" <= $2` : `AND q."order >= $2"`) : ''}
+${
+  query.lessonId
+    ? `AND q."lessonId" = $6`
+    : query.unitId
+      ? `AND q."unitId" = $5 AND q."lessonId" IS NULL`
+      : `AND q."unitId" IS NULL AND q."lessonId" IS NULL`
+}
+)
+ORDER BY
+    q."order" ${query.quizSkip < 0 ? 'DESC' : 'ASC'}
+LIMIT $3
+OFFSET $4
+`;
     const data = await this.prisma.$queryRawUnsafe<TGetManyQuizzesForStudent[]>(
-      q,
-      ...p,
+      queryString,
+      ...params,
     );
     return data;
   }

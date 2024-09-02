@@ -2,12 +2,12 @@ import { Prisma } from '@prisma/client';
 import { GetManyQuizzesQueryDto } from '../dto/queries/get-many-quizzes-query.dto';
 
 export const getManyQuizzesForStudentQuery = (
-  query: GetManyQuizzesQueryDto,
+  query: GetManyQuizzesQueryDto & { quizPageSize: number },
 ) => {
   const params = [
     /*1*/ query.courseId,
     /*2*/ query.quizCursor || Prisma.DbNull,
-    /*3*/ (query.quizPageSize || 10) + 1,
+    /*3*/ query.quizPageSize,
     /*4*/ query.quizSkip || 0 + +(typeof query.quizCursor == 'number'),
     /*5*/ query.unitId || Prisma.DbNull,
     /*6*/ query.lessonId || Prisma.DbNull,

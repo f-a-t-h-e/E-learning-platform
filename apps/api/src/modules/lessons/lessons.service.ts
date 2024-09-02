@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
-import { PrismaService } from '../prisma/prisma.service';
-import { Lesson, UserProfile } from '@prisma/client';
+import { PrismaService } from '../../../../../common/prisma/prisma.service';
+import { Lesson, Prisma, UserProfile } from '@prisma/client';
 import { getStatesForCalculatingGrades } from '../../common/utils/getStatesForCalculatingGrades';
 import { QuizzesService } from '../quizzes/quizzes.service';
+import { objOrNothing } from '../../common/utils/objOrNothing';
 
 @Injectable()
 export class LessonsService {
@@ -146,6 +147,45 @@ export class LessonsService {
           updateResult: updateResult.count,
         };
       }
+      const currentLesson = await tx.lesson.findUniqueOrThrow({
+        where: { lessonId: inputs.lessonId },
+        select: {
+          quizFullGrade: true,
+          quizPassGrade: true,
+          unitId: true,
+        },
+      });
+      const quizFullGradeDiff =
+        quizFullGrade - (currentLesson.quizFullGrade || 0);
+      const quizPassGradeDiff =
+        typeof quizPassGrade == 'number'
+          ? quizPassGrade - (currentLesson.quizPassGrade || 0)
+          : 0;
+      const extraUpdates: Prisma.LessonUpdateInput = {};
+      if (Math.abs(quizFullGradeDiff || quizPassGradeDiff) >= 1) {
+        const quizFullGrade = objOrNothing(
+          { quizFullGrade: { increment: Math.floor(quizFullGradeDiff) } },
+          Math.abs(quizFullGradeDiff) >= 1,
+        );
+        const quizPassGrade = objOrNothing(
+          { quizPassGrade: { increment: Math.floor(quizPassGradeDiff) } },
+          Math.abs(quizPassGradeDiff) >= 1,
+        );
+        extraUpdates.Course = {
+          update: {
+            ...quizFullGrade,
+            ...quizPassGrade,
+          },
+        };
+        if (currentLesson.unitId) {
+          extraUpdates.Unit = {
+            update: {
+              ...quizFullGrade,
+              ...quizPassGrade,
+            },
+          };
+        }
+      }
       const updateResult = await tx.lesson.update({
         where: {
           lessonId: inputs.lessonId,
@@ -154,16 +194,7 @@ export class LessonsService {
           state: inputs.state || 'calculated_grades',
           quizFullGrade: quizFullGrade,
           quizPassGrade: quizPassGrade,
-          Course: {
-            update: {
-              state: 'created',
-            },
-          },
-          Unit: {
-            update: {
-              state: 'created',
-            },
-          },
+          ...extraUpdates,
         },
       });
 

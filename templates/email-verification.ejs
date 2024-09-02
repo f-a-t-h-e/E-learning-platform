@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification - E-Learning Platform</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            width: 100px;
+            height: auto;
+        }
+        .content {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .otp {
+            display: block;
+            font-size: 24px;
+            margin: 20px 0;
+            text-align: center;
+            background-color: #2c7be5;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <!-- <img src="https://example.com/logo.png" alt="E-Learning Platform Logo"> -->
+            <h2>Welcome to E-Learning Platform!</h2>
+        </div>
+        <div class="content">
+            <p>Hello <%= locals.username %>,</p>
+            <p>Thank you for registering with our platform. Please verify your email address to complete the registration process.</p>
+            <p>Your verification code is:</p>
+            <div class="otp"><%= locals.otp %></div>
+            <p>If you didn't request this email, please ignore it.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; <%= new Date().getFullYear() %> E-Learning Platform. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

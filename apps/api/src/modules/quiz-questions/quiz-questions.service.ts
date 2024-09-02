@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../../../common/prisma/prisma.service';
 import { CreateQuizQuestionDto } from './dto/create-quiz-question.dto';
 import { UpdateQuizQuestionDto } from './dto/update-quiz-question.dto';
+import { QuizQuestionRepository } from './repositories/quiz-questions.repository';
 
 @Injectable()
 export class QuizQuestionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly repo: QuizQuestionRepository,
+  ) {}
 
   async create(createQuizQuestionDto: CreateQuizQuestionDto) {
     const { Options, ...quizQuestionData } = createQuizQuestionDto;
@@ -41,10 +45,64 @@ export class QuizQuestionsService {
     });
   }
 
-  async findOne(id: number) {
-    return this.prisma.quizQuestion.findUnique({
-      where: { quizQuestionId: id },
+  async findOneForStudent(questionId: number, studentId: number) {
+    const data = await this.repo.getQuestionsDetailsForStudentWithAuth({
+      questionId: questionId,
+      studentId: studentId,
+      includeCorrectAnswer: true,
+      includeOptions: true,
+      includeStudentAnswer: true,
     });
+    if (!data) {
+      return {
+        found: false as false,
+      };
+    }
+    const {
+      order,
+      questionType,
+      fullGrade,
+      passGrade,
+      questionText,
+      correctAnswer,
+      Options,
+      //
+      answerGrade,
+      chosenOptionId,
+      quizAnswerId,
+      studentAnswer,
+    } = data;
+    return {
+      found: true as true,
+      question: {
+        order,
+        questionType,
+        fullGrade,
+        passGrade,
+        questionText,
+        correctAnswer,
+        Options,
+      },
+      studentAnswer: {
+        answer: studentAnswer,
+        quizAnswerId: quizAnswerId,
+        grade: answerGrade,
+        chosenOptionId: chosenOptionId,
+      },
+      data,
+    };
+  }
+
+  validateFindOneForStudent(data: Awaited<ReturnType<typeof this.repo.getQuestionsDetailsForStudentWithAuth>>) {
+    if (!data.enrollmentState) {
+      throw new ForbiddenException(`You are not enrolled in this question' course.`)
+    }
+    if (data.enrollmentState !== "active") {
+      throw new ForbiddenException(`Your enrollment state is not active`)
+    }
+    if (data.quizEndsAt && data.quizStartsAt < new Date()) {
+      throw new BadRequestException(`The quiz of this question is not open yet`)
+    }
   }
 
   async update(id: number, updateQuizQuestionDto: UpdateQuizQuestionDto) {

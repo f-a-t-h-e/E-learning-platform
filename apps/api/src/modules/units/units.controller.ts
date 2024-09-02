@@ -206,6 +206,8 @@ export class UnitsController {
       unitId: id,
       allStates: markAvailableDto.allStates,
       auto: markAvailableDto.auto,
+      state: markAvailableDto.state,
+      quizPassGrade: markAvailableDto.passGrade,
     });
   }
 

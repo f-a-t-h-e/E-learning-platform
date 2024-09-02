@@ -2,7 +2,7 @@
 
 - [x] Add the initial models
 - [x] Add the initial auth module
-  - [ ] Confirm user email
+  - [x] Confirm user email
   - [ ] Save user sessions
 - [x] Add modules courses, units & lessons
 - [x] Add OpenApi setup
@@ -24,7 +24,7 @@
 - [x] Add questions module
 - [x] Add OpenApi to questions module
 
-- [ ] Improve the authorization for the quizzes module
+- [x] Improve the authorization for the quizzes module
 
   - [x] Improve the `create` endpoint
 
@@ -38,29 +38,30 @@
     - [x] Add service method to validate the fetched data
     - [x] Test the flow with swagger
 
-  - [ ] Improve getting many quizzes
+  - [x] Improve getting many quizzes
 
-    - [ ] Add filtering
-    - [ ] Add pagination
-    - [ ] Authorize accessing data
+    - [x] Add filtering
+    - [x] Add pagination
+    - [x] Authorize accessing data
 
-  - [ ] Improve getting one quiz
+  - [x] Improve getting one quiz
 
-    - [ ] Add filtering
-    - [ ] Add pagination
-    - [ ] Authorize accessing data
+    - [x] Add filtering
+    - [x] Add pagination
+    - [x] Authorize accessing data
 
+- [ ] Decrement the grade from connected records (lesson,unit,course) On quiz deletion
 - [ ] Improve the authorization for the quiz-questions module
 
   - [ ] Secure quiz-question endpoints with appropriate roles.
   - [ ] Test and validate authorization rules for quiz questions.
 
-- [ ] Add email module
+- [x] Add email module
 
-  - [ ] Create the email module structure.
-  - [ ] Set up email configuration (e.g., SMTP settings).
-  - [ ] Implement a service method to send emails.
-  - [ ] Add methods to handle email templates.
+  - [x] Create the email module structure.
+  - [x] Set up email configuration (e.g., SMTP settings).
+  - [x] Implement a service method to send emails.
+  - [x] Add methods to handle email templates.
   - [ ] Test email sending functionality.
 
 - [ ] Add websockets
@@ -79,11 +80,11 @@
   - [x] Handle Course submission
   - [ ] Test and validate authorization rules for quiz submissions.
 
-- [ ] Add functionality to evaluate quiz-submissions
+- [x] Add functionality to evaluate quiz-submissions
 
-  - [ ] Implement logic to evaluate quiz submissions.
-  - [ ] Add score calculation based on correct answers.
-  - [ ] Test quiz evaluation functionality.
+  - [x] Implement logic to evaluate quiz submissions.
+  - [x] Add score calculation based on correct answers.
+  - [x] Test quiz evaluation functionality.
 
 - [ ] Improve the media upload functionality
 
@@ -105,7 +106,8 @@
 
 - [ ] Track updating `grades` for the progress of the students
 
-  - [ ] Update the submissions `grades` based on the answers grades
+  - [x] Update the submissions `grades` based on the answers grades
+  - [x] Update the courseProgres of the student based on the answers & submissions
   - [ ] Update the enrollment `grades` based on the submissions
 
 - [ ] Improve GET requests for fetching data
@@ -115,11 +117,19 @@
   - [ ] Add columns selection
 
 - [ ] Don't return the results of the transactions (PrismaService.useTransacion) directly (when using it in the services then the controllers don't return the result to the user)
+
+- [x] Implement password reset
+ - [x] Reset password using old password
+ - [x] Reset password using otp
 # New Tasks
+
+- [x] Use microservices
+- [x] Create asnalytics microservice
+- [x] Task Scheduling for the microservices events
 
 - [ ] Add a repository for the ORM
 
-- [ ] Use "cron jobs"/"queues" for auto-reviewing quizzes
+- [x] Use "queues" for auto-reviewing quizzes
 
 - [ ] Validate the order of the quizQuestions, lessons & units on marking as available
 
@@ -167,7 +177,7 @@
   - [ ] Add OpenApi for payment-related endpoints.
   - [ ] Test payment integration and ensure secure handling of transactions.
 
-- [ ] Add analytics module
+- [ ] Add analytics microservice
 
   - [ ] Implement analytics tracking for user engagement and course performance.
   - [ ] Add dashboards to visualize data for both admins and users.

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from 'common/prisma/prisma.service';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { RequestUser } from './entities/request-user.entity';
+import { ConfigService } from '@nestjs/config';
 
 const defaultUserSelect = {
   userId: true,
@@ -21,14 +22,18 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
+  private async hashPassword(password: string) {
+    return await bcrypt.hash(password, 10);
+  }
   async register(data: RegisterDto) {
     try {
       const user = await this.prisma.user.create({
         data: {
           email: data.email,
-          password: await bcrypt.hash(data.password, 10),
+          password: await this.hashPassword(data.password),
           roleName: data.roleName,
           profile: {
             create: {
@@ -83,15 +88,16 @@ export class AuthService {
 
   getCookieWithJwtAccessToken(payload: RequestUser) {
     const token = this.jwtService.sign(payload, {
-      secret: '123',
-      expiresIn: `1h`,
+      secret: this.configService.get('JWT_ACCESS_SECRET'),
+      expiresIn: this.configService.get('JWT_ACCESS_LIFE'),
     });
     return token;
   }
+
   getCookieWithJwtRefresgToken(payload: RequestUser) {
     const token = this.jwtService.sign(payload, {
-      secret: '1234',
-      expiresIn: `12h`,
+      secret: this.configService.get('JWT_REFRESH_SECRET'),
+      expiresIn: this.configService.get('JWT_REFRESH_LIFE'),
     });
     return token;
   }
@@ -109,5 +115,64 @@ export class AuthService {
       return session;
     }
     return false;
+  }
+
+  async verifyEmail(userId: number) {
+    await this.prisma.user.update({
+      where: { userId: userId },
+      data: {
+        emailVerified: 'verified',
+      },
+      select: {
+        userId: true,
+      },
+    });
+  }
+
+  async getUserById(userId: number) {
+    return await this.prisma.user.findUniqueOrThrow({
+      where: { userId: userId },
+      select: {
+        email: true,
+        emailVerified: true,
+        roleName: true,
+        profile: {
+          select: {
+            username: true,
+          },
+        },
+      },
+    });
+  }
+  async getUserByEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      select: {
+        userId: true,
+        email: true,
+        emailVerified: true,
+        roleName: true,
+        profile: {
+          select: {
+            username: true,
+          },
+        },
+      },
+    });
+    return user;
+  }
+
+  async setPassword(
+    condition:
+      | { userId: number; email?: string }
+      | { userId?: number; email: string },
+    newPassword: string,
+  ) {
+    return await this.prisma.user.update({
+      where: condition,
+      data: {
+        password: await this.hashPassword(newPassword),
+      },
+    });
   }
 }

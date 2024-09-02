@@ -1,6 +1,6 @@
 import { Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { PrismaModule } from './modules/prisma/prisma.module';
+import { PrismaModule } from '../../../common/prisma/prisma.module';
 import { DrizzleModule } from './modules/drizzle/drizzle.module';
 // import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule } from '@nestjs/config';

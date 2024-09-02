@@ -13,7 +13,7 @@ import fs from 'fs';
 import { PassThrough } from 'stream';
 import path from 'path';
 import fn from '../utils/getFileTypeFromStream';
-import { MediaService } from 'src/modules/media/media.service';
+import { MediaService } from '../../modules/media/media.service';
 import { RequestUser } from '../../modules/auth/entities/request-user.entity';
 import { fileStatAsync } from '../utils/fileStatAsync';
 import { Reflector } from '@nestjs/core';

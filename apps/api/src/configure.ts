@@ -15,7 +15,7 @@ export default async function setup(app: INestApplication<any>) {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   if (!fn.fileTypeFromStream) {
-    await eval(`import('file-type')`).then((module) => {
+    await eval(`import('file-type')`).then((module:typeof fn) => {
       fn.fileTypeFromStream = module.fileTypeFromStream;
     });
   }

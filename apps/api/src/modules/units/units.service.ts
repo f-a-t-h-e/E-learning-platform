@@ -5,10 +5,11 @@ import {
 } from '@nestjs/common';
 import { CreateUnitDto } from './dto/create-unit.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
-import { PrismaService } from '../prisma/prisma.service';
-import { Unit } from '@prisma/client';
+import { PrismaService } from '../../../../../common/prisma/prisma.service';
+import { Prisma, Unit } from '@prisma/client';
 import { getStatesForCalculatingGrades } from '../../common/utils/getStatesForCalculatingGrades';
 import { LessonsService } from '../lessons/lessons.service';
+import { objOrNothing } from '../../common/utils/objOrNothing';
 
 @Injectable()
 export class UnitsService {
@@ -175,6 +176,36 @@ export class UnitsService {
           updateResult: updateResult,
         };
       }
+      const currentUnit = await tx.unit.findUniqueOrThrow({
+        where: { unitId: inputs.unitId },
+        select: {
+          quizFullGrade: true,
+          quizPassGrade: true,
+        },
+      });
+      const quizFullGradeDiff =
+        quizFullGrade - (currentUnit.quizFullGrade || 0);
+      const quizPassGradeDiff =
+        typeof quizPassGrade == 'number'
+          ? quizPassGrade - (currentUnit.quizPassGrade || 0)
+          : 0;
+      const extraUpdates: Prisma.LessonUpdateInput = {};
+      if (Math.abs(quizFullGradeDiff || quizPassGradeDiff) >= 1) {
+        const quizFullGrade = objOrNothing(
+          { quizFullGrade: { increment: Math.floor(quizFullGradeDiff) } },
+          Math.abs(quizFullGradeDiff) >= 1,
+        );
+        const quizPassGrade = objOrNothing(
+          { quizPassGrade: { increment: Math.floor(quizPassGradeDiff) } },
+          Math.abs(quizPassGradeDiff) >= 1,
+        );
+        extraUpdates.Course = {
+          update: {
+            ...quizFullGrade,
+            ...quizPassGrade,
+          },
+        };
+      }
       const updateResult = await tx.unit.update({
         where: {
           unitId: inputs.unitId,
@@ -183,11 +214,7 @@ export class UnitsService {
           state: inputs.state || 'calculated_grades',
           quizFullGrade: quizFullGrade,
           quizPassGrade: quizPassGrade,
-          Course: {
-            update: {
-              state: 'calculated_grades',
-            },
-          },
+          ...extraUpdates,
         },
       });
 

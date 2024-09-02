@@ -13,7 +13,7 @@ import {
   UserProfile,
 } from '@prisma/client';
 
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../../../../common/prisma/prisma.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
 import {
@@ -23,6 +23,7 @@ import {
 
 import { GetManyQuizzesQueryDto } from './dto/queries/get-many-quizzes-query.dto';
 import { QuizzesRepository } from './repositories/quizzes.repository';
+import { objOrNothing } from '../../common/utils/objOrNothing';
 
 @Injectable()
 export class QuizzesService {
@@ -155,7 +156,10 @@ export class QuizzesService {
   }
 
   async findManyForStudent(query: GetManyQuizzesQueryDto) {
-    const data = await this.repo.getManyQuizzesForStudentQuery(query);
+    const data = await this.repo.getManyQuizzesForStudentQuery({
+      ...query,
+      quizPageSize: (query.quizPageSize || 10) + 1,
+    });
     if (data.length > query.quizPageSize) {
       data.pop();
       return {
@@ -237,12 +241,12 @@ export class QuizzesService {
         `Your role' as Instructor in this course has expired.`,
       );
     }
-    // Check the course state
-    if (details.courseState == 'available') {
-      throw new BadRequestException(
-        `This course state is "available" You can not edit it at the current state.`,
-      );
-    }
+    // // Check the course state
+    // if (details.courseState == 'available') {
+    //   throw new BadRequestException(
+    //     `This course state is "available" You can not edit it at the current state.`,
+    //   );
+    // }
 
     if (inputs.unitId && !details.unitState) {
       throw new BadRequestException(
@@ -285,6 +289,7 @@ export class QuizzesService {
         unitId,
         order,
         title,
+        state: 'created',
         Questions: {
           create: Questions?.map((question) => ({
             ...question,
@@ -536,6 +541,7 @@ export class QuizzesService {
     auto?: boolean;
     state?: 'available' | 'calculated_grades';
   }) {
+    console.log({ inputs });
     const result = await this.prisma.useTransaction(async (tx) => {
       const sums = await tx.quizQuestion.aggregate({
         where: { quizId: inputs.quizId },
@@ -577,6 +583,59 @@ export class QuizzesService {
           updateResult: updateResult[0].count,
         };
       }
+      const currentQuiz = await tx.quizMetaData.findUniqueOrThrow({
+        where: { quizId: inputs.quizId },
+        select: {
+          fullGrade: true,
+          passGrade: true,
+          Quiz: {
+            select: {
+              unitId: true,
+              lessonId: true,
+            },
+          },
+        },
+      });
+      const fullGradeDiff = fullGrade - (currentQuiz.fullGrade || 0);
+      const passGradeDiff =
+        typeof passGrade == 'number'
+          ? passGrade - (currentQuiz.passGrade || 0)
+          : 0;
+      const extraUpdates: Prisma.QuizUpdateInput = {};
+      if (Math.abs(fullGradeDiff || passGradeDiff) >= 1) {
+        const quizFullGrade = objOrNothing(
+          { quizFullGrade: { increment: Math.floor(fullGradeDiff) } },
+          Math.abs(fullGradeDiff) >= 1,
+        );
+        const quizPassGrade = objOrNothing(
+          { quizPassGrade: { increment: Math.floor(passGradeDiff) } },
+          Math.abs(passGradeDiff) >= 1,
+        );
+        extraUpdates.Course = {
+          update: {
+            ...quizFullGrade,
+            ...quizPassGrade,
+          },
+        };
+        if (currentQuiz.Quiz.unitId) {
+          extraUpdates.Unit = {
+            update: {
+              ...quizFullGrade,
+              ...quizPassGrade,
+            },
+          };
+        }
+        if (currentQuiz.Quiz.lessonId) {
+          extraUpdates.Lesson = {
+            update: {
+              ...quizFullGrade,
+              ...quizPassGrade,
+            },
+          };
+        }
+      }
+      console.log(extraUpdates, fullGradeDiff, passGradeDiff, currentQuiz);
+
       const updateResult = await Promise.all([
         tx.quiz.update({
           where: {
@@ -584,21 +643,7 @@ export class QuizzesService {
           },
           data: {
             state: inputs.state || 'calculated_grades',
-            Course: {
-              update: {
-                state: 'calculated_grades',
-              },
-            },
-            Unit: {
-              update: {
-                state: 'calculated_grades',
-              },
-            },
-            Lesson: {
-              update: {
-                state: 'calculated_grades',
-              },
-            },
+            ...extraUpdates,
           },
           select: {
             courseId: true,
@@ -619,6 +664,12 @@ export class QuizzesService {
     return result;
   }
 
+  /**
+   * 
+   * @todo Decrement the grade from connected records (lesson,unit,course)
+   * @param id 
+   * @returns 
+   */
   async remove(id: number) {
     return this.prisma.quiz.delete({
       where: { quizId: id },

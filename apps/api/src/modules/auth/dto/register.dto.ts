@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsIn, MinLength } from 'class-validator';
 import { CreateUserProfileDto } from '../../user-profile/dto/create-user-profile.dto';
-
-const AVAILABLE_ROLES = ['student', 'teacher'] as const;
+import { AVAILABLE_ROLES } from 'common/constants';
 
 export class RegisterDto extends CreateUserProfileDto {
   @ApiProperty({

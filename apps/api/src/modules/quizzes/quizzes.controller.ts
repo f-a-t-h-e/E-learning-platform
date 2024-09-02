@@ -29,8 +29,8 @@ import JwtGuard from '../auth/guards/jwt.guard';
 import { User } from '../../common/decorators/user.decorator';
 import { RequestUser } from '../auth/entities/request-user.entity';
 import { UnauthorizedResponse } from '../../common/entities/error-response.entity';
-import { MarkAvailableDto } from '../../common/dto/markAvailable.dto';
 import { GetManyQuizzesQueryDto } from './dto/queries/get-many-quizzes-query.dto';
+import { MarkQuizAsAvailableDto } from './dto/mark-quiz-as-available.dto';
 
 @ApiBearerAuth()
 @ApiErrorResponses()
@@ -163,7 +163,7 @@ export class QuizzesController {
   async markAsAvailable(
     @User() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
-    @Body() markAvailableDto: MarkAvailableDto,
+    @Body() markAvailableDto: MarkQuizAsAvailableDto,
   ) {
     await this.quizzesService.authInstructorHardPerQuiz({
       quizId: id,
@@ -171,7 +171,8 @@ export class QuizzesController {
     });
     return this.quizzesService.markAsAvailable({
       quizId: id,
-      auto: markAvailableDto.auto,
+      state: markAvailableDto.state,
+      passGrade: markAvailableDto.passGrade,
     });
   }
 
