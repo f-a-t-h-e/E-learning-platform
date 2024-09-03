@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { PrismaService } from '../../../../../common/prisma/prisma.service';
+import { PrismaService } from 'common/prisma/prisma.service';
 import { Course, Prisma, UserProfile } from '@prisma/client';
 import { getStatesForCalculatingGrades } from '../../common/utils/getStatesForCalculatingGrades';
 import { UnitsService } from '../units/units.service';
@@ -89,14 +89,10 @@ export class CoursesService {
       };
     }
     if (options.getCourseMaterial) {
-      include.Media = {
-        where: {
-          lessonId: null,
-          unitId: null,
-        },
+      include.CourseMedia = {
         select: {
           courseMediaId: true,
-          target: true,
+          purpose: true,
           type: true,
           extension: true,
           url: true,
@@ -104,7 +100,7 @@ export class CoursesService {
         },
       };
       if (!options.allMaterialState) {
-        include.Media.where.state = 'uploaded';
+        include.CourseMedia.where.state = 'uploaded';
       }
     }
     const course = await this.prisma.course.findFirst({

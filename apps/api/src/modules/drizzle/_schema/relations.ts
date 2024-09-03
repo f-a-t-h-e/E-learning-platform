@@ -226,5 +226,3 @@ export const quizAnswerRelations = relations(QuizAnswer, ({ one }) => ({
     references: [QuizQuestion.quizQuestionId],
   }),
 }));
-
-

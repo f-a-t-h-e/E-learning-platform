@@ -10,7 +10,9 @@ export class BaseRepository {
       for (const key of methodsToMonitor) {
         if (typeof this[key] == 'function') {
           this[`__${key}_placeholder`] = this[key];
-          if (this[`__${key}_placeholder`].constructor.name == 'AsyncFunction') {
+          if (
+            this[`__${key}_placeholder`].constructor.name == 'AsyncFunction'
+          ) {
             // @ts-expect-error
             this[key] = async (...args: unknown) => {
               const startTime = performance.now();

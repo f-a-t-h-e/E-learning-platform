@@ -16,7 +16,7 @@ export class SubUpdateQuizQuestionDto extends OmitType(CreateQuizQuestionDto, [
   @ApiProperty({
     description: `Unique identifier for the quiz question. If you don't send it, it means that this is a new question`,
     example: 1,
-    required: false
+    required: false,
   })
   @IsOptional()
   @IsInt()

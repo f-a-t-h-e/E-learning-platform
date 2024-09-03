@@ -1,5 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../../../common/prisma/prisma.service';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
+import { PrismaService } from 'common/prisma/prisma.service';
 import { CreateQuizQuestionDto } from './dto/create-quiz-question.dto';
 import { UpdateQuizQuestionDto } from './dto/update-quiz-question.dto';
 import { QuizQuestionRepository } from './repositories/quiz-questions.repository';
@@ -55,7 +59,7 @@ export class QuizQuestionsService {
     });
     if (!data) {
       return {
-        found: false as false,
+        found: false as const,
       };
     }
     const {
@@ -73,7 +77,7 @@ export class QuizQuestionsService {
       studentAnswer,
     } = data;
     return {
-      found: true as true,
+      found: true as const,
       question: {
         order,
         questionType,
@@ -93,15 +97,23 @@ export class QuizQuestionsService {
     };
   }
 
-  validateFindOneForStudent(data: Awaited<ReturnType<typeof this.repo.getQuestionsDetailsForStudentWithAuth>>) {
+  validateFindOneForStudent(
+    data: Awaited<
+      ReturnType<typeof this.repo.getQuestionsDetailsForStudentWithAuth>
+    >,
+  ) {
     if (!data.enrollmentState) {
-      throw new ForbiddenException(`You are not enrolled in this question' course.`)
+      throw new ForbiddenException(
+        `You are not enrolled in this question' course.`,
+      );
     }
-    if (data.enrollmentState !== "active") {
-      throw new ForbiddenException(`Your enrollment state is not active`)
+    if (data.enrollmentState !== 'active') {
+      throw new ForbiddenException(`Your enrollment state is not active`);
     }
     if (data.quizEndsAt && data.quizStartsAt < new Date()) {
-      throw new BadRequestException(`The quiz of this question is not open yet`)
+      throw new BadRequestException(
+        `The quiz of this question is not open yet`,
+      );
     }
   }
 

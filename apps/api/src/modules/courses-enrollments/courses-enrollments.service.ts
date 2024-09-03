@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateCourseEnrollmentDto } from './dto/create-course-enrollment.dto';
-import { PrismaService } from '../../../../../common/prisma/prisma.service';
+import { PrismaService } from 'common/prisma/prisma.service';
 import { CourseEnrollmentState, UserProfile } from '@prisma/client';
 import { CreateManyCourseEnrollments } from './dto/create-many-course-enrollments.dto';
 
@@ -17,7 +17,6 @@ export class CoursesEnrollmentsService {
     createCoursesEnrollmentDto: CreateCourseEnrollmentDto,
     studentId: number,
   ) {
-    
     const [courseEnrollment] = await this.prisma.$transaction([
       this.prisma.courseEnrollment.create({
         data: {

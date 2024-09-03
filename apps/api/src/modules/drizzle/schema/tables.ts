@@ -187,7 +187,11 @@ export const courseEnrollment = pgTable(
       withTimezone: true,
       mode: 'date',
     }).notNull(),
-    endsAt: timestamp('endsAt', { precision: 3, withTimezone: true, mode: 'date' }),
+    endsAt: timestamp('endsAt', {
+      precision: 3,
+      withTimezone: true,
+      mode: 'date',
+    }),
   },
   (table) => {
     return {
@@ -229,7 +233,11 @@ export const courseInstructor = pgTable(
       withTimezone: true,
       mode: 'date',
     }).notNull(),
-    endsAt: timestamp('endsAt', { precision: 3, withTimezone: true, mode: 'date' }),
+    endsAt: timestamp('endsAt', {
+      precision: 3,
+      withTimezone: true,
+      mode: 'date',
+    }),
   },
   (table) => {
     return {

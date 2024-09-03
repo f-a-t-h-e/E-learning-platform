@@ -13,7 +13,6 @@ import {
   Put,
   HttpCode,
   HttpStatus,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { QuizSubmissionsService } from './quiz-submissions.service';
 import { CreateQuizSubmissionDto } from './dto/create-quiz-submission.dto';
@@ -46,7 +45,7 @@ import {
 } from '../../config/cookies.config';
 import { TQuizSubmissionTokenPayloud } from './types';
 import { TaskSchedulerService } from '../task-scheduler/task-scheduler.service';
-import { Channels_Enum } from '../../../../../common/enums/channels.enum';
+import { Channels_Enum } from 'common/enums/channels.enum';
 
 @ApiBearerAuth()
 @ApiErrorResponses()
@@ -123,8 +122,7 @@ export class QuizSubmissionsController {
             quizId: createQuizSubmissionDto.quizId,
             studentId: user.userId,
             grade: null,
-            attempts:
-              typeof row1.attemptsAllowed !== 'number' ? 0 : null,
+            attempts: typeof row1.attemptsAllowed !== 'number' ? 0 : null,
           });
       const submissionToken = await this.jwtService.signAsync(
         {
@@ -239,25 +237,7 @@ export class QuizSubmissionsController {
     @Body() updateQuizSubmissionDto: UpdateQuizSubmissionDto,
     @Req() req: Request,
   ) {
-    let payload: TQuizSubmissionTokenPayloud;
-    try {
-      const token = req.cookies[QUIZ_SUBMISSION_TOKEN_NAME];
-      if (!token) {
-        throw new UnauthorizedException();
-      }
-      payload = await this.jwtService.verifyAsync<TQuizSubmissionTokenPayloud>(
-        token,
-        {
-          secret: QUIZ_SUBMISSION_TOKEN_SECRET,
-          subject: QUIZ_SUBMISSION_TOKEN_NAME,
-        },
-      );
-    } catch (error) {
-      throw new UnauthorizedException();
-    }
-    if (payload.quizSubmissionId != id) {
-      throw new ForbiddenException(`Your token is not for this submission`);
-    }
+    const payload = await this.quizSubmissionsService.validateReq(req, id);
     this.quizSubmissionsService.validateIDs(
       updateQuizSubmissionDto.Answers,
       payload.questions,

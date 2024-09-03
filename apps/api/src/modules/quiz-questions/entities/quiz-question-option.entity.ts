@@ -9,7 +9,6 @@ export class QuizQuestionOptionEntity implements QuizQuestionOption {
   })
   quizeQuestionOptionId: number;
 
-
   @ApiProperty({
     description: 'The order of the option within the question',
     type: Number,

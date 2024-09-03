@@ -104,7 +104,7 @@ WHERE
       const options = await this.prisma.quizQuestionOption.findMany({
         where: { questionId: questionId },
       });
-      // @ts-expect-error
+      // @ts-expect-error nevermind
       data.Options = options;
       return data as typeof data & { Options: typeof options };
     }

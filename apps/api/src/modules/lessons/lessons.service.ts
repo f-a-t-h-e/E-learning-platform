@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
-import { PrismaService } from '../../../../../common/prisma/prisma.service';
+import { PrismaService } from 'common/prisma/prisma.service';
 import { Lesson, Prisma, UserProfile } from '@prisma/client';
 import { getStatesForCalculatingGrades } from '../../common/utils/getStatesForCalculatingGrades';
 import { QuizzesService } from '../quizzes/quizzes.service';

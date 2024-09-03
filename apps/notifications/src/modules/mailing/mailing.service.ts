@@ -17,7 +17,7 @@ export class MailingService {
     userEmail: string,
   ) {
     console.log(params);
-    
+
     return await this.mailerService.sendMail({
       to: userEmail,
       from: this.configService.get('SMTP_ADMIN_EMAIL'),
@@ -35,7 +35,7 @@ export class MailingService {
     userEmail: string,
   ) {
     console.log(params);
-    
+
     return await this.mailerService.sendMail({
       to: userEmail,
       from: this.configService.get('SMTP_ADMIN_EMAIL'),

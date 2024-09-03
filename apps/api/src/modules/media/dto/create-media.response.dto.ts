@@ -36,11 +36,11 @@ export class CreateMediaResponseDto implements CourseMedia {
   courseMediaId: number;
 
   @ApiProperty({
-    description: 'The target of the media',
-    enum: $Enums.CourseMediaTarget,
+    description: 'The purpose of the media',
+    enum: $Enums.CourseMediaPurpose,
   })
-  @IsEnum($Enums.CourseMediaTarget)
-  target: $Enums.CourseMediaTarget;
+  @IsEnum($Enums.CourseMediaPurpose)
+  purpose: $Enums.CourseMediaPurpose;
 
   @ApiProperty({
     description: 'The ID of the unit associated with the media',

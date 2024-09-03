@@ -3,7 +3,9 @@ import { AnalyticsServiceService } from './analytics-service.service';
 
 @Controller()
 export class AnalyticsServiceController {
-  constructor(private readonly analyticsServiceService: AnalyticsServiceService) {}
+  constructor(
+    private readonly analyticsServiceService: AnalyticsServiceService,
+  ) {}
 
   @Get()
   getHello(): string {

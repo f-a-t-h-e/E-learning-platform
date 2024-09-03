@@ -20,7 +20,13 @@ export class UpdateQuizDto extends OmitType(PartialType(CreateQuizDto), [
         fullGrade: 10,
         passGrade: 5,
         Options: [
-          { grade: 10, optionText: 'Afghanistan', order: 3, questionId: 1, quizeQuestionOptionId: 1 },
+          {
+            grade: 10,
+            optionText: 'Afghanistan',
+            order: 3,
+            questionId: 1,
+            quizeQuestionOptionId: 1,
+          },
           { grade: 0, optionText: 'Egypt', order: 1, questionId: 1 },
         ],
       },

@@ -10,10 +10,10 @@ export const CourseEnrollmentStateEnum = pgEnum('CourseEnrollmentState', [
   'active',
 ]);
 
-export const CourseInstructorPositionsEnum = pgEnum('CourseInstructorPositions', [
-  'owner',
-  'teacher',
-]);
+export const CourseInstructorPositionsEnum = pgEnum(
+  'CourseInstructorPositions',
+  ['owner', 'teacher'],
+);
 
 export const CourseInstructorStateEnum = pgEnum('CourseInstructorState', [
   'active',

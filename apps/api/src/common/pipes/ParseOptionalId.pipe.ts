@@ -13,7 +13,7 @@ export class ParseOptionalId
         );
       }
       if (parsedValue > 0) {
-        return parsedValue
+        return parsedValue;
       }
       throw new BadRequestException(
         `Validation failed (greater than 1 is expected) for field (${args.data})`,

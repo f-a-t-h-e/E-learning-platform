@@ -11,7 +11,9 @@ describe('AnalyticsServiceController', () => {
       providers: [AnalyticsServiceService],
     }).compile();
 
-    analyticsServiceController = app.get<AnalyticsServiceController>(AnalyticsServiceController);
+    analyticsServiceController = app.get<AnalyticsServiceController>(
+      AnalyticsServiceController,
+    );
   });
 
   describe('root', () => {

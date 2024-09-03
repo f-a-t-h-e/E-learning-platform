@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
-import { PrismaService } from '../../../../../common/prisma/prisma.service';
+import { PrismaService } from 'common/prisma/prisma.service';
 import { UserProfile } from '@prisma/client';
 
 @Injectable()
@@ -42,13 +42,13 @@ export class UserProfileService {
     return profile;
   }
 
-  async updateAvatar(id: UserProfile['userId'], url: string) {
+  async updatePhoto(id: UserProfile['userId'], url: string) {
     await this.prisma.userProfile.updateMany({
       where: {
         userId: id,
       },
       data: {
-        avatar: url,
+        photo: url,
       },
     });
     // @todo You can do some notification in case you want to get closer to a social media platform

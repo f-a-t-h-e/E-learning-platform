@@ -41,10 +41,11 @@ import { join } from 'path';
               from: '"No Reply" <no-reply@localhost>',
             },
             /**
-             * This will save the files in /temp dir on the os
+             * This will save the files in /temp dir on the os (default)
              */
             preview: {
               open: true,
+              dir: join(process.cwd(), 'tmp'),
             },
             template: {
               dir: join(process.cwd(), 'templates'),

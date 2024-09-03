@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 
 import {
@@ -15,12 +16,18 @@ import {
   QuizSubmission,
 } from '@prisma/client';
 
-import { PrismaService } from '../../../../../common/prisma/prisma.service';
+import { PrismaService } from 'common/prisma/prisma.service';
 import { CreateQuizSubmissionDto } from './dto/create-quiz-submission.dto';
 import { UpdateQuizSubmissionDto } from './dto/update-quiz-submission.dto';
 import { CreateQuizAnswerDto } from './dto/create-quiz-answer.dto';
-import { TFindAllSelectType } from './types';
+import { TFindAllSelectType, TQuizSubmissionTokenPayloud } from './types';
 import { FieldsOrNullFields } from '../../common/types/fieldsOrNullFields.type';
+import { Request } from 'express';
+import {
+  QUIZ_SUBMISSION_TOKEN_NAME,
+  QUIZ_SUBMISSION_TOKEN_SECRET,
+} from '../../config/cookies.config';
+import { JwtService } from '@nestjs/jwt';
 
 /**
  * These are the base details needed for cheching the authorization for the user actions for a quiz submission
@@ -53,7 +60,10 @@ type TGetIdsReturn<T extends boolean | undefined | never = never> =
 
 @Injectable()
 export class QuizSubmissionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async create({
     courseId,
@@ -245,6 +255,7 @@ export class QuizSubmissionsService {
     ).map((qq) => qq.quizQuestionId);
     return values as TGetIdsReturn<T>;
   }
+
   async getAuthDetailsForStudent(userId: number, quizId: number) {
     /**
      * This is for better `prettier`
@@ -342,5 +353,47 @@ WHERE
         );
       }
     }
+  }
+
+  async submitFullQuiz(quizSubmissionId: QuizSubmission['quizSubmissionId']) {
+    await this.prisma.quizSubmission.updateMany({
+      where: { quizSubmissionId: quizSubmissionId },
+      data: {
+        submittedAt: new Date(),
+      },
+    });
+  }
+
+  async submitPartOfTheQuiz() {
+    // quizSubmissionId: QuizSubmission['quizSubmissionId']
+    // @todo
+  }
+
+  async submitSingleQuestion() {
+    // quizSubmissionId: QuizSubmission['quizSubmissionId']
+    // @todo
+  }
+
+  async validateReq(req: Request, id: number) {
+    let payload: TQuizSubmissionTokenPayloud;
+    try {
+      const token = req.cookies[QUIZ_SUBMISSION_TOKEN_NAME];
+      if (!token) {
+        throw new UnauthorizedException();
+      }
+      payload = await this.jwtService.verifyAsync<TQuizSubmissionTokenPayloud>(
+        token,
+        {
+          secret: QUIZ_SUBMISSION_TOKEN_SECRET,
+          subject: QUIZ_SUBMISSION_TOKEN_NAME,
+        },
+      );
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
+    if (payload.quizSubmissionId != id) {
+      throw new ForbiddenException(`Your token is not for this submission`);
+    }
+    return payload;
   }
 }

@@ -2,7 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 
-import fn from './common/utils/getFileTypeFromStream';
+import fn from './modules/media/utils/getFileTypeFromStream';
 
 export default async function setup(app: INestApplication<any>) {
   app.use(cookieParser());
@@ -15,7 +15,7 @@ export default async function setup(app: INestApplication<any>) {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
   if (!fn.fileTypeFromStream) {
-    await eval(`import('file-type')`).then((module:typeof fn) => {
+    await eval(`import('file-type')`).then((module: typeof fn) => {
       fn.fileTypeFromStream = module.fileTypeFromStream;
     });
   }

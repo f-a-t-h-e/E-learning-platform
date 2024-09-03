@@ -8,6 +8,12 @@ import { OtpService } from 'common/services/otp.service';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, JwtRefreshStrategy, OtpService],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    JwtRefreshStrategy,
+    OtpService,
+  ],
 })
 export class AuthModule {}

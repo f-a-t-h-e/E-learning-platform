@@ -62,7 +62,7 @@ export class CreateUserProfileDto {
   })
   @IsOptional()
   @IsUrl()
-  avatar?: string;
+  photo?: string;
 
   @ApiProperty({
     description: 'Phone number of the user',

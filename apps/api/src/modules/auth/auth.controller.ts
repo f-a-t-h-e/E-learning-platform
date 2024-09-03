@@ -8,7 +8,6 @@ import {
   Body,
   HttpStatus,
   ConflictException,
-  Render,
   BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -40,8 +39,6 @@ import {
   EmailVerificationDto,
 } from './dto/email-verification.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { renderFile } from 'ejs';
-import { join } from 'path';
 import { ResetPasswordByTokenDto } from './dto/reset-password-by-token.dto';
 
 @ApiErrorResponses()

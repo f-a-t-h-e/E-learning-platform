@@ -4,16 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  CourseEnrollmentState,
-  CourseInstructorPositions,
-  CourseState,
-  Prisma,
-  Quiz,
-  UserProfile,
-} from '@prisma/client';
+import { Prisma, Quiz, UserProfile } from '@prisma/client';
 
-import { PrismaService } from '../../../../../common/prisma/prisma.service';
+import { PrismaService } from 'common/prisma/prisma.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
 import {
@@ -634,7 +627,6 @@ export class QuizzesService {
           };
         }
       }
-      console.log(extraUpdates, fullGradeDiff, passGradeDiff, currentQuiz);
 
       const updateResult = await Promise.all([
         tx.quiz.update({
@@ -664,11 +656,23 @@ export class QuizzesService {
     return result;
   }
 
+  async updateBanner(quizId: Quiz['quizId'], url: string) {
+    await this.prisma.quiz.updateMany({
+      where: {
+        quizId: quizId,
+      },
+      data: {
+        banner: url,
+      },
+    });
+    // @todo You can do some notification in case you want to get closer to a social media platform
+  }
+
   /**
-   * 
+   *
    * @todo Decrement the grade from connected records (lesson,unit,course)
-   * @param id 
-   * @returns 
+   * @param id
+   * @returns
    */
   async remove(id: number) {
     return this.prisma.quiz.delete({

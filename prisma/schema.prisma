@@ -48,38 +48,44 @@ model Session {
 }
 
 model UserProfile {
-  userId             Int                 @unique
-  user               User                @relation(fields: [userId], references: [userId])
-  username           String              @unique
-  firstName          String
-  secondName         String?
-  thirdName          String?
-  lastName           String
-  bio                String?
-  avatar             String?
-  banner             String?
-  phone              String?
+  userId                      Int                   @unique
+  user                        User                  @relation(fields: [userId], references: [userId])
+  username                    String                @unique
+  firstName                   String
+  secondName                  String?
+  thirdName                   String?
+  lastName                    String
+  bio                         String?
+  photo                       String?
+  banner                      String?
+  phone                       String?
   // timestamp
-  createdAt          DateTime            @default(now()) @db.Timestamptz(3)
-  updatedAt          DateTime            @updatedAt @db.Timestamptz(3)
+  createdAt                   DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt                   DateTime              @updatedAt @db.Timestamptz(3)
   // Relations
-  UploadedMedia      CourseMedia[]
+  // Media
+  UploadedCoursesMedia        CourseMedia[]
+  UploadedUnitsMedia          UnitMedia[]
+  UploadedLessonsMedia        LessonMedia[]
+  UploadedQuizMedia           QuizMedia[]
+  UploadedQuizSubmissionMedia QuizSubmissionMedia[]
+  UploadedUserProfileMedia    UserProfileMedia[]
   // ChatParticipations ChatParticipant[]
   // CreatedForums      Forum[]
   // ForumMemberIn      ForumMember[]
   // ForumPosts         ForumPost[]
   // ForumComments      ForumComment[]
-  Attendance         CourseAttendance[]
+  Attendance                  CourseAttendance[]
   // For instructores
-  CreatedUnits       Unit[]
-  CreatedLessons     Lesson[]
-  InstructoreCourses CourseInstructor[]
+  CreatedUnits                Unit[]
+  CreatedLessons              Lesson[]
+  InstructoreCourses          CourseInstructor[]
   // For students
   // LessonsFeedbacks   LessonFeedback[]
-  CoursesProgress    CourseProgress[]
-  Certificates       CourseCertificate[]
-  QuizSubmissions    QuizSubmission[]
-  CoursesEnrollment  CourseEnrollment[]
+  CoursesProgress             CourseProgress[]
+  Certificates                CourseCertificate[]
+  QuizSubmissions             QuizSubmission[]
+  CoursesEnrollment           CourseEnrollment[]
 }
 
 model Role {
@@ -101,7 +107,7 @@ model Course {
   // Relations
   Units            Unit[]
   Lessons          Lesson[]
-  Media            CourseMedia[]
+  CourseMedia      CourseMedia[]
   Students         CourseEnrollment[]
   Instructors      CourseInstructor[]
   Attendance       CourseAttendance[]
@@ -160,80 +166,27 @@ enum CourseInstructorState {
   active
 }
 
-model CourseMedia {
-  courseMediaId Int               @id @default(autoincrement())
-  url           String
-  type          MediaType
-  extension     String
-  state         MediaState
-  bytes         BigInt
-  userId        Int
-  UserProfile   UserProfile       @relation(fields: [userId], references: [userId])
-  courseId      Int?
-  Course        Course?           @relation(fields: [courseId], references: [courseId])
-  unitId        Int?
-  Unit          Unit?             @relation(fields: [unitId], references: [unitId])
-  lessonId      Int?
-  Lesson        Lesson?           @relation(fields: [lessonId], references: [lessonId])
-  target        CourseMediaTarget
-  // timestamp
-  createdAt     DateTime          @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime          @updatedAt @db.Timestamptz(3)
-}
-
-enum MediaType {
-  image
-  video
-  audio
-  document
-}
-
-enum MediaState {
-  uploading
-  uploaded
-  failed
-}
-
-enum CourseMediaTarget {
-  // // 'profile-picture'
-  // profile_picture
-  // // 'profile-banner'
-  // profile_banner
-  // 'course-banner'
-  course_banner
-  // 'course-material'
-  course_material
-  // 'unit-banner'
-  unit_banner
-  // 'unit-material'
-  unit_material
-  // 'lesson-banner'
-  lesson_banner
-  // 'lesson-material'
-  lesson_material
-}
-
 model Unit {
-  unitId        Int           @id @default(autoincrement())
-  order         Int           @db.SmallInt
+  unitId        Int         @id @default(autoincrement())
+  order         Int         @db.SmallInt
   title         String
   description   String?
   banner        String?
-  quizFullGrade Int           @default(0)
+  quizFullGrade Int         @default(0)
   quizPassGrade Int?
   courseId      Int
-  Course        Course        @relation(fields: [courseId], references: [courseId])
+  Course        Course      @relation(fields: [courseId], references: [courseId])
   // Owner
   userId        Int
-  AddedBy       UserProfile   @relation(fields: [userId], references: [userId])
-  state         UnitState     @default(created)
+  AddedBy       UserProfile @relation(fields: [userId], references: [userId])
+  state         UnitState   @default(created)
   // timestamp
-  createdAt     DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime      @updatedAt @db.Timestamptz(3)
+  createdAt     DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(3)
   // Relations
   Lessons       Lesson[]
   Quizzes       Quiz[]
-  Media         CourseMedia[]
+  UnitMedia     UnitMedia[]
 }
 
 enum UnitState {
@@ -263,8 +216,8 @@ model Lesson {
   updatedAt     DateTime       @updatedAt @db.Timestamptz(3)
   // Relations
   // Feedbacks      LessonFeedback[]
-  Media         CourseMedia[]
   Quizzes       Quiz[]
+  LessonMedia   LessonMedia[]
 }
 
 enum LessonState {
@@ -307,6 +260,7 @@ model Quiz {
   courseId        Int
   Course          Course           @relation(fields: [courseId], references: [courseId])
   title           String
+  banner          String?
   unitId          Int?
   Unit            Unit?            @relation(fields: [unitId], references: [unitId])
   lessonId        Int?
@@ -319,6 +273,7 @@ model Quiz {
   Questions       QuizQuestion[]
   QuizSubmissions QuizSubmission[]
   QuizMetaData    QuizMetaData?
+  QuizMedia       QuizMedia[]
 }
 
 enum QuizState {
@@ -362,18 +317,19 @@ enum QuizType {
 }
 
 model QuizQuestion {
-  quizQuestionId Int                  @id @default(autoincrement())
-  order          Int                  @db.SmallInt
-  quizId         Int
-  Quiz           Quiz                 @relation(fields: [quizId], references: [quizId])
-  questionText   String
-  fullGrade      Int                  @default(0) @db.SmallInt
-  passGrade      Int?                 @default(0) @db.SmallInt
-  correctAnswer  String?
-  questionType   QuestionType
+  quizQuestionId      Int                   @id @default(autoincrement())
+  order               Int                   @db.SmallInt
+  quizId              Int
+  Quiz                Quiz                  @relation(fields: [quizId], references: [quizId])
+  questionText        String
+  fullGrade           Int                   @default(0) @db.SmallInt
+  passGrade           Int?                  @default(0) @db.SmallInt
+  correctAnswer       String?
+  questionType        QuestionType
   // Relations
-  Options        QuizQuestionOption[]
-  QuizAnswer     QuizAnswer[]
+  Options             QuizQuestionOption[]
+  QuizAnswer          QuizAnswer[]
+  QuizSubmissionMedia QuizSubmissionMedia[]
 }
 
 enum QuestionType {
@@ -395,21 +351,22 @@ model QuizQuestionOption {
 }
 
 model QuizSubmission {
-  quizSubmissionId Int          @id @default(autoincrement())
-  quizId           Int
-  Quiz             Quiz         @relation(fields: [quizId], references: [quizId])
-  studentId        Int
-  Student          UserProfile  @relation(fields: [studentId], references: [userId])
-  grade            Int?         @db.SmallInt
-  courseId         Int
-  Course           Course       @relation(fields: [courseId], references: [courseId])
+  quizSubmissionId    Int                   @id @default(autoincrement())
+  quizId              Int
+  Quiz                Quiz                  @relation(fields: [quizId], references: [quizId])
+  studentId           Int
+  Student             UserProfile           @relation(fields: [studentId], references: [userId])
+  grade               Int?                  @db.SmallInt
+  courseId            Int
+  Course              Course                @relation(fields: [courseId], references: [courseId])
   // null for the quizzes that don't have infinite attempts limit
-  attempts         Int?         @db.SmallInt()
-  createdAt        DateTime     @default(now()) @db.Timestamptz(3)
-  submittedAt      DateTime?    @db.Timestamptz(3)
-  reviewedAt       DateTime?    @db.Timestamptz(3)
+  attempts            Int?                  @db.SmallInt()
+  createdAt           DateTime              @default(now()) @db.Timestamptz(3)
+  submittedAt         DateTime?             @db.Timestamptz(3)
+  reviewedAt          DateTime?             @db.Timestamptz(3)
   // Relations
-  Answers          QuizAnswer[]
+  Answers             QuizAnswer[]
+  QuizSubmissionMedia QuizSubmissionMedia[]
 }
 
 model QuizAnswer {
@@ -452,6 +409,156 @@ model CourseCertificate {
   Profile             UserProfile @relation(fields: [userId], references: [userId])
   issueDate           DateTime    @db.Timestamptz(3)
 }
+
+// ----------------------- START MEDIA SECTION --------------------------
+
+enum MediaType {
+  image
+  video
+  audio
+  document
+}
+
+enum MediaState {
+  uploading
+  uploaded
+  failed
+}
+
+model UserProfileMedia {
+  userProfileMediaId Int                     @id @default(autoincrement())
+  url                String
+  type               MediaType
+  extension          String
+  state              MediaState
+  bytes              BigInt
+  userId             Int
+  UserProfile        UserProfile             @relation(fields: [userId], references: [userId])
+  purpose            UserProfileMediaPurpose
+  // timestamp
+  createdAt          DateTime                @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime                @updatedAt @db.Timestamptz(3)
+}
+
+enum UserProfileMediaPurpose {
+  profile_banner
+  profile_photo
+}
+
+model CourseMedia {
+  courseMediaId Int                @id @default(autoincrement())
+  url           String
+  type          MediaType
+  extension     String
+  state         MediaState
+  bytes         BigInt
+  userId        Int
+  UserProfile   UserProfile        @relation(fields: [userId], references: [userId])
+  courseId      Int
+  Course        Course             @relation(fields: [courseId], references: [courseId])
+  purpose       CourseMediaPurpose
+  // timestamp
+  createdAt     DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime           @updatedAt @db.Timestamptz(3)
+}
+
+enum CourseMediaPurpose {
+  course_banner
+  course_material
+}
+
+model UnitMedia {
+  unitMediaId Int              @id @default(autoincrement())
+  url         String
+  type        MediaType
+  extension   String
+  state       MediaState
+  bytes       BigInt
+  userId      Int
+  UserProfile UserProfile      @relation(fields: [userId], references: [userId])
+  unitId      Int
+  Unit        Unit             @relation(fields: [unitId], references: [unitId])
+  purpose     UnitMediaPurpose
+  // timestamp
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(3)
+}
+
+enum UnitMediaPurpose {
+  unit_banner
+  unit_material
+}
+
+model LessonMedia {
+  lessonMediaId Int                @id @default(autoincrement())
+  url           String
+  type          MediaType
+  extension     String
+  state         MediaState
+  bytes         BigInt
+  userId        Int
+  UserProfile   UserProfile        @relation(fields: [userId], references: [userId])
+  lessonId      Int
+  Lesson        Lesson             @relation(fields: [lessonId], references: [lessonId])
+  purpose       LessonMediaPurpose
+  // timestamp
+  createdAt     DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime           @updatedAt @db.Timestamptz(3)
+}
+
+enum LessonMediaPurpose {
+  lesson_banner
+  lesson_material
+}
+
+model QuizMedia {
+  quizMediaId Int              @id @default(autoincrement())
+  url         String
+  type        MediaType
+  extension   String
+  state       MediaState
+  bytes       BigInt
+  userId      Int
+  UserProfile UserProfile      @relation(fields: [userId], references: [userId])
+  quizId      Int
+  Quiz        Quiz             @relation(fields: [quizId], references: [quizId])
+  purpose     QuizMediaPurpose
+  // timestamp
+  createdAt   DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(3)
+}
+
+enum QuizMediaPurpose {
+  quiz_banner
+  quiz_material
+}
+
+model QuizSubmissionMedia {
+  quizSubmissionMediaId Int                        @id @default(autoincrement())
+  url                   String
+  type                  MediaType
+  extension             String
+  state                 MediaState
+  bytes                 BigInt
+  userId                Int
+  UserProfile           UserProfile                @relation(fields: [userId], references: [userId])
+  quizSubmissionId      Int
+  QuizSubmission        QuizSubmission             @relation(fields: [quizSubmissionId], references: [quizSubmissionId])
+  purpose               QuizSubmissionMediaPurpose
+  questionId            Int?
+  Question              QuizQuestion?              @relation(fields: [questionId], references: [quizQuestionId])
+  // timestamp
+  createdAt             DateTime                   @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime                   @updatedAt @db.Timestamptz(3)
+}
+
+enum QuizSubmissionMediaPurpose {
+  full_quiz_answers
+  single_question_answer
+  part_of_the_quiz_answers
+}
+
+// ----------------------- END MEDIA SECTION --------------------------
 
 // @todo Forums
 

@@ -5,6 +5,6 @@ export const fieldOrNothing = <T extends string, D>(
   | {
       [k in T]: D;
     }
-  | {} => {
-  return (value !== 'undefined' && value !== "") ? { [field]: value } : {};
+  | object => {
+  return value !== 'undefined' && value !== '' ? { [field]: value } : {};
 };

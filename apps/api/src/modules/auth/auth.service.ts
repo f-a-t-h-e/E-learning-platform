@@ -43,7 +43,7 @@ export class AuthService {
               secondName: data.secondName,
               thirdName: data.thirdName,
               bio: data.bio,
-              avatar: data.avatar,
+              photo: data.photo,
               phone: data.phone,
             },
           },

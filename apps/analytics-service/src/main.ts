@@ -1,4 +1,4 @@
-import "dotenv/config";
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AnalyticsServiceModule } from './analytics-service.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';

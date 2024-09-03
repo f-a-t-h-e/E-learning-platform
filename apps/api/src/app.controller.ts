@@ -1,8 +1,8 @@
-import { Controller, Get, ParseBoolPipe, Query } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiTags } from '@nestjs/swagger';
-import { TaskSchedulerService } from './modules/task-scheduler/task-scheduler.service';
-import { Channels_Enum } from '../../../common/enums/channels.enum';
+// import { TaskSchedulerService } from './modules/task-scheduler/task-scheduler.service';
+// import { Channels_Enum } from '../../../common/enums/channels.enum';
 // import { PrismaService } from './modules/prisma/prisma.service';
 
 @ApiTags('root')
@@ -12,15 +12,12 @@ export class AppController {
   constructor(
     private readonly appService: AppService,
     // private readonly prisma: PrismaService
-    private readonly taskSchedulerService: TaskSchedulerService,
+    // private readonly taskSchedulerService: TaskSchedulerService,
   ) {}
 
   @Get()
-  async getHello() // @Query('taskid') taskId: string,
-  // @Query('event') event: Channels_Enum,
-  // @Query('date') date: string,
-  // @Query('manual') manual?: "1",
-  {
+  async getHello() {
+    // @Query('manual') manual?: "1", // @Query('date') date: string, // @Query('event') event: Channels_Enum, // @Query('taskid') taskId: string,
     // try {
     //   const details = manual == '1'
     //     ? {
@@ -57,9 +54,9 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('l')
-  async long() {
-    await new Promise((r) => setTimeout(r, 1000 * 10));
-    return 'OK';
-  }
+  // @Get('l')
+  // async long() {
+  //   await new Promise((r) => setTimeout(r, 1000 * 10));
+  //   return 'OK';
+  // }
 }

@@ -49,11 +49,10 @@ export class UserProfileEntity implements UserProfile {
   bio: string | null;
 
   @ApiProperty({
-    example: 'https://example.com/avatar.jpg',
     required: false,
-    description: "The URL of the user's avatar image. This field can be null.",
+    description: "The URL of the user's photo. This field can be null.",
   })
-  avatar: string | null;
+  photo: string | null;
 
   @ApiProperty({
     description: 'URL where the user profile banner is stored',

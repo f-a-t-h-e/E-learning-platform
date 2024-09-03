@@ -4,14 +4,11 @@ import Redis from 'ioredis';
 import { ClientProxy } from '@nestjs/microservices';
 import { clearTimeout, setTimeout } from 'timers';
 
-import ms from 'ms';
-
 import {
   EXTRA_GAP_IN_MS,
   FIXED_DATE_TO_START_FROM,
   TASK_SCHEDULE_KEY,
 } from 'common/constants';
-import { Channels_Enum } from 'common/enums/channels.enum';
 import { ScheduledTaskDetailsEntity } from 'common/entities/scheduled-task-details.entity';
 
 @Injectable()

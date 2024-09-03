@@ -13,39 +13,34 @@ import fs from 'fs';
 import { PassThrough } from 'stream';
 import path from 'path';
 import fn from '../utils/getFileTypeFromStream';
-import { MediaService } from '../../modules/media/media.service';
-import { RequestUser } from '../../modules/auth/entities/request-user.entity';
+import { MediaService } from '../media.service';
+import { RequestUser } from '../../auth/entities/request-user.entity';
 import { fileStatAsync } from '../utils/fileStatAsync';
-import { Reflector } from '@nestjs/core';
-import { MEDIA_TARGET } from '../decorators/file-target.decorator';
-import { CourseMediaTarget } from '@prisma/client';
-import { parseMediaParams } from '../utils/parseMediaParams';
-import { fileTargetMap } from '../utils/getFilePath';
-import { validateField } from '../utils/validateField';
+import { parseMediaFields } from '../utils/parseMediaFields';
+import { fileTargetMap } from '../utils/fileTargetMap';
+import { validateField } from 'common/utils/validateField';
+import { MediaPurposeEnum } from '../media-purpose.enum';
 
 @Injectable()
 export class FileValidationInterceptor implements NestInterceptor {
-  constructor(
-    private readonly mediaService: MediaService,
-    private reflector: Reflector,
-  ) {}
+  constructor(private readonly mediaService: MediaService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    // Get metadata from the route handler
-    const mediaTarget = this.reflector.get<CourseMediaTarget>(
-      MEDIA_TARGET,
-      context.getHandler(),
-    );
-    // it prevents the other ts error
-    // as 'PROFILE_PICTURE';
-
     const request = context
       .switchToHttp()
       .getRequest<Request & { user: RequestUser }>();
-    const targetPath = fileTargetMap[mediaTarget](
-      ...parseMediaParams[mediaTarget](request),
-    );
+
     const id = validateField(request.params, 'id', 'integer');
+    const purpose = validateField(
+      request.params,
+      'purpose',
+      'enum',
+      MediaPurposeEnum,
+    );
+    const targetPath = fileTargetMap[purpose](
+      // @ts-expect-error This returns the correct values as it has the same mapping
+      parseMediaFields[purpose](request.query, request.user),
+    );
 
     const range = request.headers['content-range'];
     if (typeof range !== 'string' && !/(\d+)-(\d+)\/(\d+)/.test(range)) {

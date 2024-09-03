@@ -19,6 +19,14 @@ export class QuizEntity implements Quiz {
   title: string;
 
   @ApiProperty({
+    description: 'URL where the lesson banner is stored',
+    example:
+      '/uploads/course/1/45/unit/303/lesson/202/quiz/623/banner/2354.jpg',
+    nullable: true,
+  })
+  banner: string | null;
+
+  @ApiProperty({
     description: 'ID of the associated course',
     example: 101,
     nullable: true,

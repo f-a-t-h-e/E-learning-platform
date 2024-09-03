@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateLessonsContentDto } from './dto/create-lessons-content.dto';
 import { UpdateLessonsContentDto } from './dto/update-lessons-content.dto';
-import { PrismaService } from '../../../../../common/prisma/prisma.service';
+import { PrismaService } from 'common/prisma/prisma.service';
 import { $Enums } from '@prisma/client';
 
 @Injectable()

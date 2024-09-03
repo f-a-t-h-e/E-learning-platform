@@ -1,13 +1,8 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
   UseGuards,
-  Query,
   ParseIntPipe,
   NotFoundException,
 } from '@nestjs/common';
@@ -17,14 +12,9 @@ import {
   ApiResponse,
   ApiParam,
   ApiBearerAuth,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { QuizQuestionsService } from './quiz-questions.service';
-import { CreateQuizQuestionDto } from './dto/create-quiz-question.dto';
-import { UpdateQuizQuestionDto } from './dto/update-quiz-question.dto';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
-import { RolesDecorator } from '../../common/decorators/roles.decorator';
-import { Role } from '../../common/enums/role.enum';
 import JwtGuard from '../auth/guards/jwt.guard';
 import { User } from '../../common/decorators/user.decorator';
 import { RequestUser } from '../auth/entities/request-user.entity';
@@ -83,17 +73,23 @@ export class QuizQuestionsController {
     description: 'Return the specified quiz question.',
   })
   @ApiResponse({ status: 404, description: 'Quiz question not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number, @User() user: RequestUser) {
-    if (user.roleName == "student") {
-      const details = await this.quizQuestionsService.findOneForStudent(id, user.userId);
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @User() user: RequestUser,
+  ) {
+    if (user.roleName == 'student') {
+      const details = await this.quizQuestionsService.findOneForStudent(
+        id,
+        user.userId,
+      );
       if (!details.found) {
-        throw new NotFoundException(`This question doesn't exist`)
+        throw new NotFoundException(`This question doesn't exist`);
       }
       this.quizQuestionsService.validateFindOneForStudent(details.data);
       return {
         question: details.question,
         studentAnswer: details.studentAnswer,
-      }
+      };
     }
   }
 

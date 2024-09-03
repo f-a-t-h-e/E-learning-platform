@@ -17,14 +17,13 @@ export class CreateQuizAnswerDto {
   @Min(1)
   questionId: number;
 
-
   @ApiProperty({
     description: `The id of the chosen option`,
-    example: 1
+    example: 1,
   })
   @IsInt()
   @Min(1)
-  chosenOptionId?: number
+  chosenOptionId?: number;
   // @ApiProperty({
   //   description:
   //     'Unique identifier for the quiz submission to which this answer belongs',
