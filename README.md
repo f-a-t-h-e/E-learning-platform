@@ -351,7 +351,7 @@ The Notifications microservice manages the delivery of various notifications to 
 - Add localization support and content recommendations
 - Integrate with mobile applications
 
-## Contributing
+<!-- ## Contributing
 
 Contributions are welcome! Please follow these steps to contribute:
 
@@ -378,4 +378,4 @@ Contributions are welcome! Please follow these steps to contribute:
 
 Ensure your code adheres to the project's coding standards and includes appropriate tests.
 
-## License
+## License -->
