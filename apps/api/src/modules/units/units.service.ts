@@ -10,6 +10,14 @@ import { Prisma, Unit } from '@prisma/client';
 import { getStatesForCalculatingGrades } from '../../common/utils/getStatesForCalculatingGrades';
 import { LessonsService } from '../lessons/lessons.service';
 import { objOrNothing } from '../../common/utils/objOrNothing';
+import { GetOneUnitQueryDto } from './dto/get-one-unit-query.dto';
+import {
+  SELECT_LESSON_PUBLIC,
+  SELECT_MEDIA_PUBLIC,
+  SELECT_QUIZ_PUBLIC,
+  TSelectLessonPublic,
+  TSelectQuizPublic,
+} from '../../common/other/common-selects';
 
 @Injectable()
 export class UnitsService {
@@ -40,10 +48,111 @@ export class UnitsService {
     return Units;
   }
 
-  async findOne(unitId: number) {
+  async findOne(
+    unitId: number,
+    options = {} as GetOneUnitQueryDto,
+    allStates?: boolean,
+  ) {
+    const allQuizzes =
+      options.getUnitsQuizzes &&
+      options.getLessonsQuizzes &&
+      options.getLessons;
+    const include: Prisma.UnitInclude = {};
+    if (options.getLessons) {
+      include.Lessons = {
+        select: SELECT_LESSON_PUBLIC,
+        orderBy: { order: 'asc' },
+      };
+      if (!allStates) {
+        include.Lessons.where = { state: 'available' };
+      }
+      if (!allQuizzes && options.getLessonsQuizzes) {
+        include.Lessons.select.Quizzes = {
+          select: SELECT_QUIZ_PUBLIC,
+          orderBy: { order: 'asc' },
+        };
+        if (!allStates) {
+          include.Lessons.select.Quizzes.where = {
+            state: 'available',
+          };
+        }
+      }
+
+      if (options.getLessonsMedia) {
+        include.Lessons.select.LessonMedia = {
+          select: {
+            ...SELECT_MEDIA_PUBLIC,
+            lessonMediaId: true,
+          },
+        };
+        if (!allStates) {
+          include.Lessons.select.LessonMedia.where = {
+            purpose: 'lesson_material',
+            state: 'uploaded',
+          };
+        }
+      }
+    }
+    if (allQuizzes) {
+      include.Quizzes = {
+        select: SELECT_QUIZ_PUBLIC,
+        orderBy: { order: 'asc' },
+      };
+      if (!allStates) {
+        include.Quizzes.where.state = 'available';
+      }
+    } else if (options.getUnitsQuizzes) {
+      include.Quizzes = {
+        where: { lessonId: null },
+        select: SELECT_QUIZ_PUBLIC,
+        orderBy: { order: 'asc' },
+      };
+      if (!allStates) {
+        include.Quizzes.where.state = 'available';
+      }
+    }
+
+    if (options.getUnitsMedia) {
+      include.UnitMedia = {
+        select: {
+          ...SELECT_MEDIA_PUBLIC,
+          unitMediaId: true,
+        },
+      };
+      if (!allStates) {
+        include.UnitMedia.where = {
+          purpose: 'unit_material',
+          state: 'uploaded',
+        };
+      }
+    }
+
     const unit = await this.prisma.unit.findFirst({
       where: { unitId: unitId },
+      include: include,
     });
+
+    if (allQuizzes) {
+      const lessonsQuizzes: { [lessonId: number]: TSelectQuizPublic[] } = {};
+      unit.Quizzes = unit.Quizzes.filter((q) => {
+        if (q.lessonId) {
+          if (lessonsQuizzes[q.lessonId]) {
+            lessonsQuizzes[q.lessonId].push(q);
+          } else {
+            lessonsQuizzes[q.lessonId] = [q];
+          }
+          return false;
+        }
+
+        return true;
+      });
+
+      (unit.Lessons as TSelectLessonPublic[]).map((l) => {
+        l.Quizzes = lessonsQuizzes[l.lessonId];
+        delete lessonsQuizzes[l.lessonId];
+      });
+    }
+
     return unit;
   }
 
@@ -228,7 +337,13 @@ export class UnitsService {
     return result;
   }
 
-  async authHard({ unitId, userId }: { userId: number; unitId: number }) {
+  async authInstructorHard({
+    unitId,
+    userId,
+  }: {
+    userId: number;
+    unitId: number;
+  }) {
     const unit = await this.prisma.unit.findFirst({
       where: {
         unitId: unitId,

@@ -10,6 +10,11 @@ import { Lesson, Prisma, UserProfile } from '@prisma/client';
 import { getStatesForCalculatingGrades } from '../../common/utils/getStatesForCalculatingGrades';
 import { QuizzesService } from '../quizzes/quizzes.service';
 import { objOrNothing } from '../../common/utils/objOrNothing';
+import { GetOneLessonQueryDto } from './dto/get-one-lesson-query.dto';
+import {
+  SELECT_MEDIA_PUBLIC,
+  SELECT_QUIZ_PUBLIC,
+} from '../../common/other/common-selects';
 
 @Injectable()
 export class LessonsService {
@@ -50,16 +55,53 @@ export class LessonsService {
     return lessons;
   }
 
-  async findOne(id: number, getContent?: boolean) {
-    const include = getContent
-      ? {
-          LessonContent: true,
-        }
-      : undefined;
+  async findOne(
+    lessonId: number,
+    options = {} as GetOneLessonQueryDto,
+    allStates?: boolean,
+  ) {
+    const include: Prisma.LessonInclude = {};
+    if (options.getLessonsQuizzes) {
+      include.Quizzes = {
+        select: SELECT_QUIZ_PUBLIC,
+        orderBy: { order: 'asc' },
+      };
+      if (!allStates) {
+        include.Quizzes.where.state = 'available';
+      }
+    }
+    if (options.getLessonsMedia) {
+      include.LessonMedia = {
+        select: {
+          ...SELECT_MEDIA_PUBLIC,
+          lessonMediaId: true,
+        },
+      };
+      if (!allStates) {
+        include.LessonMedia.where = {
+          purpose: 'lesson_material',
+          state: 'uploaded',
+        };
+      }
+    }
+    if (options.getContent) {
+      include.LessonContent = {
+        select: {
+          updatedAt: true,
+          content: true,
+          contentType: true,
+        },
+      };
+    }
+
     const lesson = await this.prisma.lesson.findFirst({
-      where: { lessonId: id },
-      include,
+      where: {
+        lessonId: lessonId,
+        ...objOrNothing({ state: 'available' }, !allStates),
+      },
+      include: include,
     });
+
     return lesson;
   }
 
@@ -207,8 +249,15 @@ export class LessonsService {
 
     return result;
   }
+
   // authorization methods
-  async authHard({ lessonId, userId }: { userId: number; lessonId: number }) {
+  async authInstructorHard({
+    lessonId,
+    userId,
+  }: {
+    userId: number;
+    lessonId: number;
+  }) {
     const lesson = await this.prisma.lesson.findFirst({
       where: {
         lessonId: lessonId,
@@ -229,11 +278,45 @@ export class LessonsService {
     if (!lesson) {
       throw new NotFoundException(`This lesson doesn't exist`);
     }
-    if (!lesson.Course.Instructors.find((i) => i.instructorId == userId)) {
+    if (!lesson.Course.Instructors[0]) {
       throw new ForbiddenException(`You have no access to edit this lesson`);
     }
-    return true;
+    return lesson;
   }
+
+  async authStudentHard({
+    lessonId,
+    userId,
+  }: {
+    userId: number;
+    lessonId: number;
+  }) {
+    const lesson = await this.prisma.lesson.findFirst({
+      where: {
+        lessonId: lessonId,
+      },
+      select: {
+        Course: {
+          select: {
+            Students: {
+              where: {
+                studentId: userId,
+              },
+              select: { studentId: true, state: true, endsAt: true },
+            },
+          },
+        },
+      },
+    });
+    if (!lesson) {
+      throw new NotFoundException(`This lesson doesn't exist`);
+    }
+    if (!lesson.Course.Students[0]) {
+      throw new ForbiddenException(`You have no access to this lesson`);
+    }
+    return lesson;
+  }
+
   async canUserEditLesson(userId: number, lessonId: number) {
     const foundResult = await this.prisma.lesson.findFirst({
       where: {

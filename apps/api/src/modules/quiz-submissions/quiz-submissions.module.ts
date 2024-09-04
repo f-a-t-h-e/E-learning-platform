@@ -7,5 +7,6 @@ import { CoursesModule } from '../courses/courses.module';
   imports: [CoursesModule],
   controllers: [QuizSubmissionsController],
   providers: [QuizSubmissionsService],
+  exports: [QuizSubmissionsService],
 })
 export class QuizSubmissionsModule {}

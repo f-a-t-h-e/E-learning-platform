@@ -6,9 +6,22 @@ import {
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { PrismaService } from 'common/prisma/prisma.service';
-import { Course, Prisma, UserProfile } from '@prisma/client';
+import {
+  Course,
+  Lesson,
+  Prisma,
+  Unit,
+  UserProfile,
+} from '@prisma/client';
 import { getStatesForCalculatingGrades } from '../../common/utils/getStatesForCalculatingGrades';
 import { UnitsService } from '../units/units.service';
+import { DefaultArgs } from '@prisma/client/runtime/library';
+import {
+  SELECT_MEDIA_PUBLIC,
+  SELECT_QUIZ_PUBLIC,
+  TSelectQuizPublic,
+} from '../../common/other/common-selects';
+import { GetOneCourseQueryDto } from './dto/get-one-course-query.dto';
 
 @Injectable()
 export class CoursesService {
@@ -45,13 +58,15 @@ export class CoursesService {
 
   async findOne(
     id: number,
-    options = {} as {
-      getUnits?: boolean;
-      getLessons?: boolean;
-      getCourseMaterial?: boolean;
-      allMaterialState?: boolean;
-    },
+    options = {} as GetOneCourseQueryDto,
+    allStates?: boolean,
   ) {
+    const allQuizzes =
+      options.getCourseQuizzes &&
+      options.getUnitsQuizzes &&
+      options.getLessonsQuizzes &&
+      options.getUnits &&
+      options.getLessons;
     const include: Prisma.CourseInclude = {};
     if (options.getUnits) {
       include.Units = {
@@ -62,8 +77,13 @@ export class CoursesService {
           createdAt: true,
           banner: true,
         },
+        orderBy: { order: 'asc' },
       };
+      if (!allStates) {
+        include.Units.where = { state: 'available' };
+      }
       if (options.getLessons) {
+        type T = Prisma.Unit$LessonsArgs<DefaultArgs>;
         include.Units.select = {
           ...include.Units.select,
           Lessons: {
@@ -74,8 +94,63 @@ export class CoursesService {
               banner: true,
               createdAt: true,
             },
+            orderBy: { order: 'asc' },
           },
         };
+        if (!allStates) {
+          (include.Units.select.Lessons as T).where = { state: 'available' };
+        }
+        if (!allQuizzes && options.getLessonsQuizzes) {
+          (include.Units.select.Lessons as T).select.Quizzes = {
+            select: SELECT_QUIZ_PUBLIC,
+            orderBy: { order: 'asc' },
+          };
+          if (!allStates) {
+            type TT = Prisma.Lesson$QuizzesArgs<DefaultArgs>;
+            ((include.Units.select.Lessons as T).select.Quizzes as TT).where = {
+              state: 'available',
+            };
+          }
+        }
+
+        if (options.getLessonsMedia) {
+          (include.Units.select.Lessons as T).select.LessonMedia = {
+            select: {
+              ...SELECT_MEDIA_PUBLIC,
+              lessonMediaId: true,
+            },
+          };
+          if (!allStates) {
+            type TT = Prisma.Lesson$LessonMediaArgs<DefaultArgs>;
+            (
+              (include.Units.select.Lessons as T).select.LessonMedia as TT
+            ).where = { purpose: 'lesson_material', state: 'uploaded' };
+          }
+        }
+      }
+      if (!allQuizzes && options.getUnitsQuizzes) {
+        include.Units.select.Quizzes = {
+          where: { lessonId: null },
+          select: SELECT_QUIZ_PUBLIC,
+          orderBy: { order: 'asc' },
+        };
+        if (!allStates) {
+          include.Units.select.Quizzes.where.state = 'available';
+        }
+      }
+      if (options.getUnitsMedia) {
+        include.Units.select.UnitMedia = {
+          select: {
+            ...SELECT_MEDIA_PUBLIC,
+            unitMediaId: true,
+          },
+        };
+        if (!allStates) {
+          include.Units.select.UnitMedia.where = {
+            purpose: 'unit_material',
+            state: 'uploaded',
+          };
+        }
       }
     } else if (options.getLessons) {
       include.Lessons = {
@@ -86,31 +161,120 @@ export class CoursesService {
           banner: true,
           createdAt: true,
         },
+        orderBy: { order: 'asc' },
       };
+      if (!allStates) {
+        include.Lessons.where = { state: 'available' };
+      }
+      if (!allQuizzes && options.getLessonsQuizzes) {
+        include.Lessons.select.Quizzes = {
+          select: SELECT_QUIZ_PUBLIC,
+          orderBy: { order: 'asc' },
+        };
+        if (!allStates) {
+          include.Lessons.select.Quizzes.where = {
+            state: 'available',
+          };
+        }
+      }
+
+      if (options.getLessonsMedia) {
+        include.Lessons.select.LessonMedia = {
+          select: {
+            ...SELECT_MEDIA_PUBLIC,
+            lessonMediaId: true,
+          },
+        };
+        if (!allStates) {
+          include.Lessons.select.LessonMedia.where = {
+            purpose: 'lesson_material',
+            state: 'uploaded',
+          };
+        }
+      }
     }
-    if (options.getCourseMaterial) {
+    if (allQuizzes) {
+      include.Quizzes = {
+        select: SELECT_QUIZ_PUBLIC,
+        orderBy: { order: 'asc' },
+      };
+      if (!allStates) {
+        include.Quizzes.where.state = 'available';
+      }
+    } else if (options.getCourseQuizzes) {
+      include.Quizzes = {
+        where: { unitId: null, lessonId: null },
+        select: SELECT_QUIZ_PUBLIC,
+        orderBy: { order: 'asc' },
+      };
+      if (!allStates) {
+        include.Quizzes.where.state = 'available';
+      }
+    }
+    if (options.getCourseMedia) {
       include.CourseMedia = {
         select: {
+          ...SELECT_MEDIA_PUBLIC,
           courseMediaId: true,
-          purpose: true,
-          type: true,
-          extension: true,
-          url: true,
-          updatedAt: true,
         },
       };
-      if (!options.allMaterialState) {
-        include.CourseMedia.where.state = 'uploaded';
+      if (!allStates) {
+        include.CourseMedia.where = {
+          purpose: 'course_material',
+          state: 'uploaded',
+        };
       }
     }
     const course = await this.prisma.course.findFirst({
       where: { courseId: id },
       include: include,
     });
+    if (allQuizzes) {
+      const unitsQuizzes: { [unitId: number]: TSelectQuizPublic[] } = {};
+      const lessonsQuizzes: { [lessonId: number]: TSelectQuizPublic[] } = {};
+      course.Quizzes = course.Quizzes.filter((q) => {
+        if (q.unitId) {
+          if (q.lessonId) {
+            if (lessonsQuizzes[q.lessonId]) {
+              lessonsQuizzes[q.lessonId].push(q);
+            } else {
+              lessonsQuizzes[q.lessonId] = [q];
+            }
+          } else {
+            if (unitsQuizzes[q.unitId]) {
+              unitsQuizzes[q.unitId].push(q);
+            } else {
+              unitsQuizzes[q.unitId] = [q];
+            }
+          }
+          return false;
+        }
+        return true;
+      });
+      (
+        course.Units as (Unit & {
+          Quizzes: TSelectQuizPublic[];
+          Lessons: (Lesson & { Quizzes: TSelectQuizPublic[] })[];
+        })[]
+      ).map((u) => {
+        u.Quizzes = unitsQuizzes[u.unitId];
+        delete unitsQuizzes[u.unitId];
+        u.Lessons.map((l) => {
+          l.Quizzes = lessonsQuizzes[l.lessonId];
+          delete lessonsQuizzes[l.lessonId];
+        });
+      });
+    }
     return course;
   }
 
-  async authHard({ courseId, userId }: { userId: number; courseId: number }) {
+  async authInstructorHard({
+    courseId,
+    userId,
+  }: {
+    userId: number;
+    courseId: number;
+  }) {
     const course = await this.prisma.course.findFirst({
       where: {
         courseId: courseId,
@@ -127,7 +291,7 @@ export class CoursesService {
     if (!course) {
       throw new NotFoundException(`This course doesn't exist`);
     }
-    if (!course.Instructors.find((i) => i.instructorId == userId)) {
+    if (!course.Instructors[0]) {
       throw new ForbiddenException(`You have no access to edit this course`);
     }
     return true;

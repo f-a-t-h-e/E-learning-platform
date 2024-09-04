@@ -116,7 +116,7 @@ export class MediaController {
       case 'unit_banner':
       case 'unit_material':
         targetId = createMediaDto.unitId;
-        await this.unitsService.authHard({
+        await this.unitsService.authInstructorHard({
           userId: user.userId,
           unitId: targetId,
         });
@@ -124,7 +124,7 @@ export class MediaController {
       case 'course_banner':
       case 'course_material':
         targetId = createMediaDto.courseId;
-        await this.coursesService.authHard({
+        await this.coursesService.authInstructorHard({
           userId: user.userId,
           courseId: targetId,
         });
@@ -132,7 +132,7 @@ export class MediaController {
       case 'lesson_banner':
       case 'lesson_material':
         targetId = createMediaDto.lessonId;
-        await this.lessonsService.authHard({
+        await this.lessonsService.authInstructorHard({
           userId: user.userId,
           lessonId: targetId,
         });

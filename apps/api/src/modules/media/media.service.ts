@@ -108,7 +108,7 @@ export class MediaService {
       media.url,
       `${media.userId}_${id}.${media.extension}`,
     );
-      // @ts-expect-error nevermind it, just make sure you have the correct inputs and mappings
+    // @ts-expect-error nevermind it, just make sure you have the correct inputs and mappings
     await this.prisma[MediaPurposeTargetEnum[purpose].table[0]].updateMany({
       where: { [MediaPurposeTargetEnum[purpose].pk]: id },
       data: {

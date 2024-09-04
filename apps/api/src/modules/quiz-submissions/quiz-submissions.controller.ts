@@ -308,7 +308,7 @@ export class QuizSubmissionsController {
           `You can't access this submission as it's not yours nor you are an instructor in this course`,
         );
       }
-      await this.coursesService.authHard({
+      await this.coursesService.authInstructorHard({
         courseId: submission.courseId,
         userId: user.userId,
       });

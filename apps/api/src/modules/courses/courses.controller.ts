@@ -33,6 +33,8 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { CourseEntity } from './entities/course.entity';
 import { CoursesService } from './courses.service';
 import { MarkAvailableDto } from '../../common/dto/markAvailable.dto';
+import { ApiGetOneForCourse } from '../../common/decorators/api-get-one-for-course.decorator';
+import { GetOneCourseQueryDto } from './dto/get-one-course-query.dto';
 
 @ApiErrorResponses()
 @ApiTags('courses')
@@ -81,102 +83,60 @@ export class CoursesController {
   }
 
   @ApiOperation({
-    summary: 'Get one course',
-    description: `Get a specific course using its id`,
+    description: `Retrieve detailed information about a course, including optional nested data like units, lessons, quizzes, and media. Only accessible to teachers of the course.`,
+    summary: `Get a specific course. For teachers.`,
   })
   @ApiResponse({
     type: CourseEntity,
     status: HttpStatus.OK,
-    description: `The course that you requested`,
+    description: `The course that you requested.`,
   })
   @ApiParam({
     name: 'id',
-    description: `\`course.id\``,
-    type: Number,
+    description: `The ID of the course to retrieve.`,
+    type: 'integer',
     required: true,
-    example: 7,
+    example: 1,
   })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
   async findOne(
     @Param('id', ParseIntPipe) id: number,
-    @Query('get-units', ParseBoolPipe) getUnits: boolean,
-    @Query('get-lessons', ParseBoolPipe) getLessons: boolean,
-    @Query('get-course-material', ParseBoolPipe) getCourseMaterial: boolean,
+    @Query() options: GetOneCourseQueryDto,
   ): Promise<CourseEntity> {
-    return this.coursesService.findOne(id, {
-      getCourseMaterial,
-      getLessons,
-      getUnits,
-    });
+    return this.coursesService.findOne(id, options);
   }
 
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Get one course (for the teacher)',
-    description: `Get a specific course using its id if you are a teacher in this course`,
+    description: `Retrieve detailed information about a course, including optional nested data like units, lessons, quizzes, and media. Only accessible to teachers of the course.`,
+    summary: `Get a specific course. For teachers.`,
   })
   @ApiResponse({
     type: CourseEntity,
     status: HttpStatus.OK,
-    description: `The course that you requested`,
+    description: `The course that you requested.`,
   })
   @ApiParam({
     name: 'id',
-    description: `\`course.id\``,
-    type: Number,
+    description: `The ID of the course to retrieve.`,
+    type: 'integer',
     required: true,
-    example: 7,
+    example: 1,
   })
   @RolesDecorator(Role.Teacher)
   @HttpCode(HttpStatus.OK)
   @Get(':id/edit')
   async findOneForTeacher(
+    @User() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
-    @Query('get-units', ParseBoolPipe) getUnits: boolean,
-    @Query('get-lessons', ParseBoolPipe) getLessons: boolean,
-    @Query('get-course-material', ParseBoolPipe) getCourseMaterial: boolean,
+    @Query() options: GetOneCourseQueryDto,
   ): Promise<CourseEntity> {
-    return this.coursesService.findOne(id, {
-      getCourseMaterial,
-      getLessons,
-      getUnits,
-      allMaterialState: true,
+    await this.coursesService.authInstructorHard({
+      courseId: id,
+      userId: user.userId,
     });
-  }
-
-  @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Get one course (for the student)',
-    description: `Get a specific course using its id if you are a student in this course`,
-  })
-  @ApiResponse({
-    type: CourseEntity,
-    status: HttpStatus.OK,
-    description: `The course that you requested`,
-  })
-  @ApiParam({
-    name: 'id',
-    description: `\`course.id\``,
-    type: Number,
-    required: true,
-    example: 7,
-  })
-  @RolesDecorator(Role.Student)
-  @HttpCode(HttpStatus.OK)
-  @Get(':id/edit')
-  async findOneForStudent(
-    @Param('id', ParseIntPipe) id: number,
-    @Query('get-units', ParseBoolPipe) getUnits: boolean,
-    @Query('get-lessons', ParseBoolPipe) getLessons: boolean,
-    @Query('get-course-material', ParseBoolPipe) getCourseMaterial: boolean,
-  ): Promise<CourseEntity> {
-    return this.coursesService.findOne(id, {
-      getCourseMaterial,
-      getLessons,
-      getUnits,
-      allMaterialState: false,
-    });
+    return this.coursesService.findOne(id, options, true);
   }
 
   @ApiBearerAuth()
@@ -209,7 +169,10 @@ export class CoursesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCourseDto: UpdateCourseDto,
   ) {
-    await this.coursesService.authHard({ courseId: id, userId: user.userId });
+    await this.coursesService.authInstructorHard({
+      courseId: id,
+      userId: user.userId,
+    });
     return this.coursesService.update(id, updateCourseDto);
   }
 
@@ -242,7 +205,10 @@ export class CoursesController {
     @Param('id', ParseIntPipe) id: number,
     @Body() markAvailableDto: MarkAvailableDto,
   ) {
-    await this.coursesService.authHard({ courseId: id, userId: user.userId });
+    await this.coursesService.authInstructorHard({
+      courseId: id,
+      userId: user.userId,
+    });
     return this.coursesService.markAsAvailable({
       courseId: id,
       allStates: markAvailableDto.allStates,
@@ -281,7 +247,10 @@ export class CoursesController {
     @User() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
   ) {
-    await this.coursesService.authHard({ courseId: id, userId: user.userId });
+    await this.coursesService.authInstructorHard({
+      courseId: id,
+      userId: user.userId,
+    });
     return this.coursesService.remove(id);
   }
 }

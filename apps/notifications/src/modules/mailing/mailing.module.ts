@@ -60,8 +60,8 @@ import { join } from 'path';
           transport: {
             host: configService.get('SMTP_HOST'),
             auth: {
-              user: configService.get('SMTP_USERNAME'),
-              pass: configService.get('SMTP_PASSWORD'),
+              user: configService.get('SMTP_USER'),
+              pass: configService.get('SMTP_PASS'),
             },
             port: configService.get<number>('SMTP_PORT'),
             // tls: configService.get<'yes'>('SMTP_TLS'),

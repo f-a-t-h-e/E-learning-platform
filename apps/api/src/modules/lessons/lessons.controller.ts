@@ -36,6 +36,7 @@ import { RequestUser } from '../auth/entities/request-user.entity';
 import { RolesDecorator } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { MarkAvailableDto } from '../../common/dto/markAvailable.dto';
+import { GetOneLessonQueryDto } from './dto/get-one-lesson-query.dto';
 
 @ApiErrorResponses()
 @ApiTags('lessons')
@@ -109,37 +110,75 @@ export class LessonsController {
     return this.lessonsService.findAll(unitId, getContent);
   }
 
+  @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Get one lesson',
-    description: `Get a specific lesson using its id`,
+    description: `Retrieve detailed information about a lesson, including optional nested data like lessons, lessons, quizzes, and media.`,
+    summary: `Get a specific lesson.`,
   })
   @ApiResponse({
     type: LessonEntity,
     status: HttpStatus.OK,
-    description: `The lesson that you requested`,
+    description: `The lesson that you requested.`,
   })
   @ApiParam({
     name: 'id',
-    description: `The lesson id of the lesson that you want to fetch`,
-    type: Number,
+    description: `The ID of the lesson to retrieve.`,
+    type: 'integer',
     required: true,
-    example: 971,
+    example: 1,
   })
-  @ApiQuery({
-    name: 'getContent',
-    description: `Use it to get the content of the lessons as well`,
-    type: String,
-    enum: TRUTHY_STRING_VALUES,
-    required: true,
-    example: 79,
-  })
+  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  findOne(
+  async findOne(
+    @User() user: RequestUser,
     @Param('id', ParseIntPipe) id: number,
-    @Query('getContent', ParseTruthyPipe) getContent: boolean,
-  ) {
-    return this.lessonsService.findOne(id, getContent);
+    @Query() options: GetOneLessonQueryDto,
+  ): Promise<LessonEntity> {
+    if (user.roleName == 'student') {
+      await this.lessonsService.authStudentHard({
+        lessonId: id,
+        userId: user.userId,
+      });
+    } else {
+      await this.lessonsService.authInstructorHard({
+        lessonId: id,
+        userId: user.userId,
+      });
+    }
+    return this.lessonsService.findOne(id, options);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: `Retrieve detailed information about a lesson, including optional nested data like lessons, lessons, quizzes, and media. Only accessible to teachers of the lesson.`,
+    summary: `Get a specific lesson. For teachers.`,
+  })
+  @ApiResponse({
+    type: LessonEntity,
+    status: HttpStatus.OK,
+    description: `The lesson that you requested.`,
+  })
+  @ApiParam({
+    name: 'id',
+    description: `The ID of the lesson to retrieve.`,
+    type: 'integer',
+    required: true,
+    example: 1,
+  })
+  @RolesDecorator(Role.Teacher)
+  @HttpCode(HttpStatus.OK)
+  @Get(':id/:edit')
+  async findOneForInstructor(
+    @User() user: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Query() options: GetOneLessonQueryDto,
+  ): Promise<LessonEntity> {
+    await this.lessonsService.authInstructorHard({
+      lessonId: id,
+      userId: user.userId,
+    });
+    return this.lessonsService.findOne(id, options, true);
   }
 
   @ApiBearerAuth()
@@ -216,7 +255,10 @@ export class LessonsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() markAvailableDto: MarkAvailableDto,
   ) {
-    await this.lessonsService.authHard({ lessonId: id, userId: user.userId });
+    await this.lessonsService.authInstructorHard({
+      lessonId: id,
+      userId: user.userId,
+    });
     return this.lessonsService.markAsAvailable({
       lessonId: id,
       allStates: markAvailableDto.allStates,

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -15,7 +16,7 @@ async function bootstrap() {
   await setup(app);
 
   // Start the server
-  const port = 5555;
+  const port = process.env.PORT;
   await app.listen(port);
   console.log(`PORT : ${port} http://localhost:${port}`);
 }

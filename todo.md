@@ -111,10 +111,11 @@
 - [x] Use queues for auto-reviewing quizzes
 - [x] Improve the media module and allow updating media files for different purposes & authorize it
 - [ ] Add a repository for the ORM
-- [ ] Send the material
-  - [ ] Send the material of the courses
-  - [ ] Send the material of the units
-  - [ ] Send the material of the lessons
+- [ ] Add some sort of service that serves the media files
+- [x] Send the material
+  - [x] Send the material of the courses & embed units, lessons, quizzes
+  - [x] Send the material of the units & embed lessons, quizzes
+  - [x] Send the material of the lessons & embed quizzes
 - [ ] Add user profiles
   - [x] Create user profile model and module
   - [x] Implement user profile editing (e.g., bio, profile picture)

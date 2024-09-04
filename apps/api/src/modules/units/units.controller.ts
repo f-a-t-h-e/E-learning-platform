@@ -37,6 +37,7 @@ import { RolesDecorator } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { MarkAvailableDto } from '../../common/dto/markAvailable.dto';
 import { WrapperType } from '../../common/types';
+import { GetOneUnitQueryDto } from './dto/get-one-unit-query.dto';
 
 @ApiErrorResponses()
 @ApiTags('units')
@@ -106,25 +107,60 @@ export class UnitsController {
   }
 
   @ApiOperation({
-    summary: 'Get one unit',
-    description: `Get a specific unit using its id`,
+    description: `Retrieve detailed information about a unit, including optional nested data like units, lessons,`,
+    summary: `Get a specific unit.`,
   })
   @ApiResponse({
     type: UnitEntity,
     status: HttpStatus.OK,
-    description: `The unit that you requested`,
+    description: `The unit that you requested.`,
   })
   @ApiParam({
     name: 'id',
-    description: `The unit id of the unit that you want to fetch`,
-    type: Number,
+    description: `The ID of the unit to retrieve.`,
+    type: 'integer',
     required: true,
-    example: 91,
+    example: 1,
   })
   @HttpCode(HttpStatus.OK)
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<UnitEntity> {
-    return this.unitsService.findOne(id);
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() options: GetOneUnitQueryDto,
+  ): Promise<UnitEntity> {
+    return this.unitsService.findOne(id, options);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({
+    description: `Retrieve detailed information about a unit, including optional nested data like units, lessons, quizzes, and media. Only accessible to teachers of the unit.`,
+    summary: `Get a specific unit. For teachers.`,
+  })
+  @ApiResponse({
+    type: UnitEntity,
+    status: HttpStatus.OK,
+    description: `The unit that you requested.`,
+  })
+  @ApiParam({
+    name: 'id',
+    description: `The ID of the unit to retrieve.`,
+    type: 'integer',
+    required: true,
+    example: 1,
+  })
+  @RolesDecorator(Role.Teacher)
+  @HttpCode(HttpStatus.OK)
+  @Get(':id/:edit')
+  async findOneForInstructor(
+    @User() user: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Query() options: GetOneUnitQueryDto,
+  ): Promise<UnitEntity> {
+    await this.unitsService.authInstructorHard({
+      unitId: id,
+      userId: user.userId,
+    });
+    return this.unitsService.findOne(id, options, true);
   }
 
   @ApiBearerAuth()
@@ -201,7 +237,10 @@ export class UnitsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() markAvailableDto: MarkAvailableDto,
   ) {
-    await this.unitsService.authHard({ unitId: id, userId: user.userId });
+    await this.unitsService.authInstructorHard({
+      unitId: id,
+      userId: user.userId,
+    });
     return this.unitsService.markAsAvailable({
       unitId: id,
       allStates: markAvailableDto.allStates,
