@@ -17,8 +17,8 @@ import { LessonsService } from './lessons.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { CoursesService } from '../courses/courses.service';
-import JwtGuard from '../auth/guards/jwt.guard';
-import { User } from '../../common/decorators/user.decorator';
+import JwtGuard from '../../../../../common/jwt.guard';
+import { User } from '../../../../../common/user.decorator';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -32,7 +32,7 @@ import { UnauthorizedResponse } from '../../common/entities/error-response.entit
 import { LessonEntity } from './entities/lesson.entity';
 import { TRUTHY_STRING_VALUES } from '../../common/constants';
 import { ParseTruthyPipe } from '../../common/pipes/ParseTruthy.pipe';
-import { RequestUser } from '../auth/entities/request-user.entity';
+import { RequestUser } from '../../../../../common/entities/request-user.entity';
 import { RolesDecorator } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { MarkAvailableDto } from '../../common/dto/markAvailable.dto';

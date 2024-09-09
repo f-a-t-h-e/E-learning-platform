@@ -17,7 +17,7 @@ import {
 import { UserProfileService } from './user-profile.service';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
-import JwtGuard from '../auth/guards/jwt.guard';
+import JwtGuard from '../../../../../common/jwt.guard';
 import { UserProfileEntity } from './entities/user-profile.entity';
 
 @ApiTags('User Profile')

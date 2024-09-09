@@ -19,8 +19,8 @@ import { UnitsService } from './units.service';
 import { CreateUnitDto } from './dto/create-unit.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
 import { CoursesService } from '../courses/courses.service';
-import JwtGuard from '../auth/guards/jwt.guard';
-import { User } from '../../common/decorators/user.decorator';
+import JwtGuard from '../../../../../common/jwt.guard';
+import { User } from '../../../../../common/user.decorator';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -32,7 +32,7 @@ import {
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { UnitEntity } from './entities/unit.entity';
 import { UnauthorizedResponse } from '../../common/entities/error-response.entity';
-import { RequestUser } from '../auth/entities/request-user.entity';
+import { RequestUser } from '../../../../../common/entities/request-user.entity';
 import { RolesDecorator } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { MarkAvailableDto } from '../../common/dto/markAvailable.dto';

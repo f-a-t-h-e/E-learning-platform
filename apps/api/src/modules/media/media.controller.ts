@@ -34,13 +34,13 @@ import { LessonsService } from '../lessons/lessons.service';
 import { CoursesService } from '../courses/courses.service';
 
 import { CreateMediaDto } from './dto/create-media.dto';
-import { RequestUser } from '../auth/entities/request-user.entity';
+import { RequestUser } from '../../../../../common/entities/request-user.entity';
 
 import { FileValidationInterceptor } from './interceptors/file-validation.interceptor';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
-import { User } from '../../common/decorators/user.decorator';
+import { User } from '../../../../../common/user.decorator';
 
-import JwtGuard from '../auth/guards/jwt.guard';
+import JwtGuard from '../../../../../common/jwt.guard';
 
 import { createFile } from './utils/createFile';
 import { fileStatAsync } from './utils/fileStatAsync';

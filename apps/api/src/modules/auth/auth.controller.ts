@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/localAuth.guard';
-import { User } from '../../common/decorators/user.decorator';
+import { User } from '../../../../../common/user.decorator';
 import { Request } from 'express';
 import { RegisterDto } from './dto/register.dto';
 import {
@@ -23,9 +23,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import JwtGuard from './guards/jwt.guard';
+import JwtGuard from '../../../../../common/jwt.guard';
 import { AuthRes } from './entities/auth-res.entity';
-import { RequestUser } from './entities/request-user.entity';
+import { RequestUser } from '../../../../../common/entities/request-user.entity';
 import { Whoami } from './entities/whoami.entity';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { UnauthorizedResponse } from '../../common/entities/error-response.entity';

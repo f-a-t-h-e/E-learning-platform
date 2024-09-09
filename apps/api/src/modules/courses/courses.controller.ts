@@ -23,10 +23,10 @@ import {
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { UnauthorizedResponse } from '../../common/entities/error-response.entity';
 import { RolesDecorator } from '../../common/decorators/roles.decorator';
-import { User } from '../../common/decorators/user.decorator';
+import { User } from '../../../../../common/user.decorator';
 import { Role } from '../../common/enums/role.enum';
 
-import { RequestUser } from '../auth/entities/request-user.entity';
+import { RequestUser } from '../../../../../common/entities/request-user.entity';
 
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';

@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsInt, IsOptional, Min } from 'class-validator';
-import { TPagination } from '../../../../common/types/pagination.type';
+import { TPagination } from 'common/types/pagination.type';
 
 export class GetManyQuizzesQueryDto
   implements Partial<TPagination<'quiz', number>>

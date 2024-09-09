@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { RequestUser } from './request-user.entity';
+import { RequestUser } from '../../../../../../common/entities/request-user.entity';
 
 export class AuthRes {
   @ApiProperty({

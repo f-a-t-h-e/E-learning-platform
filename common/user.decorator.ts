@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { RequestUser } from '../../modules/auth/entities/request-user.entity';
+import { RequestUser } from './entities/request-user.entity';
 
 // export type RequestUser = {
 //   id: number;

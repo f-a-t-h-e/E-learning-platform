@@ -15,9 +15,9 @@ import {
 } from '@nestjs/swagger';
 import { QuizQuestionsService } from './quiz-questions.service';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
-import JwtGuard from '../auth/guards/jwt.guard';
-import { User } from '../../common/decorators/user.decorator';
-import { RequestUser } from '../auth/entities/request-user.entity';
+import JwtGuard from '../../../../../common/jwt.guard';
+import { User } from '../../../../../common/user.decorator';
+import { RequestUser } from '../../../../../common/entities/request-user.entity';
 
 @ApiBearerAuth()
 @ApiErrorResponses()

@@ -14,7 +14,7 @@ import { PassThrough } from 'stream';
 import path from 'path';
 import fn from '../utils/getFileTypeFromStream';
 import { MediaService } from '../media.service';
-import { RequestUser } from '../../auth/entities/request-user.entity';
+import { RequestUser } from '../../../../../../common/entities/request-user.entity';
 import { fileStatAsync } from '../utils/fileStatAsync';
 import { parseMediaFields } from '../utils/parseMediaFields';
 import { fileTargetMap } from '../utils/fileTargetMap';

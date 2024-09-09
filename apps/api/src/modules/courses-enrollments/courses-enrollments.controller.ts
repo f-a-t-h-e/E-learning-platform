@@ -19,7 +19,7 @@ import {
 
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { RolesDecorator } from '../../common/decorators/roles.decorator';
-import { User } from '../../common/decorators/user.decorator';
+import { User } from '../../../../../common/user.decorator';
 import { Role } from '../../common/enums/role.enum';
 
 import { CreateCourseEnrollmentDto } from './dto/create-course-enrollment.dto';
@@ -27,7 +27,7 @@ import { CreateManyCourseEnrollments } from './dto/create-many-course-enrollment
 import { UpdateCourseEnrollments } from './dto/update-courses-enrollment.dto';
 
 import { CoursesEnrollmentEntity } from './entities/courses-enrollment.entity';
-import { RequestUser } from '../auth/entities/request-user.entity';
+import { RequestUser } from '../../../../../common/entities/request-user.entity';
 
 import { CoursesEnrollmentsService } from './courses-enrollments.service';
 

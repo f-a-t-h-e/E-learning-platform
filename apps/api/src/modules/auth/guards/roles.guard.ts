@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { ROLES_KEY } from '../../../common/decorators/roles.decorator';
 import { Role } from '../../../common/enums/role.enum';
-import { RequestUser } from '../entities/request-user.entity';
+import { RequestUser } from '../../../../../../common/entities/request-user.entity';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

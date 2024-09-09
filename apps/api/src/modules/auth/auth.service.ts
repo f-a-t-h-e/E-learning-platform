@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { RequestUser } from './entities/request-user.entity';
+import { RequestUser } from '../../../../../common/entities/request-user.entity';
 import { ConfigService } from '@nestjs/config';
 
 const defaultUserSelect = {

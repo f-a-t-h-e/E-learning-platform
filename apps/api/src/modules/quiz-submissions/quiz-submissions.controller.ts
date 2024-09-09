@@ -28,9 +28,9 @@ import {
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
 import { RolesDecorator } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
-import JwtGuard from '../auth/guards/jwt.guard';
-import { User } from '../../common/decorators/user.decorator';
-import { RequestUser } from '../auth/entities/request-user.entity';
+import JwtGuard from '../../../../../common/jwt.guard';
+import { User } from '../../../../../common/user.decorator';
+import { RequestUser } from '../../../../../common/entities/request-user.entity';
 import { CoursesService } from '../courses/courses.service';
 import {
   TIME_DIFF_BETWEEN_NOW_AND_END_DATE_FOR_SUBMISSION,

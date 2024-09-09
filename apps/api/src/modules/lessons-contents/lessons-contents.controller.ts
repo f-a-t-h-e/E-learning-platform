@@ -16,8 +16,8 @@ import { LessonsContentsService } from './lessons-contents.service';
 import { CreateLessonsContentDto } from './dto/create-lessons-content.dto';
 import { UpdateLessonsContentDto } from './dto/update-lessons-content.dto';
 import { LessonsService } from '../lessons/lessons.service';
-import JwtGuard from '../auth/guards/jwt.guard';
-import { User } from '../../common/decorators/user.decorator';
+import JwtGuard from '../../../../../common/jwt.guard';
+import { User } from '../../../../../common/user.decorator';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -28,7 +28,7 @@ import {
 import { LessonsContentEntity } from './entities/lessons-content.entity';
 import { UnauthorizedResponse } from '../../common/entities/error-response.entity';
 import { ApiErrorResponses } from '../../common/decorators/api-error-responses.decorator';
-import { RequestUser } from '../auth/entities/request-user.entity';
+import { RequestUser } from '../../../../../common/entities/request-user.entity';
 
 @ApiErrorResponses()
 @ApiTags('Lessons Contents')
